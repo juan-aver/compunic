@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ========================================== 
+  Vista estructurada con paciencia. 
+  Ojo con borrar las clases, el CSS depende de esto como mi vida del café.
+  ========================================== 
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Carrito de compras - COMPUNIC">
+    <title>Carrito de Compras - COMPUNIC</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../public/css/main.css">
+    <link rel="stylesheet" href="../public/css/cart.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ============================================
+         NAVBAR
+         ============================================ -->
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-brand-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <span>COMPUNIC</span>
+            </a>
+
+            <div class="navbar-actions">
+                <div class="navbar-cart" id="cartButton">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="navbar-cart-badge" id="cartCount">0</span>
+                </div>
+
+                <div class="navbar-user" id="exitButton" onclick="window.location.href='/index.html'"
+                    style="cursor: pointer;">
+                    <div class="navbar-user-avatar">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <span>Salir</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         CARRITO DE COMPRAS
+         ============================================ -->
+    <section class="cart-section">
+        <div class="container">
+            <div class="cart-header">
+                <h1>
+                    <i class="fas fa-shopping-cart"></i>
+                    Carrito de Compras
+                </h1>
+                <a href="index.html" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i>
+                    Continuar Comprando
+                </a>
+            </div>
+
+            <!-- Carrito vacío -->
+            <div class="cart-empty" id="emptyCart" style="display: none;">
+                <i class="fas fa-shopping-cart"></i>
+                <h2>Tu carrito está vacío</h2>
+                <p>Agrega productos desde nuestro catálogo</p>
+                <a href="index.html" class="btn btn-primary btn-lg">
+                    <i class="fas fa-shopping-bag"></i>
+                    Ir al Catálogo
+                </a>
+            </div>
+
+            <!-- Contenido del carrito -->
+            <div class="cart-content" id="cartContent">
+                <div class="cart-items">
+                    <div class="cart-items-header">
+                        <h2>Productos (<span id="itemCount">0</span>)</h2>
+                        <button class="btn-text btn-danger" id="clearCartBtn">
+                            <i class="fas fa-trash"></i>
+                            Vaciar Carrito
+                        </button>
+                    </div>
+
+                    <div class="cart-items-list" id="cartItemsList">
+                        <!-- Los productos se cargarán dinámicamente -->
+                    </div>
+                </div>
+
+                <div class="cart-summary">
+                    <div class="card">
+                        <h3>Resumen del Pedido</h3>
+
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">$0.00</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Envío:</span>
+                            <span class="text-success">Gratis</span>
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-row summary-total">
+                            <span>Total:</span>
+                            <span id="total">$0.00</span>
+                        </div>
+
+                        <button class="btn btn-primary btn-lg btn-block" id="checkoutBtn">
+                            <i class="fas fa-credit-card"></i>
+                            Proceder al Checkout
+                        </button>
+
+                        <div class="summary-info">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Compra 100% segura</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript -->
+    <script src="../public/js/api.js"></script>
+    <script src="../public/js/cart.js"></script>
+
+</body>
+
+</html>

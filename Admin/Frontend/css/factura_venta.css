@@ -1,0 +1,445 @@
+/* =========================================
+   CONFIGURACIÓN DE PÁGINA
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+
+body {
+    background-color: #525659;
+    margin: 0;
+    padding: 20px;
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    justify-content: center;
+}
+
+.hoja-factura {
+    background-color: white;
+    width: 21cm;
+    min-height: 27cm;
+    /* Reducido de 29.7cm */
+    padding: 0.5cm;
+    /* Reducido de 1cm */
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================================
+   HEADER
+   ========================================= */
+.header-factura {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 5px;
+    /* Reducido de 10px */
+}
+
+.logo-area {
+    width: 20%;
+    display: flex;
+    justify-content: flex-start;
+}
+
+/* LOGO DE 70PX */
+.logo-area img,
+.img-logo {
+    width: 110px !important;
+    /* Reducido de 100px */
+    height: 110px !important;
+    object-fit: contain;
+    max-width: 100%;
+}
+
+.info-empresa {
+    width: 55%;
+    text-align: center;
+    color: #333;
+}
+
+.empresa-nombre {
+    font-size: 20px;
+    /* Reducido de 24px */
+    font-weight: 900;
+    color: #2c3e50;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.empresa-ruc {
+    font-size: 14px;
+    /* Reducido de 16px */
+    font-weight: 800;
+    color: #444;
+    margin: 2px 0 5px 0;
+    /* Reducido margen inferior */
+}
+
+.empresa-detalles p {
+    font-size: 9px;
+    /* Reducido de 10px */
+    margin: 1px 0;
+    line-height: 1.1;
+    /* Reducido de 1.2 */
+}
+
+.empresa-slogan {
+    margin-top: 3px !important;
+    /* Reducido de 5px */
+    font-weight: 500;
+}
+
+/* Caja de Número de Factura */
+.box-numero-factura {
+    width: 20%;
+    border: 1px solid #7f8c8d;
+}
+
+.box-header {
+    background-color: #006994;
+    color: white;
+    text-align: center;
+    font-weight: 800;
+    padding: 2px 0;
+    /* Reducido de 3px */
+    font-size: 12px;
+    /* Reducido de 14px */
+    text-transform: uppercase;
+}
+
+.box-content {
+    padding: 3px;
+    /* Reducido de 5px */
+    text-align: center;
+    height: 25px;
+    /* Reducido de 30px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.numero-rojo {
+    color: #c0392b;
+    font-weight: bold;
+    font-size: 16px;
+    /* Reducido de 18px */
+    font-family: 'Courier New', monospace;
+}
+
+/* =========================================
+   SECCIÓN CLIENTE
+   ========================================= */
+.seccion-cliente {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    /* Reducido de 10px */
+    margin-bottom: 3px;
+    /* Reducido de 5px */
+    gap: 10px;
+}
+
+.bloque-izq {
+    width: 70%;
+}
+
+.barra-amarilla {
+    background-color: #eec232;
+    color: #2c3e50;
+    font-weight: 800;
+    padding: 3px 10px;
+    /* Reducido de 4px */
+    font-size: 11px;
+    /* Reducido de 12px */
+    text-transform: uppercase;
+    margin-bottom: 3px;
+    /* Reducido de 5px */
+}
+
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    /* Reducido de 5px */
+    padding-left: 5px;
+}
+
+.campo-linea {
+    display: flex;
+    align-items: baseline;
+}
+
+.campo-linea label {
+    font-size: 11px;
+    /* Reducido de 12px */
+    font-weight: 800;
+    width: 110px;
+    color: #2c3e50;
+}
+
+.linea-input {
+    flex-grow: 1;
+    border-bottom: 1px solid #bdc3c7;
+    height: 12px;
+    /* Reducido de 14px */
+}
+
+/* Tabla de Fecha */
+.bloque-der-fecha {
+    width: 28%;
+}
+
+.tabla-fecha {
+    border: 1px solid #7f8c8d;
+    font-size: 10px;
+    /* Reducido de 11px */
+}
+
+.fecha-header {
+    background-color: black;
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    text-transform: uppercase;
+}
+
+.fecha-cols {
+    display: flex;
+    background-color: #bdc3c7;
+    border-bottom: 1px solid #7f8c8d;
+}
+
+.col-f {
+    flex: 1;
+    text-align: center;
+    border-right: 1px solid #7f8c8d;
+    padding: 2px 0;
+    font-weight: bold;
+    font-size: 9px;
+    /* Reducido de 10px */
+}
+
+.col-f:last-child {
+    border-right: none;
+}
+
+.fecha-inputs {
+    display: flex;
+    height: 20px;
+    /* Reducido de 25px */
+}
+
+.col-i {
+    flex: 1;
+    border-right: 1px solid #7f8c8d;
+}
+
+.col-i:last-child {
+    border-right: none;
+}
+
+
+/* =========================================
+   TABLA DE PRODUCTOS
+   ========================================= */
+.seccion-productos {
+    margin-top: 3px;
+    /* Reducido de 5px */
+    position: relative;
+    flex-grow: 1;
+}
+
+.tabla-detalle {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-detalle th {
+    background-color: #eec232;
+    color: #2c3e50;
+    font-weight: 800;
+    font-size: 10px;
+    /* Reducido de 11px */
+    text-align: center;
+    padding: 3px;
+    /* Reducido de 4px */
+    text-transform: uppercase;
+    border: 1px solid white;
+}
+
+.tabla-detalle td {
+    border-left: 1px solid #bdc3c7;
+    border-right: 1px solid #bdc3c7;
+    height: 18px;
+    /* Reducido de 25px */
+    font-size: 10px;
+    padding: 2px;
+}
+
+.col-cant {
+    width: 10%;
+}
+
+.col-desc {
+    width: 50%;
+}
+
+.col-unit {
+    width: 20%;
+}
+
+.col-imp {
+    width: 20%;
+    border-right: none !important;
+}
+
+.texto-lateral {
+    position: relative;
+    left: -25px;
+    bottom: 40px;
+    /* Ajustado */
+    transform: rotate(-90deg);
+    font-size: 5px;
+    /* Reducido de 6px */
+    color: #7f8c8d;
+    width: 400px;
+    transform-origin: left bottom;
+}
+
+/* =========================================
+   SECCIÓN FINAL (TOTALES Y FIRMAS)
+   ========================================= */
+.seccion-final {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    /* Reducido para acercar a la tabla */
+    margin-bottom: 5px;
+    /* Aumentado para dar espacio al footer */
+    align-items: flex-end;
+}
+
+/* Firmas */
+.area-firmas {
+    display: flex;
+    gap: 30px;
+    /* Reducido de 40px */
+    padding-left: 20px;
+    width: 60%;
+}
+
+.firma-box {
+    text-align: center;
+    flex: 1;
+}
+
+.linea-firma {
+    border-bottom: 1px solid black;
+    margin-bottom: 3px;
+    /* Reducido de 5px */
+    height: 30px;
+    /* Reducido de 40px */
+}
+
+.firma-box p {
+    font-size: 9px;
+    /* Reducido de 10px */
+    font-weight: 800;
+    margin: 0;
+    color: #2c3e50;
+}
+
+/* Totales */
+.area-totales {
+    width: 35%;
+}
+
+.fila-total {
+    display: flex;
+    border: 1px solid #bdc3c7;
+    border-top: none;
+}
+
+.fila-total:first-child {
+    border-top: 1px solid #bdc3c7;
+}
+
+.label-amarillo {
+    background-color: #eec232;
+    font-weight: 800;
+    font-size: 10px;
+    /* Reducido de 11px */
+    padding: 2px 10px;
+    /* Reducido de 3px */
+    width: 40%;
+}
+
+.label-simple {
+    font-weight: 800;
+    font-size: 10px;
+    /* Reducido de 11px */
+    padding: 2px 10px;
+    /* Reducido de 3px */
+    width: 40%;
+    color: #2c3e50;
+}
+
+.valor-total {
+    flex-grow: 1;
+    border-left: 1px solid #bdc3c7;
+    font-size: 10px;
+    padding: 2px 5px;
+}
+
+/* =========================================
+   FOOTER AZUL
+   ========================================= */
+.footer-azul {
+    background-color: #3b5a83;
+    color: white;
+    padding: 3px 10px;
+    /* Reducido a�n m�s */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    /* bottom: 0; */
+    /* left: 0; */
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+}
+
+.footer-texto p {
+    font-size: 8px;
+    /* Reducido de 9px */
+    margin: 1px 0;
+    /* Reducido de 2px */
+}
+
+.footer-logo {
+    text-align: right;
+    font-family: sans-serif;
+    font-size: 16px;
+    /* Reducido de 18px */
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.nic-box {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0 2px;
+}
+
+.footer-sub {
+    font-size: 5px;
+    /* Reducido de 6px */
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: -2px;
+}

@@ -1,0 +1,280 @@
+<!-- 
+  ========================================== 
+  Plantilla principal. 
+  Nota mental: Revisar accesibilidad (algún día). 
+  ========================================== 
+-->
+<!-- Table Enhancements -->
+<!-- ⚠️ Cuidado con los z-index de este Modal de Agregar/Editar Producto -->
+<div id="modalProductoForm" class="producto-form-modal" style="display: none;">
+  <div class="producto-form-modal-overlay" onclick="cerrarModalProducto()"></div>
+  <div class="producto-form-modal-content">
+    <div class="producto-form-modal-header">
+      <h3 id="modalProductoTitle"><i class="fas fa-plus-circle"></i> Nuevo Producto</h3>
+      <button class="producto-form-modal-close" onclick="cerrarModalProducto()">&times;</button>
+    </div>
+    <div class="producto-form-modal-body">
+      <form id="formularioProducto">
+
+        <div style="margin-bottom: 15px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Identificación del Producto:</label>
+          <div style="display: flex; gap: 10px;">
+            <div style="flex: 0.3;">
+              <label style="font-size: 0.8em; color: #666;">ID (Auto)</label>
+              <input id="id_producto" type="text" placeholder="#" readonly
+                style="width: 100%; background-color: #e9ecef; cursor: not-allowed;" />
+            </div>
+            <div style="flex: 1;">
+              <label style="font-size: 0.8em; color: #666;">Nombre del Producto</label>
+              <div class="input-with-icon">
+                <span class="input-icon">📦</span>
+                <input id="nombre_producto" type="text" placeholder="Ej: Laptop HP Pavilion" required />
+              </div>
+            </div>
+            <div style="flex: 1;">
+              <label style="font-size: 0.8em; color: #666;">Modelo</label>
+              <input id="modelo" type="text" placeholder="Ej: V3400" style="width: 100%;" />
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Descripción / Detalles:</label>
+          <textarea id="descripcion" placeholder="Ej: Color negro, 16GB RAM, incluye estuche..."
+            style="width: 100%; resize: vertical; padding: 5px; font-family: inherit;" rows="2"></textarea>
+        </div>
+
+        <!-- Sección de Imagen del Producto -->
+        <div style="margin-bottom: 15px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Imagen del Producto:</label>
+          <div style="display: flex; gap: 15px; align-items: flex-start;">
+            <div style="flex: 1;">
+              <input id="imagen_producto" type="file" accept="image/*"
+                style="width: 100%; padding: 8px; border: 2px dashed #007bff; border-radius: 5px; background-color: rgba(255,255,255,0.5);" />
+              <small style="color: #666; display: block; margin-top: 5px;">Formatos: JPG, PNG, GIF, WEBP (Máx.
+                5MB)</small>
+            </div>
+            <div id="preview_imagen_container" style="display: none; flex: 0 0 100px;">
+              <img id="preview_imagen" src="" alt="Preview"
+                style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #007bff;" />
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Clasificación y Origen:</label>
+          <div style="display: flex; gap: 10px;">
+            <select id="categoria" required style="flex: 1;">
+              <option value="" disabled selected>Seleccionar Categoría...</option>
+            </select>
+            <select id="marca" required style="flex: 1;">
+              <option value="" disabled selected>Seleccionar Marca...</option>
+            </select>
+            <select id="proveedor" required style="flex: 1;">
+              <option value="" disabled selected>Seleccionar Proveedor principal...</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+          <div>
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Garantía:</label>
+            <select id="garantia" required style="width: 100%;">
+              <option value="" disabled selected>Seleccionar Garantía...</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Precio Venta:</label>
+            <div class="input-with-icon">
+              <span class="input-icon">💰</span>
+              <input id="precio_venta" type="number" placeholder="Precio Venta ($)" step="0.01" min="0" required />
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 15px; background-color: rgba(0,0,0,0.03); padding: 10px; border-radius: 8px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px; color: #444;">Información de Inventario
+            (Solo Lectura):</label>
+          <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+              <label style="font-size: 0.8em;">Stock Actual (Calculado)</label>
+              <input id="stock_actual" type="number" placeholder="0" readonly
+                style="width: 100%; background-color: #e9ecef; color: #495057;" />
+            </div>
+            <div style="flex: 1;">
+              <label style="font-size: 0.8em;">Precio Compra Referencia</label>
+              <input id="precio_compra" type="text" placeholder="$0.00" readonly
+                style="width: 100%; background-color: #e9ecef; color: #495057;" />
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+    <div class="producto-form-modal-footer">
+      <button type="button" class="btn-modal-cancel" onclick="cerrarModalProducto()">
+        <i class="fas fa-times"></i> Cancelar
+      </button>
+      <button type="button" id="btn_eliminar" class="btn-modal-delete" style="display: none;">
+        <i class="fas fa-trash"></i> Eliminar
+      </button>
+      <button type="button" id="btn_agregar" class="btn-modal-save">
+        <i class="fas fa-save"></i> Guardar
+      </button>
+      <button type="button" id="btn_modificar" class="btn-modal-update" style="display: none;">
+        <i class="fas fa-edit"></i> Modificar
+      </button>
+    </div>
+  </div>
+</div>
+
+<section class="tabla" id="seccion-tabla">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <h2 style="margin: 0;">Inventario de Productos</h2>
+    <button class="btn-nuevo-producto" onclick="abrirModalProducto()">
+      <i class="fas fa-plus"></i> Nuevo Producto
+    </button>
+  </div>
+
+  <!-- Controles de Tabla Mejorados -->
+  <div class="table-controls">
+    <div class="search-enhanced-container">
+      <!-- Input de búsqueda en tiempo real -->
+      <div class="search-input-wrapper">
+        <input type="text" id="buscar_tabla" class="filter-search"
+          placeholder="Buscar por nombre, modelo, descripción o marca...">
+        <button class="btn-clear-filters" onclick="clearProductosFilters()">
+          <i class="fas fa-times"></i> Limpiar
+        </button>
+      </div>
+    </div>
+
+    <div class="table-per-page">
+      <label>Mostrar:</label>
+      <select class="per-page-select" id="productos-per-page">
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+    </div>
+
+    <!-- View Toggle -->
+    <div class="view-toggle-container">
+      <button class="view-toggle-btn active" id="btn-view-cards" title="Vista Cards"
+        onclick="switchProductView('cards')">
+        <i class="fas fa-th-large"></i>
+      </button>
+      <button class="view-toggle-btn" id="btn-view-table" title="Vista Tabla" onclick="switchProductView('table')">
+        <i class="fas fa-list"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Products Grid (Cards View - default) -->
+  <div id="productosGrid" class="products-grid">
+    <!-- Cards rendered by JS -->
+  </div>
+
+  <!-- Table View (hidden by default) -->
+  <div id="tablaProductosContainer" style="display: none;">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 50px;">ID</th>
+          <th>Nombre</th>
+          <th>Modelo</th>
+          <th style="width: 100px;">Descripción</th>
+          <th>Categoría</th>
+          <th>Marca</th>
+          <th>Proveedor</th>
+          <th>Garantía</th>
+          <th>Stock</th>
+          <th>P. Compra</th>
+          <th>P. Venta</th>
+        </tr>
+      </thead>
+      <tbody id="tablaProductos"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Modal de Descripción del Producto (Redesigned) -->
+<div id="modalDescripcionProducto" class="modal-descripcion" style="display: none;">
+  <div class="modal-descripcion-content">
+    <!-- Image Header -->
+    <div class="modal-detail-image-header">
+      <img id="modal_imagen" src="" alt="Producto" style="display: none;" />
+      <div id="modal_img_placeholder" class="modal-img-placeholder">
+        <i class="fas fa-box-open"></i>
+      </div>
+      <button class="modal-detail-close-btn" onclick="cerrarModalDescripcion()">×</button>
+    </div>
+    <!-- Body -->
+    <div class="modal-detail-body">
+      <h2 id="modal_nombre" class="modal-detail-name"></h2>
+      <p id="modal_descripcion_text" class="modal-detail-subtitle"></p>
+
+      <div class="detail-fields-grid">
+        <div class="detail-field">
+          <span class="detail-label"><i class="fas fa-laptop"></i> Modelo</span>
+          <span id="modal_modelo" class="detail-value"></span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-label"><i class="fas fa-th-large"></i> Categoría</span>
+          <span id="modal_categoria" class="detail-value"></span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-label"><i class="fas fa-tag"></i> Marca</span>
+          <span id="modal_marca" class="detail-value"></span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-label"><i class="fas fa-truck"></i> Proveedor</span>
+          <span id="modal_proveedor" class="detail-value"></span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-label"><i class="fas fa-shield-alt"></i> Garantía</span>
+          <span id="modal_garantia" class="detail-value"></span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-label"><i class="fas fa-cubes"></i> Stock</span>
+          <span id="modal_stock" class="detail-value stock-value"></span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-label"><i class="fas fa-dollar-sign"></i> Precio Compra</span>
+          <span id="modal_precio_compra" class="detail-value"></span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-label"><i class="fas fa-dollar-sign"></i> Precio Venta</span>
+          <span id="modal_precio_venta" class="detail-value price-value"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</main>
+
+<script>
+  // Definir API_BASE antes de cargar otros scripts
+  const API_BASE = 'http://localhost:3001/api';
+</script>
+<script>
+  // Inicializar productos cuando se accede directamente a esta página
+  document.addEventListener('DOMContentLoaded', function () {
+    // Esperar a que todos los scripts se carguen
+    setTimeout(function () {
+      if (typeof cargarProductos === 'function') {
+        cargarProductos();
+      }
+      if (typeof poblarSelectCategorias === 'function') poblarSelectCategorias();
+      if (typeof poblarSelectMarcas === 'function') poblarSelectMarcas();
+      if (typeof poblarSelectProveedores === 'function') poblarSelectProveedores();
+      if (typeof poblarSelectGarantiaTipos === 'function') poblarSelectGarantiaTipos();
+    }, 500);
+  });
+</script>
+</body>
+
+</html>

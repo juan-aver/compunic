@@ -1,0 +1,121 @@
+<!-- 
+  ¡Atención! Este HTML fue ensamblado a altas horas de la noche ☕. 
+  Si ves un div anidado 5 veces, lo siento, era necesario para centrar un botón.
+-->
+<link rel="stylesheet" href="css/views/G_Devoluciones.css">
+
+<div id="message-container" class="message-container"></div>
+
+<div id="app" class="max-w-7xl mx-auto p-4 sm:p-8">
+  <h1 class="main-title">
+    Gestión de Devoluciones / Garantías
+  </h1>
+
+  <!-- FORMULARIO DE NUEVA DEVOLUCIÓN -->
+  <div class="card devolution-register-card">
+    <h2 class="card-title">Registrar Nueva Devolución</h2>
+
+    <form id="devolution-form">
+
+      <div class="section-container border-bottom">
+        <h3 class="section-subtitle primary-color">Información de la Devolución</h3>
+        <div class="grid-layout three-cols">
+
+          <div class="form-group">
+            <label for="venta-select">Venta / Factura *</label>
+            <select id="venta-select" required>
+              <option value="" disabled selected>Seleccione una Venta</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="producto-devolucion-select">Producto *</label>
+            <select id="producto-devolucion-select" required disabled>
+              <option value="" disabled selected>Seleccione una venta primero</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="cantidad-devolucion">Cantidad *</label>
+            <div class="input-with-icon">
+              <span class="input-icon">🔢</span>
+              <input type="number" id="cantidad-devolucion" min="1" value="1" required>
+            </div>
+            <small class="text-muted" id="cantidad-disponible-info"></small>
+          </div>
+
+          <div class="form-group col-span-2">
+            <label for="motivo-devolucion">Motivo de la Devolución</label>
+            <textarea id="motivo-devolucion" rows="3"
+              placeholder="Describa el motivo de la devolución (defecto, falla, etc.)"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="accion-select">Acción *</label>
+            <select id="accion-select" required>
+              <option value="" disabled selected>Seleccione una acción</option>
+              <option value="reingreso">Reingreso (Reparación)</option>
+              <option value="garantia">Garantía Proveedor</option>
+              <option value="desecho">Desecho</option>
+            </select>
+            <small class="text-muted">Reingreso: producto reparado vuelve al stock</small>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- INFORMACIÓN IMPORTANTE -->
+      <div class="info-box">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <div>
+          <strong>Proceso de Devolución:</strong>
+          <p>Al registrar una devolución, se entregará un producto de reemplazo al cliente (se descuenta del stock). El
+            producto devuelto se registrará según la acción seleccionada: reparación y reingreso, garantía de proveedor,
+            o desecho.</p>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success">
+          Registrar Devolución
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="limpiarFormularioDevolucion()">
+          Limpiar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- TABLA DE DEVOLUCIONES REGISTRADAS -->
+  <div class="card devolutions-record-card">
+    <h2 class="card-title border-bottom">Historial de Devoluciones</h2>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="text-left">ID</th>
+            <th class="text-left">Factura</th>
+            <th class="text-left">Producto</th>
+            <th class="text-center">Cantidad</th>
+            <th class="text-left">Motivo</th>
+            <th class="text-center">Acción</th>
+            <th class="text-left">Fecha</th>
+            <th class="text-center">Opciones</th>
+          </tr>
+        </thead>
+        <tbody id="devolutions-table-body">
+          <tr>
+            <td colspan="8" class="text-center italic text-gray">
+              Cargando devoluciones...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

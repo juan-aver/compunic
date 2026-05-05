@@ -1,0 +1,82 @@
+<!-- 
+  ========================================== 
+  Plantilla principal. 
+  Nota mental: Revisar accesibilidad (algún día). 
+  ========================================== 
+-->
+<link rel="stylesheet" href="css/views/G_Compras.css">
+<!-- Dark Mode & Enhanced Animations -->
+<link rel="stylesheet" href="css/views/dark-mode.css">
+<link rel="stylesheet" href="css/views/enhanced-animations.css">
+<!-- Table Enhancements -->
+<link rel="stylesheet" href="css/views/table-enhancements.css">
+<script src="js/table-enhancements.js" defer></script>
+<script src="js/search/compras-table-init.js" defer></script>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Header -->
+        </div>
+    </div>
+
+    <div class="container full-width-container">
+        <!-- SECCIÓN TABLA (Listado Completo) -->
+        <section class="tabla glass-table-section" id="seccion-tabla-compras">
+            <h2 class="section-title-light">Historial de Compras</h2>
+
+            <!-- Controles de Tabla -->
+            <div class="table-controls">
+                <div class="table-filters">
+                    <input type="text" id="buscar_compra" class="filter-search"
+                        placeholder="Buscar por factura o proveedor...">
+                    <button class="btn-clear-filters" onclick="clearComprasFilters()">
+                        <i class="fas fa-times"></i> Limpiar
+                    </button>
+                </div>
+                <div class="table-per-page">
+                    <label>Mostrar:</label>
+                    <select class="per-page-select" id="compras-per-page">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table-main" id="tabla-compras-enhanced">
+                    <thead class="table-main-header">
+                        <tr>
+                            <th class="table-header-cell">ID</th>
+                            <th class="table-header-cell">No. Factura</th>
+                            <th class="table-header-cell">Proveedor</th>
+                            <th class="table-header-cell">Garantía</th>
+                            <th class="table-header-cell">Fecha</th>
+                            <th class="table-header-cell">Items</th>
+                            <th class="table-header-cell">Total</th>
+                            <th class="table-header-cell">Detalles</th>
+                            <th class="table-header-cell">Factura</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCompras" class="table-body-white">
+                        <!-- Filas generadas dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Modal Detalle -->
+<div id="modalDetalleCompra" class="modal modal-overlay">
+    <div class="modal-content glass modal-content-glass">
+        <div class="modal-header">
+            <h3 class="modal-title">Detalle de Compra</h3>
+            <span onclick="document.getElementById('modalDetalleCompra').style.display='none'"
+                class="modal-close">&times;</span>
+        </div>
+        <div id="contenidoDetalleCompra"></div>
+    </div>
+</div>

@@ -1,0 +1,148 @@
+/* 
+ * Estilos con mucho amor y lágrimas 😢 
+ * Por favor usar variables de CSS, no me agregues colores quemados.
+ */
+/* =========================================
+   COMPUNIC - THEME TOGGLE STYLES
+   Estilos para el botón de cambio de tema
+   ========================================= */
+
+.theme-toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    padding: 0 20px;
+}
+
+.theme-toggle {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Iconos */
+.theme-toggle svg {
+    width: 24px;
+    height: 24px;
+    color: #667eea;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle.dark svg {
+    color: #fbbf24;
+}
+
+.sun-icon,
+.moon-icon {
+    position: absolute;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.sun-icon {
+    opacity: 1;
+    transform: rotate(0deg);
+}
+
+.theme-toggle.dark .sun-icon {
+    opacity: 0;
+    transform: rotate(180deg);
+}
+
+.moon-icon {
+    opacity: 0;
+    transform: rotate(-180deg);
+}
+
+.theme-toggle.dark .moon-icon {
+    opacity: 1;
+    transform: rotate(0deg);
+}
+
+/* Animación de pulso para llamar la atención */
+@keyframes togglePulse {
+
+    0%,
+    100% {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    50% {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1),
+            0 0 0 8px rgba(102, 126, 234, 0.2);
+    }
+}
+
+.theme-toggle.pulse {
+    animation: togglePulse 2s infinite;
+}
+
+/* Modo oscuro */
+[data-theme="dark"] .theme-toggle {
+    background: rgba(30, 41, 59, 0.8);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+    background: rgba(51, 65, 85, 0.9);
+}
+
+/* Media Queries (A rezar para que se vea bien en iPhone) 🙏 */
+@media (max-width: 768px) {
+    .theme-toggle {
+        width: 44px;
+        height: 44px;
+    }
+
+    .theme-toggle svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Tooltip para el toggle */
+.theme-toggle::before {
+    content: attr(title);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.theme-toggle:hover::before {
+    opacity: 1;
+}
+
+[data-theme="dark"] .theme-toggle::before {
+    background: #f1f5f9;
+    color: #1e293b;
+}

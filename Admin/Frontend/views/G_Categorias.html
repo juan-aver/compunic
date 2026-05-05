@@ -1,0 +1,54 @@
+<!-- html de categorias-->
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ¡Atención! Este HTML fue ensamblado a altas horas de la noche ☕. 
+  Si ves un div anidado 5 veces, lo siento, era necesario para centrar un botón.
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Categorías</title>
+  <link rel="stylesheet" href="css/views/G_Categorias.css">
+</head>
+
+<body>
+  <main>
+    <div class="container">
+      <section class="formulario" id="gestioncategorias">
+        <h2>Agregar Categoría</h2>
+        <form id="formulario-categorias">
+          <!-- IDs actualizados -->
+          <div class="input-with-icon">
+            <span class="input-icon">📚</span>
+            <input id="NOMBRE_CATEGORIA" type="text" placeholder="Nombre de la categoría" required />
+          </div>
+          <div style="display: flex; gap: 10px; justify-content: center;">
+            <button id="btn-agregar-categoria" type="button" style="flex: 1; max-width: 120px;">Agregar</button>
+            <button id="btn-eliminar-categoria" type="button" style="flex: 1; max-width: 120px;">Eliminar</button>
+            <button id="btn-modificar-categoria" type="button" style="flex: 1; max-width: 120px;">Modificar</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="tabla" id="seccion-tabla">
+        <h2>Lista de Categorías</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+            </tr>
+          </thead>
+          <tbody id="tablaCategorias">
+            <!-- Aquí se llenarán las categorías -->
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+  <script src="../script.js"></script>
+</body>
+
+</html>

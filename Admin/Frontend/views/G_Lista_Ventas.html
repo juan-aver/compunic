@@ -1,0 +1,66 @@
+<!-- 
+  ¡Atención! Este HTML fue ensamblado a altas horas de la noche ☕. 
+  Si ves un div anidado 5 veces, lo siento, era necesario para centrar un botón.
+-->
+<link rel="stylesheet" href="css/views/G_ventas.css">
+<!-- Dark Mode & Enhanced Animations -->
+<link rel="stylesheet" href="css/views/dark-mode.css">
+<link rel="stylesheet" href="css/views/enhanced-animations.css">
+<!-- Table Enhancements -->
+<link rel="stylesheet" href="css/views/table-enhancements.css">
+<script src="js/table-enhancements.js" defer></script>
+<script src="js/search/ventas-table-init.js" defer></script>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Header -->
+        </div>
+    </div>
+
+    <div class="container full-width-container">
+        <!-- SECCIÓN TABLA (Listado Completo) -->
+        <section class="tabla glass-table-section" id="seccion-tabla-ventas">
+            <h2 class="section-title-light">Historial de Ventas</h2>
+
+            <!-- Controles de Tabla -->
+            <div class="table-controls">
+                <div class="table-filters">
+                    <input type="text" id="buscar_venta" class="filter-search"
+                        placeholder="Buscar por factura o cliente...">
+                    <button class="btn-clear-filters" onclick="clearVentasFilters()">
+                        <i class="fas fa-times"></i> Limpiar
+                    </button>
+                </div>
+                <div class="table-per-page">
+                    <label>Mostrar:</label>
+                    <select class="per-page-select" id="ventas-per-page">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table-main" id="tabla-ventas-enhanced">
+                    <thead class="table-main-header">
+                        <tr>
+                            <th class="table-header-cell">ID Venta</th>
+                            <th class="table-header-cell">No. Factura</th>
+                            <th class="table-header-cell">Fecha</th>
+                            <th class="table-header-cell">Cliente</th>
+                            <th class="table-header-cell">Vendedor</th>
+                            <th class="table-header-cell">Total</th>
+                            <th class="table-header-cell">Factura</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sales-record-table" class="table-body-white">
+                        <!-- Filas generadas dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,144 @@
+/* 
+ * ========================================== 
+ * HOJA DE ESTILOS PRINCIPAL 
+ * ========================================== 
+ * Nota: Si vas a usar '!important', piénsalo dos veces antes de arruinar 
+ * mi especificidad cuidadosamente diseñada.
+ */
+/* =========================================
+   ENHANCED SEARCH STYLES
+   ========================================= */
+
+/* Search Enhanced Container */
+.search-enhanced-container {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.search-input-wrapper {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.search-input-wrapper .filter-search {
+    flex: 1;
+}
+
+/* Results Counter */
+.search-results-counter {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.search-results-counter span {
+    font-weight: 700;
+    color: #667eea;
+}
+
+/* Quick Filters Container */
+.quick-filters-container {
+    margin-top: 15px;
+}
+
+.filters-label {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 0.95em;
+}
+
+/* Quick Filters Buttons */
+.quick-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    border: 2px solid #667eea;
+    background: transparent;
+    color: #667eea;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.filter-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.filter-btn:active {
+    transform: translateY(0);
+}
+
+/* Highlight Search Results */
+mark {
+    background-color: #fff59d;
+    color: #000;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 600;
+}
+
+/* No Results Message */
+.no-results-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-size: 1.1em;
+}
+
+.no-results-message i {
+    font-size: 3em;
+    margin-bottom: 15px;
+    display: block;
+    opacity: 0.3;
+}
+
+/* Dark Mode Adjustments */
+body.dark-mode .search-results-counter {
+    color: #bbb;
+}
+
+body.dark-mode .search-results-counter span {
+    color: #8b9dff;
+}
+
+body.dark-mode .filters-label {
+    color: #e0e0e0;
+}
+
+body.dark-mode .filter-btn {
+    border-color: #8b9dff;
+    color: #8b9dff;
+}
+
+body.dark-mode .filter-btn:hover {
+    background: rgba(139, 157, 255, 0.1);
+}
+
+body.dark-mode .filter-btn.active {
+    background: linear-gradient(135deg, #8b9dff 0%, #9f7aea 100%);
+    color: #000;
+}
+
+body.dark-mode mark {
+    background-color: #ffd54f;
+    color: #000;
+}

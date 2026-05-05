@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ========================================== 
+  Vista estructurada con paciencia. 
+  Ojo con borrar las clases, el CSS depende de esto como mi vida del café.
+  ========================================== 
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="COMPUNIC - Tu tienda de productos electrónicos de confianza. Encuentra las mejores ofertas en laptops, smartphones, accesorios y más.">
+    <title>COMPUNIC - Tienda de Productos Electrónicos</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../public/css/main.css">
+    <link rel="stylesheet" href="../public/css/catalog.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ============================================
+         NAVBAR
+         ============================================ -->
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-brand-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <span>COMPUNIC</span>
+            </a>
+
+            <div class="navbar-search">
+                <i class="fas fa-search navbar-search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Buscar productos, marcas, modelos..."
+                    autocomplete="off">
+                <div class="search-suggestions" id="searchSuggestions"></div>
+            </div>
+
+            <div class="navbar-actions">
+                <!-- View Toggle -->
+                <div class="view-toggle" id="viewToggle">
+                    <button class="view-btn active" id="gridViewBtn" title="Vista Grilla">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="view-btn" id="listViewBtn" title="Vista Lista">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+
+                <div class="navbar-cart" id="cartButton">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="navbar-cart-badge" id="cartCount">0</span>
+                </div>
+
+                <div class="navbar-user" id="exitButton" onclick="window.location.href='/index.html'"
+                    style="cursor: pointer;">
+                    <div class="navbar-user-avatar">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <span>Salir</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         HERO SECTION
+         ============================================ -->
+    <section class="hero">
+        <div class="container hero-content">
+            <h1 class="hero-title">
+                Tecnología de Vanguardia
+                <br>
+                <span class="text-gradient">Al Mejor Precio</span>
+            </h1>
+            <p class="hero-subtitle">
+                Descubre nuestra amplia selección de productos electrónicos con garantía y envío gratis
+            </p>
+
+            <!-- Hero Stats -->
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-number" id="statProductos">-</span>
+                    <span class="hero-stat-label">Productos</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number" id="statMarcas">-</span>
+                    <span class="hero-stat-label">Marcas</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number" id="statCategorias">-</span>
+                    <span class="hero-stat-label">Categorías</span>
+                </div>
+            </div>
+
+            <div class="hero-cta">
+                <a href="#catalog" class="btn btn-primary btn-lg">
+                    <i class="fas fa-shopping-bag"></i>
+                    Ver Catálogo
+                </a>
+                <a href="#categories" class="btn btn-outline btn-lg" style="color: white; border-color: white;">
+                    <i class="fas fa-fire"></i>
+                    Categorías
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         CATEGORÍAS DESTACADAS
+         ============================================ -->
+    <section class="categories-section" id="categories">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-layer-group"></i> Explorar por Categoría
+            </h2>
+            <div class="categories-grid" id="categoriesGrid">
+                <!-- Se rellena dinámicamente -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         FILTROS
+         ============================================ -->
+    <section class="filters-section">
+        <div class="container filters-container">
+            <div class="filter-group">
+                <label class="filter-label">Categoría</label>
+                <select class="filter-select" id="categoryFilter">
+                    <option value="">Todas las categorías</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Marca</label>
+                <select class="filter-select" id="brandFilter">
+                    <option value="">Todas las marcas</option>
+                </select>
+            </div>
+
+            <!-- Price Range Filter -->
+            <div class="filter-group filter-price-group">
+                <label class="filter-label">Precio: <span id="priceRangeLabel">Todos</span></label>
+                <div class="price-range-container">
+                    <input type="range" id="priceRange" class="price-range-input" min="0" max="10000" value="10000"
+                        step="100">
+                </div>
+            </div>
+
+            <div class="filter-tags">
+                <button class="filter-tag active" data-filter="all">
+                    <i class="fas fa-th"></i> Todos
+                </button>
+                <button class="filter-tag" data-filter="new">
+                    <i class="fas fa-star"></i> Nuevos
+                </button>
+                <button class="filter-tag" data-filter="sale">
+                    <i class="fas fa-tag"></i> En Oferta
+                </button>
+                <button class="filter-tag" data-filter="stock">
+                    <i class="fas fa-check-circle"></i> En Stock
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         CATÁLOGO DE PRODUCTOS
+         ============================================ -->
+    <section class="catalog-section" id="catalog">
+        <div class="container">
+            <div class="catalog-header">
+                <div>
+                    <h2 class="catalog-title">Nuestros Productos</h2>
+                    <p class="catalog-count" id="productCount">Mostrando <strong>12</strong> productos</p>
+                </div>
+
+                <div class="catalog-sort">
+                    <label for="sortSelect" style="color: var(--text-secondary); font-size: 0.9rem;">Ordenar
+                        por:</label>
+                    <select id="sortSelect" class="filter-select" style="min-width: 150px;">
+                        <option value="newest">Más recientes</option>
+                        <option value="price-low">Precio: Menor a Mayor</option>
+                        <option value="price-high">Precio: Mayor a Menor</option>
+                        <option value="name">Nombre A-Z</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Grid de Productos -->
+            <div class="products-grid" id="productsGrid">
+                <!-- Los productos se cargarán dinámicamente con JavaScript -->
+            </div>
+
+            <!-- Paginación -->
+            <div class="pagination" id="pagination">
+                <button class="pagination-btn" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="pagination-btn active">1</button>
+                <button class="pagination-btn">2</button>
+                <button class="pagination-btn">3</button>
+                <button class="pagination-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         PRODUCT DETAIL MODAL
+         ============================================ -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal-container">
+            <button class="modal-close" id="modalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-body">
+                <div class="modal-image-section">
+                    <div class="modal-image-wrap" id="modalImageWrap">
+                        <!-- image goes here -->
+                    </div>
+                    <div class="modal-stock-badge" id="modalStock"></div>
+                </div>
+                <div class="modal-info-section">
+                    <div class="modal-category" id="modalCategory"></div>
+                    <h2 class="modal-title" id="modalTitle"></h2>
+                    <p class="modal-model" id="modalModel"></p>
+                    <div class="modal-price" id="modalPrice"></div>
+                    <div class="modal-warranty" id="modalWarranty"></div>
+                    <div class="modal-description" id="modalDescription"></div>
+                    <div class="modal-actions">
+                        <button class="btn btn-primary btn-lg" id="modalBuyBtn"
+                            style="flex:1; background: linear-gradient(135deg, #56A5DD, #145D90);">
+                            <i class="fas fa-shopping-cart"></i> Añadir al Carrito
+                        </button>
+                        <a class="btn btn-outline btn-lg" id="modalWhatsapp" href="#" target="_blank"
+                            style="border-color: #25D366; color: #25D366;">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         FOOTER
+         ============================================ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>
+                        <i class="fas fa-bolt"></i>
+                        COMPUNIC
+                    </h3>
+                    <p>
+                        Tu tienda de confianza para productos electrónicos de alta calidad.
+                        Más de 10 años brindando tecnología de vanguardia.
+                    </p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Enlaces Rápidos</h3>
+                    <ul class="footer-links">
+                        <li><a href="#catalog"><i class="fas fa-angle-right"></i> Catálogo</a></li>
+                        <li><a href="#categories"><i class="fas fa-angle-right"></i> Categorías</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right"></i> Sobre Nosotros</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right"></i> Contacto</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Servicio al Cliente</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-angle-right"></i> Preguntas Frecuentes</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right"></i> Política de Devoluciones</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right"></i> Garantías</a></li>
+                        <li><a href="#"><i class="fas fa-angle-right"></i> Envíos</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Contacto</h3>
+                    <p>
+                        <i class="fas fa-phone"></i> +505 8888-8888<br>
+                        <i class="fas fa-envelope"></i> info@compunic.com<br>
+                        <i class="fas fa-map-marker-alt"></i> Managua, Nicaragua
+                    </p>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem; font-size: 1.5rem;">
+                        <a href="#" style="color: rgba(255,255,255,0.7);"><i class="fab fa-facebook"></i></a>
+                        <a href="#" style="color: rgba(255,255,255,0.7);"><i class="fab fa-instagram"></i></a>
+                        <a href="#" style="color: rgba(255,255,255,0.7);"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color: rgba(255,255,255,0.7);"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 COMPUNIC. Todos los derechos reservados. | Diseñado con <i class="fas fa-heart"
+                        style="color: var(--secondary);"></i> para nuestros clientes</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" title="Volver al inicio">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script src="../public/js/api.js"></script>
+    <script src="../public/js/catalog.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ========================================== 
+  Vista estructurada con paciencia. 
+  Ojo con borrar las clases, el CSS depende de esto como mi vida del café.
+  ========================================== 
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Inventarios</title>
+  <link rel="stylesheet" href="../css/G_Clientes.css">
+  <script src="js/search/clientes-search.js" defer></script>
+</head>
+
+<body>
+  <main>
+    <div class="container">
+
+      <!-- Formulario CRUD -->
+      <section class="formulario" id="seccion-formulario">
+        <h2>Gestion de Clientes</h2>
+        <form id="formulario-clientes">
+          <div class="input-with-icon">
+            <span class="input-icon">👤</span>
+            <input id="NOMBRE" type="text" placeholder="Nombre del cliente" required />
+          </div>
+          <div class="input-with-icon">
+            <span class="input-icon">👤</span>
+            <input id="APELLIDO" type="text" placeholder="Apellido del cliente" required />
+          </div>
+          <div class="input-with-icon">
+            <span class="input-icon">📞</span>
+            <input id="TELEFONO" type="text" placeholder="telefono del Clientes" required />
+          </div>
+          <div class="input-with-icon">
+            <span class="input-icon">📧</span>
+            <input id="EMAIL" type="text" placeholder="email del Clientes" required />
+          </div>
+
+          <div style="display: flex; gap: 10px; justify-content: center;">
+            <button id="btn_agregar_cliente" type="button" style="flex: 1; max-width: 120px;">Agregar</button>
+            <button id="btn_modificar_cliente" type="button" style="flex: 1; max-width: 120px;">Modificar</button>
+            <button id="btn_eliminar_cliente" type="button" style="flex: 1; max-width: 120px;">Eliminar</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Sección de Búsqueda -->
+      <section class="busqueda" id="seccion-busqueda">
+        <h2>Buscar clientes</h2>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <div class="input-with-icon">
+            <span class="input-icon">👤</span>
+            <input id="buscar_nombre" type="text" placeholder="Buscar por nombre" />
+          </div>
+          <button id="btn_buscar_cliente" type="button">Buscar</button>
+        </div>
+      </section>
+
+      <!-- Resultados de Búsqueda -->
+      <section class="resultados-busqueda" id="resultadosBusquedaSection" style="display: none; margin-top: 20px;">
+        <h2>Resultados de la búsqueda</h2>
+        <div id="resultadosBusqueda"></div>
+      </section>
+
+      <!-- Tabla de resultados -->
+      <section class="tabla" id="seccion-tabla">
+        <h2>Lista de Clientes</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Id de usuarios</th>
+              <th>nombre del cliente</th>
+              <th>Apellido del cliente</th>
+              <th>telefono del cliente</th>
+              <th>email</th>
+            </tr>
+          </thead>
+          <tbody id="tablaClientes">
+            <!-- Aquí se llenarán los proveedores -->
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="../script.js"></script>
+</body>
+
+</html>

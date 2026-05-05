@@ -1,0 +1,233 @@
+/* =========================================
+   MOBILE MENU - HAMBURGER MENU ELEGANTE
+   ========================================= */
+
+/* Botón Hamburguesa */
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1001;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.mobile-menu-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Icono Hamburguesa Animado */
+.hamburger {
+    position: relative;
+    width: 24px;
+    height: 18px;
+    margin: 0 auto;
+}
+
+.hamburger span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: white;
+    border-radius: 3px;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.hamburger span:nth-child(1) {
+    top: 0;
+}
+
+.hamburger span:nth-child(2) {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.hamburger span:nth-child(3) {
+    bottom: 0;
+}
+
+/* Animación a X cuando está abierto */
+.mobile-menu-toggle.active .hamburger span:nth-child(1) {
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.mobile-menu-toggle.active .hamburger span:nth-child(2) {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.mobile-menu-toggle.active .hamburger span:nth-child(3) {
+    bottom: 50%;
+    transform: translateY(50%) rotate(-45deg);
+}
+
+/* Backdrop Oscuro */
+.mobile-menu-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-menu-backdrop.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Menú Lateral */
+.mobile-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 280px;
+    height: 100vh;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    z-index: 1000;
+    padding: 80px 20px 20px;
+    overflow-y: auto;
+    box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
+    transition: right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.mobile-menu.active {
+    right: 0;
+}
+
+/* Items del Menú */
+.mobile-menu-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mobile-menu-item {
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translateX(50px);
+    transition: all 0.3s ease;
+}
+
+.mobile-menu.active .mobile-menu-item {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Animación escalonada */
+.mobile-menu.active .mobile-menu-item:nth-child(1) {
+    transition-delay: 0.1s;
+}
+
+.mobile-menu.active .mobile-menu-item:nth-child(2) {
+    transition-delay: 0.15s;
+}
+
+.mobile-menu.active .mobile-menu-item:nth-child(3) {
+    transition-delay: 0.2s;
+}
+
+.mobile-menu.active .mobile-menu-item:nth-child(4) {
+    transition-delay: 0.25s;
+}
+
+.mobile-menu.active .mobile-menu-item:nth-child(5) {
+    transition-delay: 0.3s;
+}
+
+.mobile-menu.active .mobile-menu-item:nth-child(6) {
+    transition-delay: 0.35s;
+}
+
+.mobile-menu.active .mobile-menu-item:nth-child(7) {
+    transition-delay: 0.4s;
+}
+
+.mobile-menu.active .mobile-menu-item:nth-child(8) {
+    transition-delay: 0.45s;
+}
+
+.mobile-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 20px;
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.mobile-menu-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.mobile-menu-link:active {
+    transform: scale(0.95);
+}
+
+.mobile-menu-icon {
+    font-size: 1.3em;
+    width: 24px;
+    text-align: center;
+}
+
+/* Mostrar solo en móvil */
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: block;
+    }
+
+    /* Ocultar navegación desktop */
+    nav.desktop-nav {
+        display: none !important;
+    }
+}
+
+/* Scrollbar del menú */
+.mobile-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.mobile-menu::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.mobile-menu::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+.mobile-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Prevenir scroll del body cuando el menú está abierto */
+body.mobile-menu-open {
+    overflow: hidden;
+}

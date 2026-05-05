@@ -1,0 +1,256 @@
+/* 
+ * ========================================== 
+ * HOJA DE ESTILOS PRINCIPAL 
+ * ========================================== 
+ * Nota: Si vas a usar '!important', piénsalo dos veces antes de arruinar 
+ * mi especificidad cuidadosamente diseñada.
+ */
+/* =========================================
+   RESPONSIVE TABLES - Tablas → Cards en Móvil
+   ========================================= */
+
+/* Desktop: Tablas normales (ya están definidas) */
+
+/* Móvil: Convertir tablas en cards */
+@media (max-width: 768px) {
+
+    /* Ocultar thead en móvil (excepto en modales) */
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) thead {
+        display: none;
+    }
+
+    /* Tabla como contenedor flex (excepto en modales) */
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto),
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody {
+        display: block;
+        width: 100%;
+    }
+
+    /* Cada fila es una card (excepto en modales) */
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody tr {
+        display: block;
+        margin-bottom: 20px;
+        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border: 2px solid #e0e0e0;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Cada celda es una fila dentro de la card (excepto en modales) */
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        text-align: right;
+    }
+
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody td:last-child {
+        border-bottom: none;
+    }
+
+    /* Label antes del valor (excepto en modales) */
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #667eea;
+        text-align: left;
+        flex: 1;
+        padding-right: 10px;
+    }
+
+    /* Valor de la celda (excepto en modales) */
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody td {
+        flex: 1;
+    }
+
+    /* Botones de acción en cards */
+    table tbody td button {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        margin: 2px;
+    }
+
+    /* Card con efecto de selección */
+    table tbody tr.selected {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+
+    /* Indicador de swipe */
+    table tbody tr.swipe-active {
+        transform: translateX(-80px);
+        transition: transform 0.3s ease;
+    }
+
+    /* Botón de eliminar que aparece al hacer swipe */
+    .swipe-delete-btn {
+        position: absolute;
+        right: -80px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.5em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .swipe-delete-btn:active {
+        transform: translateY(-50%) scale(0.9);
+    }
+
+    /* Formularios en móvil */
+    .formulario,
+    .form-section {
+        padding: 15px;
+    }
+
+    .formulario input,
+    .formulario select,
+    .formulario textarea {
+        font-size: 16px;
+        /* Prevenir zoom en iOS */
+    }
+
+    /* Botones en móvil */
+    .formulario button,
+    button {
+        min-height: 44px;
+        /* Touch target mínimo */
+        font-size: 1rem;
+    }
+
+    /* Grid de botones en móvil */
+    .formulario div[style*="display: flex"] {
+        flex-wrap: wrap;
+    }
+
+    /* Búsqueda en móvil */
+    .busqueda {
+        padding: 15px;
+    }
+
+    .busqueda input {
+        font-size: 16px;
+    }
+}
+
+/* Tablet: Ajustes intermedios */
+@media (min-width: 769px) and (max-width: 1024px) {
+    table {
+        font-size: 0.95rem;
+    }
+
+    th,
+    td {
+        padding: 12px 10px;
+    }
+
+    .formulario,
+    .tabla {
+        padding: 20px;
+    }
+}
+
+/* Animaciones para cards */
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody tr {
+        animation: cardSlideIn 0.3s ease forwards;
+        opacity: 0;
+    }
+
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody tr:nth-child(1) {
+        animation-delay: 0.05s;
+    }
+
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody tr:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody tr:nth-child(3) {
+        animation-delay: 0.15s;
+    }
+
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody tr:nth-child(4) {
+        animation-delay: 0.2s;
+    }
+
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody tr:nth-child(5) {
+        animation-delay: 0.25s;
+    }
+
+    table:not(.modal-descripcion table):not(.tabla-detalles-producto) tbody tr:nth-child(n+6) {
+        animation-delay: 0.3s;
+    }
+}
+
+/* Dark mode en móvil */
+@media (max-width: 768px) {
+    [data-theme="dark"] table tbody tr {
+        background: var(--dark-bg-secondary);
+        border-color: var(--dark-border);
+    }
+
+    [data-theme="dark"] table tbody td {
+        border-bottom-color: var(--dark-border-light);
+    }
+
+    [data-theme="dark"] table tbody td::before {
+        color: #93c5fd;
+    }
+}
+
+/* Mejoras de accesibilidad táctil */
+@media (max-width: 768px) {
+
+    /* Aumentar área táctil de botones */
+    button,
+    a,
+    input[type="checkbox"],
+    input[type="radio"] {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    /* Espaciado entre elementos táctiles */
+    .mobile-menu-item {
+        margin-bottom: 12px;
+    }
+
+    /* Feedback visual en touch */
+    button:active,
+    .mobile-menu-link:active,
+    table tbody tr:active {
+        opacity: 0.7;
+    }
+}

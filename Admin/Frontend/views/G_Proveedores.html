@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<!-- 
+  ========================================== 
+  Plantilla principal. 
+  Nota mental: Revisar accesibilidad (algún día). 
+  ========================================== 
+-->
+<!-- SECCIÓN 1: FORMULARIO CRUD PROVEEDORES -->
+<section class="formulario" id="seccion-formulario">
+  <h2>Gestión de Proveedores</h2>
+  <form id="formularioProveedor">
+
+    <!-- Fila 1: ID y Empresa -->
+    <div style="margin-bottom: 15px;">
+      <label style="font-weight: bold; display: block; margin-bottom: 5px;">Datos de la Empresa:</label>
+      <div style="display: flex; gap: 10px;">
+        <div class="input-with-icon" style="flex: 1;">
+          <span class="input-icon">🔢</span>
+          <input id="id_proveedor" type="number" placeholder="ID (Ej: 2001)" required />
+        </div>
+        <div class="input-with-icon" style="flex: 2;">
+          <span class="input-icon">🏢</span>
+          <input id="nombre_empresa" type="text" placeholder="Nombre de la Empresa (Ej: Intcomex)" required />
+        </div>
+      </div>
+    </div>
+
+    <!-- Fila 2: Contacto y Teléfono -->
+    <div style="margin-bottom: 15px;">
+      <label style="font-weight: bold; display: block; margin-bottom: 5px;">Contacto:</label>
+      <div style="display: flex; gap: 10px;">
+        <div class="input-with-icon" style="flex: 1;">
+          <span class="input-icon">👤</span>
+          <input id="persona_contacto" type="text" placeholder="Persona de Contacto" />
+        </div>
+        <div class="input-with-icon" style="flex: 1;">
+          <span class="input-icon">📞</span>
+          <input id="telefono_proveedor" type="text" placeholder="Teléfono" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Fila 3: Web y Email -->
+    <div style="margin-bottom: 15px;">
+      <label style="font-weight: bold; display: block; margin-bottom: 5px;">Datos Digitales:</label>
+      <div style="display: flex; gap: 10px;">
+        <input id="pagina_web" type="text" placeholder="Web (Ej: www.intcomex.com)" style="flex: 1;" />
+        <div class="input-with-icon" style="flex: 1;">
+          <span class="input-icon">📧</span>
+          <input id="email_proveedor" type="email" placeholder="Correo Electrónico" required />
+        </div>
+      </div>
+    </div>
+
+    <!-- Fila 4: Dirección -->
+    <div style="margin-bottom: 15px;">
+      <label style="font-weight: bold; display: block; margin-bottom: 5px;">Ubicación:</label>
+      <div class="input-with-icon">
+        <span class="input-icon">📍</span>
+        <input id="direccion_proveedor" type="text" placeholder="Dirección Física Completa" required />
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+      <button id="btn_agregar_proveedor" type="button"
+        style="flex: 1; max-width: 120px; background-color: #28a745; color: white;">Agregar</button>
+      <button id="btn_modificar_proveedor" type="button"
+        style="flex: 1; max-width: 120px; background-color: #ffc107; color: #333;">Modificar</button>
+      <button id="btn_eliminar_proveedor" type="button"
+        style="flex: 1; max-width: 120px; background-color: #dc3545; color: white;">Eliminar</button>
+      <button id="btn_limpiar" type="button"
+        style="flex: 0.5; max-width: 80px; background-color: #6c757d; color: white;">Limpiar</button>
+    </div>
+  </form>
+</section>
+
+<!-- SECCIÓN 2: BÚSQUEDA -->
+<section class="busqueda" id="seccion-busqueda">
+  <h2>Buscar Proveedor</h2>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <div class="input-with-icon">
+      <span class="input-icon">🏢</span>
+      <input id="buscar_nombre" type="text" placeholder="Buscar por nombre..." />
+    </div>
+    <button id="btn_buscar_proveedor" type="button">Buscar</button>
+  </div>
+</section>
+
+<section class="resultados-busqueda" id="resultadosBusquedaSection" style="display: none; margin-top: 20px;">
+  <h2>Resultados de la búsqueda</h2>
+  <div id="resultadosBusqueda"></div>
+</section>
+
+<!-- SECCIÓN 3: TABLA -->
+<section class="tabla" id="seccion-tabla">
+  <h2>Lista de Proveedores</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Empresa</th>
+        <th>Contacto</th>
+        <th>Teléfono</th>
+        <th>Email</th>
+        <th>Web</th>
+        <th>Dirección</th>
+      </tr>
+    </thead>
+    <tbody id="tablaProveedores">
+      <!-- Se llena con JS -->
+    </tbody>
+  </table>
+</section>
+
+</div>
+</main>
+
+<!-- CORRECCIÓN CRÍTICA: Usamos '../' porque el script está una carpeta arriba -->
+<script src="../script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ========================================== 
+  Plantilla principal. 
+  Nota mental: Revisar accesibilidad (algún día). 
+  ========================================== 
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de empleados</title>
+  <link rel="stylesheet" href="../css/G_Empleados.css">
+  <script src="js/search/empleados-search.js" defer></script>
+</head>
+
+<body>
+  <main>
+    <div class="container">
+
+      <section class="formulario" id="seccion-formulario">
+        <h2>Gestión de Empleado</h2>
+        <form id="formulario-empleados">
+
+          <div class="input-with-icon">
+            <span class="input-icon">👤</span>
+            <input id="NOMBRE" type="text" placeholder="Nombre del empleado" required />
+          </div>
+          <div class="input-with-icon">
+            <span class="input-icon">👤</span>
+            <input id="APELLIDO" type="text" placeholder="Apellido del empleado" required />
+          </div>
+          <input id="SEXO" type="text" placeholder="Sexo (M/F)" maxlength="1" required />
+          <input id="F_NACIMIENTO" type="date" placeholder="Fecha de nacimiento" required />
+
+          <!-- ID_EMPLEADO eliminado ya que es autogenerado o no necesario en el form de creación -->
+
+          <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+            <button id="btn_agregar_empleado" type="button" style="flex: 1; max-width: 120px;">Agregar</button>
+            <button id="btn_modificar_empleado" type="button" style="flex: 1; max-width: 120px;">Modificar</button>
+            <button id="btn_eliminar_empleado" type="button" style="flex: 1; max-width: 120px;">Eliminar</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="busqueda" id="seccion-busqueda">
+        <h2>Buscar empleado</h2>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <div class="input-with-icon">
+            <span class="input-icon">👤</span>
+            <input id="buscar_empleado" type="text" placeholder="Buscar por Nombre" />
+          </div>
+          <button id="btn_buscar_empleado" type="button">Buscar</button>
+        </div>
+      </section>
+
+      <section class="tabla" id="seccion-tabla">
+        <h2>Lista de Empleados</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Sexo</th>
+              <th>Fecha de Nacimiento</th>
+            </tr>
+          </thead>
+          <tbody id="tablaEmpleados">
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+  </main>
+
+</body>
+
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ¡Atención! Este HTML fue ensamblado a altas horas de la noche ☕. 
+  Si ves un div anidado 5 veces, lo siento, era necesario para centrar un botón.
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factura COMPUNIC</title>
+    <!-- Asegúrate de que el archivo CSS se llame así y esté en la misma carpeta -->
+    <link rel="stylesheet" href="../css/factura_venta.css">
+    <!-- Librería para generar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Bot�n de descarga PDF -->
+    <div style="text-align: center; padding: 20px; background-color: #f5f5f5;">
+        <button id="btn-descargar-pdf" style="
+            background-color: #2563eb;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+        " onmouseover="this.style.backgroundColor='#1d4ed8'" onmouseout="this.style.backgroundColor='#2563eb'">
+            Descargar PDF
+        </button>
+    </div>
+
+    <div class="hoja-factura">
+
+        <!-- ENCABEZADO SUPERIOR -->
+        <header class="header-factura">
+            <div class="logo-area">
+                <!-- Clase 'img-logo' para que tome el tamaño de 70px del CSS -->
+                <!-- Ajusta la ruta de la imagen según donde la tengas guardada -->
+                <img src="../assets/img/logo_compu.png" alt="Logo_Compunic" class="img-logo">
+            </div>
+
+            <div class="info-empresa">
+                <h1 class="empresa-nombre">COMPUNIC</h1>
+                <h2 class="empresa-ruc">RUC: 0012705950036G</h2>
+                <div class="empresa-detalles">
+                    <p>Colonia Maestro Gabriel, semáforos del colonial 25 vrs. Oeste, 15 vrs. Sur. Telf: 8568 0614</p>
+                    <p>Distrito IV. Managua, Nicaragua</p>
+                    <p>E-mail: compunicventas@gmail.com</p>
+                    <p class="empresa-slogan">Venta de equipos informáticos para oficina</p>
+                </div>
+            </div>
+
+            <div class="box-numero-factura">
+                <div class="box-header">FACTURA</div>
+                <div class="box-content">
+                    <!-- Campo vacío para el número -->
+                    <span class="numero-rojo">N° &nbsp;&nbsp; </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- SECCIÓN CLIENTE -->
+        <section class="seccion-cliente">
+            <div class="bloque-izq">
+                <div class="barra-amarilla">CLIENTE</div>
+                <div class="form-grid">
+                    <div class="campo-linea">
+                        <label>Nombre</label>
+                        <div class="linea-input"></div>
+                    </div>
+                    <div class="campo-linea">
+                        <label>N° Identificación</label>
+                        <div class="linea-input"></div>
+                    </div>
+                    <div class="campo-linea">
+                        <label>N° Contacto</label>
+                        <div class="linea-input"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bloque-der-fecha">
+                <div class="tabla-fecha">
+                    <div class="fecha-header">FECHA</div>
+                    <div class="fecha-cols">
+                        <div class="col-f">DIA</div>
+                        <div class="col-f">MES</div>
+                        <div class="col-f">AÑO</div>
+                    </div>
+                    <div class="fecha-inputs">
+                        <div class="col-i"></div>
+                        <div class="col-i"></div>
+                        <div class="col-i"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TABLA DE PRODUCTOS -->
+        <section class="seccion-productos">
+            <table class="tabla-detalle">
+                <thead>
+                    <tr>
+                        <th class="col-cant">CANTIDAD</th>
+                        <th class="col-desc">DESCRIPCIÓN</th>
+                        <th class="col-unit">VALOR UNITARIO</th>
+                        <th class="col-imp">IMPORTE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Filas vacías -->
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Texto vertical lateral -->
+            <div class="texto-lateral">
+                Fran Impresiones RUC: 0010310650002U AIMP/04/01/16/03-2025 500 Bks (2) # 0051 - 1000 AI/04/2005/16-2025
+                OT 5076/06-2025 / Copia: Amarilla
+            </div>
+        </section>
+
+        <!-- PIE DE PÁGINA (TOTALES Y FIRMAS) -->
+        <section class="seccion-final">
+            <div class="area-firmas">
+                <div class="firma-box">
+                    <div class="linea-firma"></div>
+                    <p>FIRMA DEL CLIENTE</p>
+                </div>
+                <div class="firma-box">
+                    <div class="linea-firma"></div>
+                    <p>FIRMA 2</p>
+                </div>
+            </div>
+
+            <div class="area-totales">
+                <div class="fila-total">
+                    <div class="label-amarillo">SUBTOTAL</div>
+                    <div class="valor-total"></div>
+                </div>
+
+                <!-- NUEVA FILA: IVA (15%) -->
+                <div class="fila-total">
+                    <div class="label-simple">IVA (15%)</div>
+                    <div class="valor-total"></div>
+                </div>
+
+                <div class="fila-total">
+                    <div class="label-simple">TOTAL</div>
+                    <div class="valor-total"></div>
+                </div>
+                <div class="fila-total">
+                    <div class="label-simple">T/C</div>
+                    <div class="valor-total"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER AZUL -->
+        <footer class="footer-azul">
+            <div class="footer-texto">
+                <p>Colonia Maestro Gabriel, semáforos del colonial 25 vrs. Oeste, 15 vrs. Sur</p>
+                <p>Tel. (505) 8568 0614 - email: compunicventas@gmail.com</p>
+            </div>
+            <div class="footer-logo">
+                COMPU<span class="nic-box">NIC</span>
+                <div class="footer-sub">SOLUCIONES INFORMATICAS</div>
+            </div>
+    </div>
+    </footer>
+
+    </div>
+
+    <script src="factura_script.js"></script>
+</body>
+
+</html>

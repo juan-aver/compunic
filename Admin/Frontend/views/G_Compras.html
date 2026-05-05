@@ -1,0 +1,145 @@
+<!-- 
+  ========================================== 
+  Vista estructurada con paciencia. 
+  Ojo con borrar las clases, el CSS depende de esto como mi vida del café.
+  ========================================== 
+-->
+<link rel="stylesheet" href="css/views/G_Compras.css">
+<!-- Dark Mode & Enhanced Animations -->
+<link rel="stylesheet" href="css/views/dark-mode.css">
+<link rel="stylesheet" href="css/views/enhanced-animations.css">
+<!-- Table Enhancements -->
+<link rel="stylesheet" href="css/views/table-enhancements.css">
+<script src="js/table-enhancements.js" defer></script>
+<script src="js/search/compras-table-init.js" defer></script>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+      <!-- Header similar to Productos -->
+    </div>
+  </div>
+
+  <div class="container full-width-container">
+    <!-- POS-STYLE 2-COLUMN LAYOUT -->
+    <section class="formulario form-section" id="seccion-formulario-compra">
+      <h2>Gestión de Compras</h2>
+
+      <!-- Compact header row: Proveedor, Factura -->
+      <div class="ventas-pos-header">
+        <div class="pos-header-field" style="flex: 2;">
+          <label class="form-label-small">Proveedor</label>
+          <select id="proveedor_compra" class="form-select">
+            <option value="">Cargando proveedores...</option>
+          </select>
+        </div>
+        <div class="pos-header-field">
+          <label class="form-label-small">No. Factura</label>
+          <input type="text" id="numero_factura" class="form-input" placeholder="Ej: FAC-001" readonly>
+        </div>
+      </div>
+
+      <form id="formularioCompra">
+        <div class="ventas-pos-container">
+
+          <!-- LEFT: Product List -->
+          <div class="ventas-product-list">
+            <div class="ventas-pos-search-wrapper">
+              <i class="fas fa-search"></i>
+              <input type="text" id="compras-pos-search" placeholder="Buscar producto por nombre..." class="form-input">
+            </div>
+            <div id="compras-products-grid" class="ventas-pos-products-grid">
+              <!-- Product cards rendered by JS -->
+              <div class="cart-empty-message">
+                <i class="fas fa-boxes"></i>
+                <p>Cargando productos...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Cart Panel -->
+          <div class="ventas-cart-section">
+            <div class="ventas-cart-header">
+              <i class="fas fa-truck"></i> Detalle de la Compra
+              <span id="compras-cart-badge" class="ventas-cart-badge" style="display:none">0</span>
+            </div>
+
+            <!-- Carrito de Items (Cards) -->
+            <div id="tablaItemsCompra" class="cart-items-container">
+              <div class="cart-empty-message">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Haz clic en un producto para agregarlo.</p>
+              </div>
+            </div>
+
+            <!-- Totales -->
+            <div class="cart-total-section">
+              <div class="cart-total-row">
+                <span>Subtotal</span>
+                <span id="subtotalCompraDisplay">C$0.00</span>
+              </div>
+              <div class="cart-total-row">
+                <span>IVA (15%)</span>
+                <span id="ivaCompraDisplay">C$0.00</span>
+              </div>
+              <div class="cart-total-row total-final">
+                <span>TOTAL COMPRA</span>
+                <span id="totalCompraDisplay">C$0.00</span>
+              </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="ventas-cart-actions">
+              <button type="button"
+                onclick="document.getElementById('formularioCompra').reset(); itemsCompra=[]; renderizarItemsCompra(); generarFacturaAutomatica();"
+                class="btn-cancel">
+                Cancelar
+              </button>
+              <button type="button" onclick="guardarCompra()" class="btn-register">
+                <i class="fas fa-save"></i> Registrar Compra
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </form>
+    </section>
+
+    <!-- Mini-Popup para Garantía y Costo al agregar producto -->
+    <div id="compraPopupCosto" class="producto-form-modal" style="display: none;">
+      <div class="producto-form-modal-overlay" onclick="cerrarPopupCosto()"></div>
+      <div class="producto-form-modal-content" style="max-width: 380px;">
+        <div class="producto-form-modal-header">
+          <h3 id="compraPopupTitle"><i class="fas fa-box"></i> Agregar Producto</h3>
+          <button class="producto-form-modal-close" onclick="cerrarPopupCosto()">&times;</button>
+        </div>
+        <div class="producto-form-modal-body">
+          <input type="hidden" id="popup_id_producto">
+          <input type="hidden" id="popup_nombre_producto">
+          <input type="hidden" id="popup_imagen_producto">
+          <div style="margin-bottom: 12px;">
+            <label style="font-weight: 600; display: block; margin-bottom: 4px;">Cantidad:</label>
+            <input type="number" id="popup_cantidad" value="1" min="1"
+              style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #d1d5db;">
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="font-weight: 600; display: block; margin-bottom: 4px;">Costo Unitario (C$):</label>
+            <input type="number" id="popup_costo" step="0.01" min="0" placeholder="0.00"
+              style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #d1d5db;">
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="font-weight: 600; display: block; margin-bottom: 4px;">Garantía (meses):</label>
+            <input type="number" id="popup_garantia" min="0" value="0"
+              style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #d1d5db;">
+          </div>
+        </div>
+        <div class="producto-form-modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="cerrarPopupCosto()">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+          <button type="button" class="btn-modal-save" onclick="confirmarAgregarCompra()">
+            <i class="fas fa-plus"></i> Agregar
+          </button>
+        </div>
+      </div>
+    </div>

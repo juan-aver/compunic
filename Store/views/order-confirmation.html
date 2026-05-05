@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ========================================== 
+  Plantilla principal. 
+  Nota mental: Revisar accesibilidad (algún día). 
+  ========================================== 
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Confirmación de Pedido - COMPUNIC">
+    <title>Pedido Confirmado - COMPUNIC</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../public/css/main.css">
+    <link rel="stylesheet" href="../public/css/confirmation.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ============================================
+         NAVBAR
+         ============================================ -->
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-brand-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <span>COMPUNIC</span>
+            </a>
+
+            <div class="navbar-actions">
+                <div class="navbar-user" id="exitButton" onclick="window.location.href='/index.html'"
+                    style="cursor: pointer;">
+                    <div class="navbar-user-avatar">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <span>Salir</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         CONFIRMACIÓN
+         ============================================ -->
+    <section class="confirmation-section">
+        <div class="container">
+            <div class="confirmation-card">
+                <div class="confirmation-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+
+                <h1>¡Pedido Confirmado!</h1>
+                <p class="confirmation-message">
+                    Tu pedido ha sido registrado exitosamente. Pronto nos pondremos en contacto contigo.
+                </p>
+
+                <div class="order-number">
+                    <span class="label">Número de Pedido:</span>
+                    <span class="number" id="orderNumber">-</span>
+                </div>
+
+                <div class="confirmation-details" id="orderDetails">
+                    <!-- Los detalles se cargarán dinámicamente -->
+                </div>
+
+                <div class="confirmation-actions">
+                    <a href="index.html" class="btn btn-primary btn-lg">
+                        <i class="fas fa-shopping-bag"></i>
+                        Volver a la Tienda
+                    </a>
+                </div>
+
+                <div class="confirmation-info">
+                    <i class="fas fa-info-circle"></i>
+                    <p>Recibirás un email de confirmación con los detalles de tu pedido.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript -->
+    <script src="../public/js/api.js"></script>
+    <script src="../public/js/confirmation.js"></script>
+
+</body>
+
+</html>

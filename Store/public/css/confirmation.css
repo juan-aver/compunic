@@ -1,0 +1,268 @@
+/* 
+ * ¡ADVERTENCIA! 
+ * El CSS aquí puede parecer magia negra, pero prometo que tiene sentido.
+ * Creado a medianoche. Funciona, no pregunten cómo.
+ */
+/* ============================================
+   CONFIRMATION PAGE STYLES
+   ============================================ */
+
+.confirmation-section {
+    min-height: calc(100vh - 80px);
+    padding: 4rem 0;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+}
+
+.confirmation-card {
+    max-width: 700px;
+    margin: 0 auto;
+    background: var(--glass-bg-light);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border-light);
+    border-radius: var(--border-radius-xl);
+    padding: 4rem 3rem;
+    text-align: center;
+    box-shadow: var(--shadow-2xl);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.confirmation-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 2rem;
+    background: var(--gradient-success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: scaleInBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 8px 32px rgba(16, 185, 129, 0.4);
+    position: relative;
+}
+
+.confirmation-icon::before {
+    content: '';
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 3px solid var(--success-light);
+    opacity: 0.3;
+    animation: ripple 2s ease-out infinite;
+}
+
+.confirmation-icon i {
+    font-size: 3.5rem;
+    color: white;
+    animation: checkmark 0.5s ease-out 0.3s both;
+}
+
+@keyframes scaleInBounce {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+
+    100% {
+        transform: scale(1.3);
+        opacity: 0;
+    }
+}
+
+@keyframes checkmark {
+    0% {
+        transform: scale(0) rotate(-45deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+.confirmation-card h1 {
+    font-size: 2.5rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-weight: 800;
+    animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.confirmation-message {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.order-number {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 2px solid var(--glass-border-light);
+    animation: fadeInUp 0.6s ease-out 0.4s both;
+}
+
+.order-number .label {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.order-number .number {
+    display: block;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.75rem;
+    font-weight: 800;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+}
+
+.confirmation-details {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: left;
+    border: 1px solid var(--glass-border);
+    animation: fadeInUp 0.6s ease-out 0.6s both;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row .label {
+    color: var(--text-muted);
+}
+
+.detail-row .value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.detail-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-section h3 {
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.product-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.product-item .name {
+    flex: 1;
+}
+
+.product-item .qty {
+    color: var(--text-muted);
+    margin: 0 1rem;
+}
+
+.product-item .price {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.confirmation-actions {
+    margin: 2rem 0;
+}
+
+.confirmation-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.75rem;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%);
+    border-radius: var(--border-radius-lg);
+    margin-top: 2rem;
+    border: 1px solid var(--glass-border-light);
+    animation: fadeInUp 0.6s ease-out 0.8s both;
+}
+
+.confirmation-info i {
+    color: var(--primary);
+    font-size: 1.25rem;
+}
+
+.confirmation-info p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .confirmation-section {
+        padding: 2rem 0;
+    }
+
+    .confirmation-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .confirmation-card h1 {
+        font-size: 1.5rem;
+    }
+
+    .confirmation-message {
+        font-size: 1rem;
+    }
+
+    .order-number .number {
+        font-size: 1.25rem;
+    }
+
+    .confirmation-info {
+        flex-direction: column;
+        text-align: center;
+    }
+}

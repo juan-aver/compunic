@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ¡Atención! Este HTML fue ensamblado a altas horas de la noche ☕. 
+  Si ves un div anidado 5 veces, lo siento, era necesario para centrar un botón.
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Checkout - COMPUNIC">
+    <title>Checkout - COMPUNIC</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../public/css/main.css">
+    <link rel="stylesheet" href="../public/css/checkout.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ============================================
+         NAVBAR
+         ============================================ -->
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-brand-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <span>COMPUNIC</span>
+            </a>
+
+            <div class="navbar-actions">
+                <div class="navbar-cart" onclick="window.location.href='cart.html'" style="cursor: pointer;">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="navbar-cart-badge" id="cartCount">0</span>
+                </div>
+
+                <div class="navbar-user" id="exitButton" onclick="window.location.href='/index.html'"
+                    style="cursor: pointer;">
+                    <div class="navbar-user-avatar">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <span>Salir</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         CHECKOUT
+         ============================================ -->
+    <section class="checkout-section">
+        <div class="container">
+            <div class="checkout-header">
+                <h1>
+                    <i class="fas fa-credit-card"></i>
+                    Finalizar Compra
+                </h1>
+                <div class="checkout-steps">
+                    <div class="step completed">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Carrito</span>
+                    </div>
+                    <div class="step active">
+                        <i class="fas fa-user"></i>
+                        <span>Datos</span>
+                    </div>
+                    <div class="step">
+                        <i class="fas fa-check"></i>
+                        <span>Confirmación</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="checkout-content">
+                <!-- Formulario de datos -->
+                <div class="checkout-form-container">
+                    <div class="card">
+                        <h2>
+                            <i class="fas fa-user-circle"></i>
+                            Información del Cliente
+                        </h2>
+
+                        <form id="checkoutForm">
+                            <div class="form-group">
+                                <label for="nombre">
+                                    Nombre Completo <span class="required">*</span>
+                                </label>
+                                <input type="text" id="nombre" class="form-control" placeholder="Ej: Juan Pérez"
+                                    required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="email">
+                                        Email <span class="required">*</span>
+                                    </label>
+                                    <input type="email" id="email" class="form-control" placeholder="ejemplo@email.com"
+                                        required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="telefono">
+                                        Teléfono <span class="required">*</span>
+                                    </label>
+                                    <input type="tel" id="telefono" class="form-control" placeholder="88888888"
+                                        pattern="[0-9]{8}" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="direccion">
+                                    Dirección (Opcional)
+                                </label>
+                                <textarea id="direccion" class="form-control" rows="3"
+                                    placeholder="Ej: Managua, Nicaragua"></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <a href="cart.html" class="btn btn-outline">
+                                    <i class="fas fa-arrow-left"></i>
+                                    Volver al Carrito
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                    <i class="fas fa-check-circle"></i>
+                                    Confirmar Pedido
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Resumen del pedido -->
+                <div class="checkout-summary">
+                    <div class="card">
+                        <h3>
+                            <i class="fas fa-receipt"></i>
+                            Resumen del Pedido
+                        </h3>
+
+                        <div class="summary-items" id="summaryItems">
+                            <!-- Los productos se cargarán dinámicamente -->
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-totals">
+                            <div class="summary-row">
+                                <span>Subtotal:</span>
+                                <span id="subtotal">$0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Envío:</span>
+                                <span class="text-success">Gratis</span>
+                            </div>
+                            <div class="summary-divider"></div>
+                            <div class="summary-row summary-total">
+                                <span>Total:</span>
+                                <span id="total">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-info">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Compra 100% segura</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Procesando tu pedido...</p>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../public/js/api.js"></script>
+    <script src="../public/js/checkout.js"></script>
+
+</body>
+
+</html>

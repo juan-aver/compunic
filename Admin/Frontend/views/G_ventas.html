@@ -1,0 +1,118 @@
+<!-- 
+  ========================================== 
+  Vista estructurada con paciencia. 
+  Ojo con borrar las clases, el CSS depende de esto como mi vida del café.
+  ========================================== 
+-->
+<link rel="stylesheet" href="css/views/G_ventas.css">
+<!-- Dark Mode & Enhanced Animations -->
+<link rel="stylesheet" href="css/views/dark-mode.css">
+<link rel="stylesheet" href="css/views/enhanced-animations.css">
+<!-- Table Enhancements -->
+<link rel="stylesheet" href="css/views/table-enhancements.css">
+<script src="js/table-enhancements.js" defer></script>
+<script src="js/search/ventas-table-init.js" defer></script>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+      <!-- Header -->
+    </div>
+  </div>
+
+  <div class="container full-width-container">
+    <!-- POS-STYLE 2-COLUMN LAYOUT -->
+    <section class="formulario form-section" id="seccion-formulario-venta">
+      <h2>Gestión de Ventas</h2>
+
+      <!-- Compact header row: Cliente, Vendedor, Factura, Fecha -->
+      <div class="ventas-pos-header">
+        <div class="pos-header-field">
+          <label class="form-label-small">Cliente</label>
+          <select id="cliente-select" class="form-select" required>
+            <option value="" disabled selected>Seleccione un Cliente</option>
+          </select>
+        </div>
+        <div class="pos-header-field">
+          <label class="form-label-small">Vendedor</label>
+          <input type="text" id="vendedor-display" class="form-input" readonly placeholder="Cargando...">
+          <input type="hidden" id="vendedor-id">
+        </div>
+        <div class="pos-header-field">
+          <label class="form-label-small">No. Factura</label>
+          <input type="text" id="factura-input" class="form-input" placeholder="Autogenerado" readonly>
+        </div>
+        <div class="pos-header-field">
+          <label class="form-label-small">Fecha</label>
+          <input type="text" id="fecha-venta-display" class="form-input" readonly placeholder="Cargando...">
+          <input type="hidden" id="fecha-venta">
+        </div>
+      </div>
+
+      <form id="sale-form">
+        <div class="ventas-pos-container">
+
+          <!-- LEFT: Product List -->
+          <div class="ventas-product-list">
+            <div class="ventas-pos-search-wrapper">
+              <i class="fas fa-search"></i>
+              <input type="text" id="ventas-pos-search" placeholder="Buscar producto por nombre..." class="form-input">
+            </div>
+            <div id="ventas-products-grid" class="ventas-pos-products-grid">
+              <!-- Product cards rendered by JS -->
+              <div class="cart-empty-message">
+                <i class="fas fa-boxes"></i>
+                <p>Cargando productos...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Cart Panel -->
+          <div class="ventas-cart-section">
+            <div class="ventas-cart-header">
+              <i class="fas fa-shopping-cart"></i> Detalle de la Venta
+              <span id="ventas-cart-badge" class="ventas-cart-badge" style="display:none">0</span>
+            </div>
+
+            <!-- Carrito de Items (Cards) -->
+            <div id="cart-table-body" class="cart-items-container">
+              <div class="cart-empty-message">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Haz clic en un producto para agregarlo.</p>
+              </div>
+            </div>
+
+            <!-- Totales -->
+            <div class="cart-total-section">
+              <div class="cart-total-row">
+                <span>Subtotal</span>
+                <span id="subtotal-venta-display">C$0.00</span>
+              </div>
+              <div class="cart-total-row">
+                <span>IVA (15%)</span>
+                <span id="iva-venta-display">C$0.00</span>
+              </div>
+              <div class="cart-total-row total-final">
+                <span>TOTAL VENTA</span>
+                <span id="total-venta-display">C$0.00</span>
+              </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="ventas-cart-actions">
+              <button type="button" onclick="document.getElementById('sale-form').reset();" class="btn-cancel">
+                Cancelar
+              </button>
+              <button type="button" onclick="guardarVenta()" id="btn-save-sale" class="btn-register">
+                <i class="fas fa-save"></i> Guardar Venta
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </form>
+    </section>
+
+
+  </div>
+</div>

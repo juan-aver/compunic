@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ========================================== 
+  Vista estructurada con paciencia. 
+  Ojo con borrar las clases, el CSS depende de esto como mi vida del café.
+  ========================================== 
+-->
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Administradores</title>
+    <link rel="stylesheet" href="../css/G_Administradores.css">
+    <script src="js/search/administradores-search.js" defer></script>
+</head>
+
+<body>
+    <main>
+        <div class="container">
+
+            <section class="formulario" id="seccion-formulario">
+                <h2>Gestión de Administrador</h2>
+                <form id="formulario-administradores">
+
+                    <input id="ID_ADMINISTRADOR" type="text" placeholder="ID (Autogenerado)" disabled />
+
+                    <select id="ID_EMPLEADO" required>
+                        <option value="">Seleccione Empleado...</option>
+                        <!-- Se llena dinámicamente -->
+                    </select>
+
+                    <div class="input-with-icon">
+                        <span class="input-icon">📞</span>
+                        <input id="TELEFONO" type="text" placeholder="Teléfono" />
+                    </div>
+                    <div class="input-with-icon">
+                        <span class="input-icon">📧</span>
+                        <input id="EMAIL" type="email" placeholder="Email" />
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                        <button id="btn_agregar_administrador" type="button"
+                            style="flex: 1; max-width: 120px;">Agregar</button>
+                        <button id="btn_modificar_administrador" type="button"
+                            style="flex: 1; max-width: 120px;">Modificar</button>
+                        <button id="btn_eliminar_administrador" type="button"
+                            style="flex: 1; max-width: 120px;">Eliminar</button>
+                        <button id="btn_limpiar_administrador" type="button"
+                            style="flex: 1; max-width: 120px; background-color: #7f8c8d;">Limpiar</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="busqueda" id="seccion-busqueda">
+                <h2>Buscar Administrador</h2>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input id="buscar_administrador" type="text" placeholder="Buscar por Nombre, Teléfono o Email" />
+                    <button id="btn_buscar_administrador" type="button">Buscar</button>
+                </div>
+            </section>
+
+            <section class="tabla" id="seccion-tabla">
+                <h2>Lista de Administradores</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Empleado</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaAdministradores">
+                        <!-- Se llena dinámicamente -->
+                    </tbody>
+                </table>
+            </section>
+
+        </div>
+    </main>
+
+</body>
+
+</html>

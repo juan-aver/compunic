@@ -1,0 +1,51 @@
+<!-- html de movimientos_stock -->
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ========================================== 
+  Plantilla principal. 
+  Nota mental: Revisar accesibilidad (algún día). 
+  ========================================== 
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Categorías</title>
+  <link rel="stylesheet" href="css/views/H_Stock.css">
+</head>
+
+<body>
+  <div class="main-container">
+    <header>
+      <h1>Historial de Stock</h1>
+    </header>
+
+    <div class="content-wrapper">
+      <div class="table-container catalogo-section">
+        <h3><i class="fas fa-history"></i> Registro de Movimientos de Inventario</h3>
+        <p>Bitácora completa de entradas, salidas y ajustes de stock.</p>
+
+        <table id="tabla-historial">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Producto</th>
+              <th>Tipo</th>
+              <th>Motivo</th>
+              <th>Cantidad</th>
+              <th>Stock Resultante</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Se llena dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script src="../script.js"></script>
+</body>
+
+</html>

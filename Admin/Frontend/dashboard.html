@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ========================================== 
+  Plantilla principal. 
+  Nota mental: Revisar accesibilidad (algún día). 
+  ========================================== 
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Compunic - Sistema de Inventario</title>
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard_mejorado.css">
+  <!-- Dark Mode & Enhanced Animations -->
+  <link rel="stylesheet" href="css/dark-mode.css">
+  <link rel="stylesheet" href="css/enhanced-animations.css">
+  <link rel="stylesheet" href="css/theme-toggle.css">
+  <!-- Dashboard Enhanced -->
+  <link rel="stylesheet" href="css/dashboard-enhanced.css">
+  <!-- Mobile & Responsive Features -->
+  <link rel="stylesheet" href="css/mobile-menu.css">
+  <link rel="stylesheet" href="css/responsive-tables.css">
+  <script src="js/mobile-menu.js" defer></script>
+  <script src="js/touch-gestures.js" defer></script>
+  <script src="js/table-data-labels.js" defer></script>
+  <script src="js/theme-toggle.js"></script>
+  <script src="js/auth.js"></script>
+  <!-- ApexCharts -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script>
+    // Proteger la ruta
+    Auth.checkAuth();
+
+    // Mostrar usuario logueado y aplicar roles
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = Auth.getUser();
+      const role = Auth.getRole();
+      const userDisplay = document.getElementById('user-display');
+
+      if (user && userDisplay) {
+        userDisplay.textContent = `Usuario: ${user}`;
+      }
+
+      // Lógica de Roles
+      if (role === 'vendedor') {
+        // Ocultar módulos no permitidos
+        const modulosProhibidos = ['nav-inventario', 'nav-compras', 'nav-administracion'];
+        modulosProhibidos.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = 'none';
+        });
+      }
+
+      // Cargar estadísticas del dashboard
+      cargarEstadisticasDashboard();
+    });
+  </script>
+  <!-- ===== Módulos de Lógica (reemplazan app_logic.js) ===== -->
+  <script src="logic/router.js"></script>
+  <script src="logic/utils.js"></script>
+  <script src="logic/categorias.js"></script>
+  <script src="logic/productos.js"></script>
+  <script src="logic/ventas.js"></script>
+  <script src="logic/compras.js"></script>
+  <script src="logic/devoluciones.js"></script>
+  <script src="logic/proveedores.js"></script>
+  <script src="logic/usuarios.js"></script>
+  <script src="logic/servicios.js"></script>
+  <script src="logic/empleados_temporales.js"></script>
+  <script src="js/dashboard_stats.js" defer></script>
+  <!-- <script src="js/dashboard_charts.js" defer></script> -->
+  <script src="js/vendedor_auto.js" defer></script>
+  <!-- Dashboard Enhanced -->
+  <script src="js/dashboard-enhanced.js" defer></script>
+</head>
+
+<body>
+  <div class="app-container">
+    <nav class="top-nav glass">
+      <div class="nav-brand">
+        <img src="assets/img/logo_compu.png" alt="Logo" class="nav-logo">
+
+      </div>
+
+      <ul class="nav-menu">
+        <li id="nav-inicio"><a href="#" class="nav-link active" onclick="location.reload()">Inicio</a></li>
+
+        <li class="nav-item-dropdown" id="nav-inventario">
+          <a href="#" class="nav-link">Inventario</a>
+          <ul class="dropdown-menu glass">
+            <li><a href="#" onclick="cargarVista('gestion-productos', false)"> Producto</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-productos', true)">Listado de productos</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-categorias')"> Categorias</a></li>
+            <li><a href="#" onclick="cargarVista('historial-stock')">Historial de stock</a></li>
+          </ul>
+        </li>
+        <li class="nav-item-dropdown" id="nav-servicios">
+          <a href="#" class="nav-link">Servicios</a>
+          <ul class="dropdown-menu glass">
+            <li><a href="#" onclick="cargarVista('gestion-garantias')">Garantías</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-garantias', true)">Listado de Garantías</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-servicios')">Servicios</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-servicios', true)">Listado de servicios</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-ventas')">Generar Venta</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-lista-ventas')">Listado de Ventas</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-devoluciones')">Devoluciones</a></li>
+          </ul>
+        </li>
+        <li class="nav-item-dropdown" id="nav-compras">
+          <a href="#" class="nav-link">Compras</a>
+          <ul class="dropdown-menu glass">
+            <li><a href="#" onclick="cargarVista('gestion-compra')">Nueva compra</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-lista-compras')">Listado de compras</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-proveedores')">Proveedores</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-proveedores', true)">Lista de proveedores</a></li>
+          </ul>
+        </li>
+        <li class="nav-item-dropdown" id="nav-administracion">
+          <a href="#" class="nav-link">Administración</a>
+          <ul class="dropdown-menu glass">
+            <li><a href="#" onclick="cargarVista('gestion-vendedores')">Vendedores</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-empleados')">Empleados</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-clientes')">Clientes</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-administradores')">Administradores</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-empleados-temporales')">Empleados Temporales</a></li>
+          </ul>
+        </li>
+      </ul>
+      <div class="user-profile">
+        <span id="user-display">Usuario: ADMIN</span>
+        <img src="assets/img/Admin.png" alt="User" class="user-avatar">
+        <button onclick="Auth.logout()"
+          style="margin-left: 20px; background: #d00505; border: none; color: #ffffff; padding: 10px 20px; cursor: pointer; font-weight: bold;">Salir</button>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <button class="mobile-menu-toggle" aria-label="Menú">
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+
+    <div class="mobile-menu-backdrop"></div>
+
+    <nav class="mobile-menu">
+      <ul class="mobile-menu-items">
+        <li class="mobile-menu-item">
+          <a href="#" class="mobile-menu-link" onclick="location.reload()">
+            <span class="mobile-menu-icon">🏠</span>
+            Inicio
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-productos', false)">
+            <span class="mobile-menu-icon">📦</span>
+            Productos
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-categorias')">
+            <span class="mobile-menu-icon">📚</span>
+            Categorías
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-garantias')">
+            <span class="mobile-menu-icon">🛡️</span>
+            Garantías
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-servicios')">
+            <span class="mobile-menu-icon">🔧</span>
+            Servicios
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-ventas')">
+            <span class="mobile-menu-icon">💰</span>
+            Generar Venta
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-lista-ventas')">
+            <span class="mobile-menu-icon">📋</span>
+            Lista Ventas
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-compra')">
+            <span class="mobile-menu-icon">🛒</span>
+            Generar Compra
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-lista-compras')">
+            <span class="mobile-menu-icon">📋</span>
+            Lista Compras
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-clientes')">
+            <span class="mobile-menu-icon">👥</span>
+            Clientes
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="main-content desktop-nav">
+      <header class="page-header">
+        <h1>Sistema de Inventario Compunic</h1>
+        <p class="subtitle">Panel de Control</p>
+      </header>
+
+      <div id="content">
+        <!-- Dashboard Mejorado -->
+        <div class="dashboard-grid">
+          <!-- Tarjeta 1: Ingresos -->
+          <div class="stat-card stat-card-blue stagger-item">
+            <div class="stat-icon">
+              <i class="fas fa-dollar-sign" style="font-size: 40px;"></i>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Ingresos Totales (Este Mes)</p>
+              <h3 class="stat-value" id="ingresos-total">0.00 C$</h3>
+              <span class="stat-badge badge-success" id="ingresos-cambio">
+                <span id="ingresos-porcentaje">+0%</span>
+              </span>
+              <p class="stat-detail" id="ingresos-ventas">0 ventas este mes</p>
+              <div class="sparkline-container" id="sparkline-ingresos"></div>
+            </div>
+          </div>
+
+          <!-- Tarjeta 2: Servicios -->
+          <div class="stat-card stat-card-red stagger-item">
+            <div class="stat-icon">
+              <i class="fas fa-clipboard-list" style="font-size: 40px;"></i>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Servicios Pendientes</p>
+              <h3 class="stat-value" id="servicios-total">0 Tickets</h3>
+              <span class="stat-badge badge-warning">
+                <span id="servicios-diagnostico">0 en Diagnóstico</span>
+              </span>
+              <div class="sparkline-container" id="sparkline-servicios"></div>
+            </div>
+          </div>
+
+          <!-- Tarjeta 3: Stock Crítico -->
+          <div class="stat-card stat-card-yellow stagger-item">
+            <div class="stat-icon">
+              <i class="fas fa-box" style="font-size: 40px;"></i>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Stock Crítico</p>
+              <h3 class="stat-value" id="stock-total">0 Productos</h3>
+              <p class="stat-detail" id="stock-lista">Cargando...</p>
+              <div class="sparkline-container" id="sparkline-stock"></div>
+            </div>
+          </div>
+
+          <!-- Tarjeta 4: Clientes Nuevos -->
+          <div class="stat-card stat-card-green stagger-item">
+            <div class="stat-icon">
+              <i class="fas fa-users" style="font-size: 40px;"></i>
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Nuevos Clientes</p>
+              <h3 class="stat-value" id="clientes-total">0 Clientes</h3>
+              <span class="stat-badge badge-success">Este mes</span>
+              <div class="sparkline-container" id="sparkline-clientes"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="charts-grid mt-4">
+          <div class="chart-card">
+            <h4>Ventas vs. Costos (Últimos 6 Meses)</h4>
+            <div class="chart-placeholder" id="chart-ventas-costos">
+              <p>Cargando datos del gráfico...</p>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h4>Stock por Categoría</h4>
+            <div class="chart-placeholder" id="chart-stock-categoria">
+              <p>Cargando datos del gráfico...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

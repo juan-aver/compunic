@@ -1,0 +1,386 @@
+/* 
+ * Estilos con mucho amor y lágrimas 😢 
+ * Por favor usar variables de CSS, no me agregues colores quemados.
+ */
+/* ============================================
+   CHECKOUT PAGE STYLES
+   ============================================ */
+
+.checkout-section {
+    min-height: calc(100vh - 80px);
+    padding: 2rem 0 4rem;
+    background: var(--bg-secondary);
+}
+
+.checkout-header {
+    margin-bottom: 2rem;
+}
+
+.checkout-header h1 {
+    font-size: 2rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.checkout-header h1 i {
+    color: var(--primary);
+}
+
+/* ============================================
+   STEPS INDICATOR
+   ============================================ */
+
+.checkout-steps {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    position: relative;
+}
+
+.step i {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all var(--transition-base);
+    border: 2px solid transparent;
+}
+
+.step span {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.step.completed i {
+    background: var(--gradient-success);
+    color: white;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+    border-color: var(--success-light);
+}
+
+.step.active i {
+    background: var(--gradient-primary);
+    color: white;
+    box-shadow: 0 4px 24px rgba(99, 102, 241, 0.5);
+    border-color: var(--primary-light);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.step.completed,
+.step.active {
+    color: var(--text-primary);
+}
+
+/* ============================================
+   CHECKOUT CONTENT
+   ============================================ */
+
+.checkout-content {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 2rem;
+    align-items: start;
+}
+
+/* ============================================
+   FORMULARIO
+   ============================================ */
+
+.checkout-form-container .card {
+    background: var(--glass-bg-light);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border-light);
+    border-radius: var(--border-radius-xl);
+    padding: 2.5rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.checkout-form-container h2 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.checkout-form-container h2 i {
+    color: var(--primary);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.required {
+    color: var(--error);
+}
+
+.form-control {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--border-radius-lg);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all var(--transition-base);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    transform: translateY(-2px);
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+/* ============================================
+   RESUMEN DEL PEDIDO
+   ============================================ */
+
+.checkout-summary {
+    position: sticky;
+    top: 100px;
+}
+
+.checkout-summary .card {
+    background: var(--glass-bg-light);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border-light);
+    border-radius: var(--border-radius-xl);
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.checkout-summary h3 {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkout-summary h3 i {
+    color: var(--primary);
+}
+
+.summary-items {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+}
+
+.summary-item-info {
+    flex: 1;
+}
+
+.summary-item-name {
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.summary-item-qty {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.summary-item-price {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.summary-divider {
+    height: 1px;
+    background: var(--glass-border);
+    margin: 1rem 0;
+}
+
+.summary-totals {
+    margin-top: 1rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.summary-row span:last-child {
+    font-weight: 600;
+}
+
+.summary-total {
+    font-size: 1.75rem;
+    color: var(--text-primary);
+    margin-top: 1rem;
+    font-weight: 700;
+}
+
+.summary-total span:last-child {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.summary-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.summary-info i {
+    color: var(--success);
+}
+
+/* ============================================
+   LOADING OVERLAY
+   ============================================ */
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.loading-spinner {
+    text-align: center;
+    color: white;
+}
+
+.loading-spinner i {
+    font-size: 4rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.loading-spinner p {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .checkout-content {
+        grid-template-columns: 1fr;
+    }
+
+    .checkout-summary {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .checkout-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .checkout-steps {
+        gap: 1rem;
+    }
+
+    .step span {
+        font-size: 0.8rem;
+    }
+
+    .step i {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+    }
+}

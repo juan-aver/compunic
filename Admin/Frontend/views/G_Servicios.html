@@ -1,0 +1,159 @@
+<!-- 
+  ¡Atención! Este HTML fue ensamblado a altas horas de la noche ☕. 
+  Si ves un div anidado 5 veces, lo siento, era necesario para centrar un botón.
+-->
+<div class="main-container">
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Gestión de Servicios</h1>
+            <button class="btn-nuevo-producto" onclick="abrirModalServicio()">
+                <i class="fas fa-plus"></i> Nuevo Servicio
+            </button>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+
+        <section class="table-container catalogo-section">
+            <h3><i class="fas fa-book-open"></i> Catálogo de Servicios Disponibles</h3>
+            <p>Lista de referencia de los servicios que ofrece la empresa.</p>
+
+            <table id="tabla-catalogo">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">ID</th>
+                        <th style="width: 70%;">Servicio</th>
+                        <th style="width: 20%; text-align: center;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ⚠️ Cuidado con los z-index de este Modal de Agregar/Editar Servicio -->
+        <div id="modalServicioForm" class="producto-form-modal" style="display: none;">
+            <div class="producto-form-modal-overlay" onclick="cerrarModalServicio()"></div>
+            <div class="producto-form-modal-content" style="max-width: 600px;">
+                <div class="producto-form-modal-header">
+                    <h3 id="modalServicioTitle"><i class="fas fa-plus-circle"></i> Nuevo Servicio</h3>
+                    <button class="producto-form-modal-close" onclick="cerrarModalServicio()">&times;</button>
+                </div>
+                <div class="producto-form-modal-body">
+                    <form id="formularioServicio">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                            <div>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Cliente:</label>
+                                <select id="id_cliente" name="id_cliente" class="form-control" required
+                                    style="width: 100%;">
+                                    <option value="">Seleccione un cliente</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Garantía
+                                    Aplicada:</label>
+                                <select id="id_garantia" name="id_garantia" class="form-control" style="width: 100%;">
+                                    <option value="">Seleccione una garantía</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                            <div>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Tipo de
+                                    Servicio:</label>
+                                <select id="id_servicio_tipo" name="id_servicio_tipo" class="form-control" required
+                                    style="width: 100%;">
+                                    <option value="">Seleccione un tipo</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Estado del
+                                    Trabajo:</label>
+                                <select id="id_servicio_estado" name="id_servicio_estado" class="form-control" required
+                                    style="width: 100%;">
+                                    <option value="">Seleccione un estado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                            <div>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Costo Final
+                                    ($):</label>
+                                <input type="number" id="costo" name="costo" step="0.01" class="form-control" required
+                                    placeholder="0.00" style="width: 100%;">
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">ID Temporal
+                                    (Opcional):</label>
+                                <input type="number" id="id_temporal" name="id_temporal" class="form-control"
+                                    style="width: 100%;">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                            <div>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Fecha
+                                    Solicitud:</label>
+                                <input type="date" id="fecha_solicitud" name="fecha_solicitud" class="form-control"
+                                    required style="width: 100%;">
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Fecha
+                                    Ejecución:</label>
+                                <input type="date" id="fecha_ejecucion" name="fecha_ejecucion" class="form-control"
+                                    style="width: 100%;">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="producto-form-modal-footer">
+                    <button type="button" class="btn-modal-cancel" onclick="cerrarModalServicio()">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" id="btn-eliminar" class="btn-modal-delete" style="display: none;">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                    <button type="submit" id="btn-agregar" class="btn-modal-save">
+                        <i class="fas fa-save"></i> Guardar Trabajo
+                    </button>
+                    <button type="button" id="btn-modificar" class="btn-modal-update" style="display: none;">
+                        <i class="fas fa-edit"></i> Modificar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <section class="busqueda" id="seccion-busqueda">
+            <h2>Buscar Servicio</h2>
+            <div class="search-container">
+                <input type="text" id="buscar_servicio" placeholder="Buscar por descripción, cliente o tipo..."
+                    class="search-input">
+            </div>
+        </section>
+
+        <div class="table-container" style="margin-top: 25px;">
+            <h2><i class="fas fa-history"></i> Historial de Trabajos Realizados</h2>
+            <table id="tabla-servicios">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Descripción</th>
+                        <th>Cliente</th>
+                        <th>Tipo</th>
+                        <th>Garantía</th>
+                        <th>F. Solicitud</th>
+                        <th>F. Ejecución</th>
+                        <th>Estado</th>
+                        <th>Costo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>

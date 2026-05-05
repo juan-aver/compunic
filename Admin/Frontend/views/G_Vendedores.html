@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ¡Atención! Este HTML fue ensamblado a altas horas de la noche ☕. 
+  Si ves un div anidado 5 veces, lo siento, era necesario para centrar un botón.
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Vendedores</title>
+  <link rel="stylesheet" href="css/views/G_Usuarios.css">
+  <script src="js/search/vendedores-search.js" defer></script>
+</head>
+
+<body>
+  <main>
+    <div class="container">
+
+      <section class="formulario" id="seccion-formulario">
+        <h2>Gestión de Vendedores</h2>
+        <form id="formulario-vendedores">
+
+          <input id="AREA" type="text" placeholder="Área (Ej: Ventas Corporativas)" required />
+          <input id="HORARIO" type="text" placeholder="Horario (Ej: 08:00-17:00)" required />
+          <div class="input-with-icon">
+            <span class="input-icon">📞</span>
+            <input id="TELEFONO" type="text" placeholder="Teléfono" required />
+          </div>
+          <div class="input-with-icon">
+            <span class="input-icon">📧</span>
+            <input id="EMAIL" type="email" placeholder="Email del Vendedor" required />
+          </div>
+
+          <div class="input-with-icon">
+            <span class="input-icon">🔢</span>
+            <input id="ID_EMPLEADO" type="number" placeholder="ID del Empleado Asociado" required />
+          </div>
+
+          <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+            <button id="btn_agregar_vendedor" type="button" style="flex: 1; max-width: 120px;">Agregar</button>
+            <button id="btn_modificar_vendedor" type="button" style="flex: 1; max-width: 120px;">Modificar</button>
+            <button id="btn_eliminar_vendedor" type="button" style="flex: 1; max-width: 120px;">Eliminar</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="busqueda" id="seccion-busqueda">
+        <h2>Buscar Vendedor</h2>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input id="buscar_vendedor" type="text" placeholder="Buscar por Área o Email" />
+          <button id="btn_buscar_vendedor" type="button">Buscar</button>
+        </div>
+      </section>
+
+      <section class="tabla" id="seccion-tabla">
+        <h2>Lista de Vendedores</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Área</th>
+              <th>Horario</th>
+              <th>Teléfono</th>
+              <th>Email</th>
+              <th>ID Emp.</th>
+            </tr>
+          </thead>
+          <tbody id="tablaVendedores">
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+  </main>
+
+</body>
+
+</html>

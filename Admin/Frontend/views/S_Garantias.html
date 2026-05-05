@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- 
+  ========================================== 
+  Vista estructurada con paciencia. 
+  Ojo con borrar las clases, el CSS depende de esto como mi vida del café.
+  ========================================== 
+-->
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Garantías</title>
+    <link rel="stylesheet" href="../css/S_Garantias.css">
+</head>
+
+<body>
+    <main>
+        <div class="container">
+
+            <section class="formulario" id="seccion-formulario">
+                <h2>Gestión de Garantías</h2>
+                <form id="formulario-garantias">
+
+                    <div class="input-with-icon">
+                        <span class="input-icon">🔢</span>
+                        <input type="number" id="ID_GARANTIA" placeholder="ID Garantía (Único)" />
+                    </div>
+                    <input type="date" id="FECHA" placeholder="Fecha" />
+                    <input type="time" id="HORA" placeholder="Hora" />
+                    <div class="input-with-icon">
+                        <span class="input-icon">📅</span>
+                        <input type="number" id="DURACION_MESES" placeholder="Duración (Meses)" />
+                    </div>
+
+                    <select id="ID_GARANTIA_TIPO">
+                        <option value="">Seleccione Tipo...</option>
+                        <!-- Se llena dinámicamente -->
+                    </select>
+
+                    <select id="ID_GARANTIA_ESTADO">
+                        <option value="">Seleccione Estado...</option>
+                        <!-- Se llena dinámicamente -->
+                    </select>
+
+                    <div class="input-with-icon">
+                        <span class="input-icon">✅</span>
+                        <input id="CONDICION" type="text" placeholder="Condición" />
+                    </div>
+                    <div class="input-with-icon">
+                        <span class="input-icon">❌</span>
+                        <input id="EXCLUSIONES" type="text" placeholder="Exclusiones" />
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                        <button id="btn_agregar_garantia" type="button"
+                            style="flex: 1; max-width: 120px;">Agregar</button>
+                        <button id="btn_modificar_garantia" type="button"
+                            style="flex: 1; max-width: 120px;">Modificar</button>
+                        <button id="btn_eliminar_garantia" type="button"
+                            style="flex: 1; max-width: 120px;">Eliminar</button>
+                        <button id="btn_limpiar_garantia" type="button"
+                            style="flex: 1; max-width: 120px; background-color: #7f8c8d;">Limpiar</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="busqueda" id="seccion-busqueda">
+                <h2>Buscar Garantía</h2>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <select id="buscar_tipo">
+                        <option value="">Todos los Tipos</option>
+                        <!-- Se llena dinámicamente -->
+                    </select>
+                    <select id="buscar_estado">
+                        <option value="">Todos los Estados</option>
+                        <!-- Se llena dinámicamente -->
+                    </select>
+                    <div class="input-with-icon">
+                        <span class="input-icon">📅</span>
+                        <input id="buscar_duracion" type="text" placeholder="Duración (ej. 12 meses)" />
+                    </div>
+                    <button id="btn_buscar_garantia" type="button">Buscar</button>
+                </div>
+            </section>
+
+            <section class="tabla" id="seccion-tabla">
+                <h2>Lista de Garantías</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Duración</th>
+                            <th>Condición</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaGarantias">
+                        <!-- Se llena dinámicamente -->
+                    </tbody>
+                </table>
+            </section>
+
+        </div>
+    </main>
+
+</body>
+
+</html>
