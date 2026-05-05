@@ -518,17 +518,21 @@ function modificarProducto() {
         .then(async res => {
             if (!res.ok) {
                 const e = await res.json().catch(() => ({ error: 'Error desconocido' }));
-                throw new Error(e.error || 'Error al modificar producto');
+                throw new Error(e.error || e.detail || 'Error al modificar producto');
             }
             return res.json();
         })
         .then(() => {
-            alert('Producto modificado');
+            cerrarModalProducto();
+            alert('Producto modificado exitosamente');
             document.getElementById('formularioProducto')?.reset();
             document.getElementById('preview_imagen_container').style.display = 'none';
             if (typeof cargarProductos === 'function') cargarProductos();
         })
-        .catch(err => console.error('Error modificando producto:', err));
+        .catch(err => {
+            console.error('Error modificando producto:', err);
+            alert('Error al modificar producto: ' + err.message);
+        });
 }
 
 // ⚠️ PELIGRO: Elimina un producto. Siempre pide confirmación primero
@@ -548,11 +552,15 @@ function eliminarProducto() {
             return json;
         })
         .then(() => {
-            alert('Producto eliminado');
+            cerrarModalProducto();
+            alert('Producto eliminado exitosamente');
             document.getElementById('formularioProducto')?.reset();
             if (typeof cargarProductos === 'function') cargarProductos();
         })
-        .catch(err => console.error('Error eliminando producto:', err));
+        .catch(err => {
+            console.error('Error eliminando producto:', err);
+            alert('Error al eliminar producto: ' + err.message);
+        });
 }
 
 
@@ -590,12 +598,16 @@ function agregarProducto() {
             return json;
         })
         .then(resp => {
+            cerrarModalProducto();
             alert('Producto agregado exitosamente. ID generado: ' + (resp.id || 'N/A'));
             if (form) form.reset();
             document.getElementById('preview_imagen_container').style.display = 'none';
             if (typeof cargarProductos === 'function') cargarProductos();
         })
-        .catch(err => console.error('Error agregando producto:', err));
+        .catch(err => {
+            console.error('Error agregando producto:', err);
+            alert('Error al agregar producto: ' + err.message);
+        });
 }
 
 function _recolectarFormulario() {

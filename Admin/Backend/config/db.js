@@ -15,7 +15,11 @@ const dbConfig = process.env.DB_URL
   : {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
+
     password: process.env.DB_PASSWORD || '82366150AjRm',
+
+ 
+
     database: process.env.DB_NAME || 'COMPUNIC_V5',
     waitForConnections: true,
     connectionLimit: 10,
