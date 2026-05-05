@@ -60,6 +60,17 @@ const Cliente = {
     } catch (err) {
       throw new Error('Error al eliminar cliente: ' + err.message);
     }
+  },
+
+  // LLAMADO A PROCEDIMIENTO ALMACENADO sp_NuevoCliente
+  agregarRapido: async (nombre, apellido, telefono, email, id_vendedor) => {
+    try {
+      const sql = 'CALL sp_NuevoCliente(?, ?, ?, ?, ?)';
+      const [result] = await db.query(sql, [nombre, apellido, telefono, email, id_vendedor]);
+      return result;
+    } catch (err) {
+      throw new Error('Error al registrar cliente rápido: ' + err.message);
+    }
   }
 };
 

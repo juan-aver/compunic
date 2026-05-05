@@ -194,6 +194,19 @@ const productosController = {
     }
   },
 
+  // LLAMADO A PROCEDIMIENTO ALMACENADO sp_BuscarPrecioProducto
+  buscarPrecio: async (req, res) => {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ error: 'Falta el parámetro de búsqueda (q)' });
+    try {
+      const resultados = await Producto.buscarPrecio(q);
+      res.json(resultados);
+    } catch (err) {
+      console.error('Error al buscar precio:', err);
+      res.status(500).json({ error: 'Error al buscar precio del producto', detail: err.message });
+    }
+  },
+
   eliminar: async (req, res) => {
     const { id } = req.params;
     try {

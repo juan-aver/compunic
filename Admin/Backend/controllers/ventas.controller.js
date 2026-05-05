@@ -90,3 +90,18 @@ exports.findById = async (req, res) => {
     res.status(500).send({ message: err.message });
   }
 };
+
+// LLAMADO A PROCEDIMIENTO ALMACENADO sp_VentasPorVendedor
+exports.findByVendedor = async (req, res) => {
+  try {
+    const idVendedor = req.params.id;
+    if (!idVendedor) {
+      return res.status(400).send({ message: "Se requiere el ID del vendedor." });
+    }
+
+    const ventasVendedor = await Ventas.obtenerPorVendedor(idVendedor);
+    res.send(ventasVendedor);
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};

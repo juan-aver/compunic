@@ -166,6 +166,17 @@ const Producto = {
     } catch (err) {
       throw new Error('Error al eliminar el producto: ' + err.message);
     }
+  },
+
+  // LLAMADO A PROCEDIMIENTO ALMACENADO sp_BuscarPrecioProducto
+  buscarPrecio: async (nombreModelo) => {
+    try {
+      const sql = 'CALL sp_BuscarPrecioProducto(?)';
+      const [resultados] = await db.query(sql, [nombreModelo]);
+      return resultados[0];
+    } catch (err) {
+      throw new Error('Error al buscar precio de producto: ' + err.message);
+    }
   }
 };
 

@@ -17,6 +17,10 @@ router.get('/', ventasController.findAll);
 // GET http://localhost:3001/api/ventas/:id
 router.get('/:id', ventasController.findById);
 
+// Ruta para obtener ventas de un vendedor específico por SP
+// GET http://localhost:3001/api/ventas/vendedor/:id
+router.get('/vendedor/:id', ventasController.findByVendedor);
+
 // Ruta para crear una nueva venta
 router.post('/', ventasController.create);
 

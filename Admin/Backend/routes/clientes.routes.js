@@ -13,6 +13,7 @@ const controlador = require('../controllers/clientes.controller.js');
 
 router.get('/buscar', controlador.buscar);
 router.get('/', controlador.listar);
+router.post('/rapido', controlador.agregarRapido); // Registro rápido de cliente por SP
 router.post('/', controlador.agregar);
 router.put('/:id', controlador.actualizar);
 router.delete('/:id', controlador.eliminar);

@@ -129,6 +129,17 @@ const Ventas = {
     venta.items = productos;
 
     return venta;
+  },
+
+  // LLAMADO A PROCEDIMIENTO ALMACENADO sp_VentasPorVendedor
+  obtenerPorVendedor: async (idVendedor) => {
+    try {
+      const sql = 'CALL sp_VentasPorVendedor(?)';
+      const [resultados] = await db.query(sql, [idVendedor]);
+      return resultados[0];
+    } catch (err) {
+      throw new Error('Error al obtener ventas del vendedor: ' + err.message);
+    }
   }
 };
 

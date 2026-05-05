@@ -12,6 +12,7 @@ const controlador = require('../controllers/productos.controller.js');
 const upload = require('../controllers/productos.controller.js').upload;
 
 router.get('/', controlador.listar);   // Obtener todos los productos
+router.get('/precio/buscar', controlador.buscarPrecio); // Buscar precio de producto por SP
 router.post('/', upload.single('imagen'), controlador.crear);   // Crear un nuevo producto con imagen
 router.put('/:id', upload.single('imagen'), controlador.actualizar);  // Actualizar un producto con imagen
 router.delete('/:id', controlador.eliminar);  // Eliminar un producto
