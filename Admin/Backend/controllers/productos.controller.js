@@ -99,7 +99,14 @@ const productosController = {
           nombre_proveedor: r.nombre_proveedor ?? r.NOMBRE_EMPRESA ?? r.NOMBRE_PROVEEDOR ?? '',
           nombre_categoria: r.nombre_categoria ?? r.NOMBRE_CATEGORIA ?? '',
           garantia_meses: r.GARANTIA_MESES ?? r.garantia_meses ?? null,
-          stock: stockNum
+          stock: stockNum,
+          _raw: {
+            ID_MARCA: r.ID_MARCA ?? null,
+            ID_PROVEEDOR: r.ID_PROVEEDOR ?? null,
+            ID_GARANTIAS: r.ID_GARANTIAS ?? null,
+            ID_CATEGORIA: r.categoria_ids ? String(r.categoria_ids).split(',').map(s => s.trim())[0] : null,
+            categoria_ids: r.categoria_ids ?? null
+          }
         };
       });
       res.json(normalizados);
