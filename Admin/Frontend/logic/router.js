@@ -69,12 +69,9 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
         'gestion-lista-compras': { html: 'views/G_Lista_Compras.html', css: '' },
         'gestion-proveedores': { html: 'views/G_Proveedores.html', css: 'css/views/G_Proveedores.css' },
         'gestion-empleados': { html: 'views/G_Empleados.html', css: 'css/views/G_Empleados.css' },
-        'gestion-vendedores': { html: 'views/G_Vendedores.html', css: 'css/views/G_Vendedores.css' },
         'gestion-clientes': { html: 'views/G_Clientes.html', css: 'css/views/G_Clientes.css' },
         'gestion-garantias': { html: 'views/S_Garantias.html', css: 'css/views/S_Garantias.css' },
-        'gestion-administradores': { html: 'views/G_Administradores.html', css: 'css/views/G_Administradores.css' },
         'gestion-servicios': { html: 'views/G_Servicios.html', css: 'css/views/G_Servicios.css' },
-        'gestion-empleados-temporales': { html: 'views/G_ETemporales.html', css: 'css/views/G_ETemporales.css' },
         'gestion-devoluciones': { html: 'views/G_Devoluciones.html', css: 'css/views/G_Devoluciones.css' }
     };
 
@@ -154,23 +151,6 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                             asignarEventosProveedores();
                         }
 
-                    } else if (nombreVista === 'gestion-vendedores') {
-                        if (Lista_de_proveedores === true) {
-                            const formulario = document.getElementById('seccion-formulario');
-                            if (formulario) formulario.style.display = 'none';
-                        }
-                        if (typeof cargarVendedores === 'function') cargarVendedores();
-
-                        const btnAdd = document.getElementById('btn_agregar_vendedor');
-                        const btnMod = document.getElementById('btn_modificar_vendedor');
-                        const btnDel = document.getElementById('btn_eliminar_vendedor');
-                        const btnSearch = document.getElementById('btn_buscar_vendedor');
-
-                        if (btnAdd) btnAdd.onclick = agregarVendedor;
-                        if (btnMod) btnMod.onclick = modificarVendedor;
-                        if (btnDel) btnDel.onclick = eliminarVendedor;
-                        if (btnSearch) btnSearch.onclick = buscarVendedor;
-
                     } else if (nombreVista === 'gestion-categorias') {
                         if (typeof cargarCategorias === 'function') cargarCategorias();
 
@@ -181,22 +161,6 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         if (btnAgregar) btnAgregar.onclick = agregarCategoria;
                         if (btnModificar) btnModificar.onclick = modificarCategoria;
                         if (btnEliminar) btnEliminar.onclick = eliminarCategoria;
-
-                    } else if (nombreVista === 'gestion-administradores') {
-                        // cargarAdministradores(); // TODO: Función no definida
-                        // cargarEmpleadosParaAdmin(); // TODO: Función no definida
-
-                        const btnAdd = document.getElementById('btn_agregar_administrador');
-                        const btnMod = document.getElementById('btn_modificar_administrador');
-                        const btnDel = document.getElementById('btn_eliminar_administrador');
-                        const btnClean = document.getElementById('btn_limpiar_administrador');
-                        const btnSearch = document.getElementById('btn_buscar_administrador'); // Asumiendo ID estándar
-
-                        if (btnAdd) btnAdd.onclick = agregarAdministrador;
-                        if (btnMod) btnMod.onclick = modificarAdministrador;
-                        if (btnDel) btnDel.onclick = eliminarAdministrador;
-                        if (btnClean) btnClean.onclick = limpiarFormularioAdministrador;
-                        if (btnSearch) btnSearch.onclick = buscarAdministrador;
 
                     } else if (nombreVista === 'gestion-clientes') {
                         if (typeof cargarClientes === 'function') cargarClientes();
@@ -236,15 +200,16 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         if (btnSearch) btnSearch.onclick = buscarGarantia;
 
                     } else if (nombreVista === 'gestion-empleados') {
+                        if (typeof initEmpleadosEventos === 'function') initEmpleadosEventos();
                         if (typeof cargarEmpleados === 'function') cargarEmpleados();
                         const btnAdd = document.getElementById('btn_agregar_empleado');
                         const btnMod = document.getElementById('btn_modificar_empleado');
-                        const btnDel = document.getElementById('btn_eliminar_empleado');
+                        const btnClean = document.getElementById('btn_limpiar_formulario');
                         const btnSearch = document.getElementById('btn_buscar_empleado');
 
                         if (btnAdd) btnAdd.onclick = agregarEmpleado;
                         if (btnMod) btnMod.onclick = modificarEmpleado;
-                        if (btnDel) btnDel.onclick = eliminarEmpleado;
+                        if (btnClean) btnClean.onclick = limpiarFormularioEmpleado;
                         if (btnSearch) btnSearch.onclick = buscarEmpleado;
 
                     }/*cargar vista servicios*/else if (nombreVista === 'gestion-servicios') {
@@ -369,19 +334,6 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         if (typeof filtrarTabla === 'function') {
                             filtrarTabla('buscar_venta', 'sales-record-table', [1, 3, 4]);
                         }
-                    } else if (nombreVista === 'gestion-empleados-temporales') {
-                        if (typeof cargarETemporales === 'function') cargarETemporales();
-                        if (typeof poblarSelectAdministradores === 'function') poblarSelectAdministradores();
-
-                        const btnAdd = document.getElementById('btn-agregar-et');
-                        const btnMod = document.getElementById('btn-modificar-et');
-                        const btnDel = document.getElementById('btn-eliminar-et');
-                        const btnClean = document.getElementById('btn-limpiar-et');
-
-                        if (btnAdd) btnAdd.onclick = (e) => { e.preventDefault(); agregarETemporal(); };
-                        if (btnMod) btnMod.onclick = (e) => { e.preventDefault(); modificarETemporal(); };
-                        if (btnDel) btnDel.onclick = (e) => { e.preventDefault(); eliminarETemporal(); };
-                        if (btnClean) btnClean.onclick = (e) => { e.preventDefault(); limpiarFormularioETemporal(); };
                     } else if (nombreVista === 'gestion-devoluciones') {
                         // Inicializar módulo de devoluciones
                         if (typeof cargarDevoluciones === 'function') cargarDevoluciones();

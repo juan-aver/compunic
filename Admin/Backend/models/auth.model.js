@@ -3,8 +3,7 @@
  * @description Modelo de BD. Define las consultas SQL e interacción con la base de datos directa. ¡Ojo con las inyecciones SQL!
  * @date 8 de abril de 2026
  * 
- * Este componente centraliza la lógica respectiva para evitar código espagueti.
- * Estructurado a mano con paciencia y un red bull.
+
  */
 const db = require('../config/db');
 const crypto = require('crypto');
@@ -18,17 +17,15 @@ const AuthModel = {
     async login(username, password) {
         const query = `
             SELECT 
-                e.ID as ID_EMPLEADO,
+                e.ID_EMPLEADO,
                 e.NOMBRE,
                 e.APELLIDO,
                 e.USERNAME,
                 e.PASSWORD_HASH,
                 e.ROL,
-                e.GMAIL as EMAIL,
-                v.ID_VENDEDOR,
-                v.AREA
+                e.EMAIL,
+                e.AREA
             FROM EMPLEADOS e
-            LEFT JOIN VENDEDOR v ON e.ID = v.ID_EMPLEADO
             WHERE e.USERNAME = ? 
               AND e.ESTADO = 1
         `;
@@ -49,18 +46,12 @@ const AuthModel = {
                 return null; // Contraseña incorrecta
             }
 
-            // Verificar que tenga ID_VENDEDOR (todos deben tenerlo según tu BD)
-            if (!user.ID_VENDEDOR) {
-                console.warn(`⚠️ Usuario ${username} no tiene registro en tabla VENDEDOR`);
-            }
-
             return {
                 id_empleado: user.ID_EMPLEADO,
                 nombre: user.NOMBRE,
                 apellido: user.APELLIDO,
                 username: user.USERNAME,
                 rol: user.ROL,
-                id_vendedor: user.ID_VENDEDOR,
                 area: user.AREA,
                 email: user.EMAIL
             };
@@ -78,13 +69,13 @@ const AuthModel = {
     async findEmployeeByEmail(email) {
         const query = `
             SELECT 
-                e.ID as ID_EMPLEADO,
+                e.ID_EMPLEADO,
                 e.NOMBRE,
                 e.APELLIDO,
                 e.USERNAME,
-                e.GMAIL as EMAIL
+                e.EMAIL
             FROM EMPLEADOS e
-            WHERE e.GMAIL = ? AND e.ESTADO = 1
+            WHERE e.EMAIL = ? AND e.ESTADO = 1
         `;
 
         try {
@@ -104,11 +95,11 @@ const AuthModel = {
     async findEmployeeByUsername(username) {
         const query = `
             SELECT 
-                e.ID as ID_EMPLEADO,
+                e.ID_EMPLEADO,
                 e.NOMBRE,
                 e.APELLIDO,
                 e.USERNAME,
-                e.GMAIL as EMAIL
+                e.EMAIL
             FROM EMPLEADOS e
             WHERE e.USERNAME = ? AND e.ESTADO = 1
         `;
@@ -184,7 +175,7 @@ const AuthModel = {
                 e.NOMBRE,
                 e.APELLIDO
             FROM PASSWORD_RESET_TOKENS t
-            JOIN EMPLEADOS e ON t.ID_EMPLEADO = e.ID
+            JOIN EMPLEADOS e ON t.ID_EMPLEADO = e.ID_EMPLEADO
             WHERE t.TOKEN = ?
         `;
 
@@ -244,11 +235,11 @@ const AuthModel = {
             // Encriptar nueva contraseña con bcrypt
             const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-            // Actualizar contraseña del empleado
+            // Actualizar contraseña del empleado y activar cuenta (ESTADO=1)
             const updatePasswordQuery = `
                 UPDATE EMPLEADOS 
-                SET PASSWORD_HASH = ?
-                WHERE ID = ?
+                SET PASSWORD_HASH = ?, ESTADO = 1
+                WHERE ID_EMPLEADO = ?
             `;
 
             await db.query(updatePasswordQuery, [hashedPassword, tokenData.id_empleado]);
@@ -267,6 +258,60 @@ const AuthModel = {
             return true;
         } catch (error) {
             console.error('❌ Error restableciendo contraseña:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Crear token de bienvenida para nuevo empleado (2 horas de expiración)
+     * Busca sin filtrar por ESTADO porque el empleado recién creado tiene ESTADO=0
+     * @param {string} email - Email del nuevo empleado
+     * @returns {object} Token generado y datos del empleado
+     */
+    async createWelcomePasswordToken(email) {
+        try {
+            // Buscar empleado por email SIN filtrar por estado (es nuevo, ESTADO=0)
+            const query = `
+                SELECT ID_EMPLEADO, NOMBRE, APELLIDO, EMAIL
+                FROM EMPLEADOS
+                WHERE EMAIL = ?
+            `;
+            const [rows] = await db.query(query, [email]);
+            
+            if (rows.length === 0) {
+                console.log(`⚠️ No se encontró empleado con email: ${email}`);
+                return null;
+            }
+
+            const empleado = rows[0];
+
+            // Generar token único
+            const token = crypto.randomBytes(32).toString('hex');
+
+            // Calcular fecha de expiración (2 horas desde ahora)
+            const expiraEn = new Date();
+            expiraEn.setHours(expiraEn.getHours() + 2);
+
+            // Guardar token en la base de datos
+            const insertQuery = `
+                INSERT INTO PASSWORD_RESET_TOKENS (ID_EMPLEADO, TOKEN, EXPIRA_EN)
+                VALUES (?, ?, ?)
+            `;
+
+            await db.query(insertQuery, [empleado.ID_EMPLEADO, token, expiraEn]);
+
+            console.log(`✅ Token de bienvenida creado para: ${email} (expira en 2h)`);
+
+            return {
+                token,
+                empleado: {
+                    nombre: empleado.NOMBRE,
+                    apellido: empleado.APELLIDO,
+                    email: empleado.EMAIL
+                }
+            };
+        } catch (error) {
+            console.error('❌ Error creando token de bienvenida:', error);
             throw error;
         }
     },

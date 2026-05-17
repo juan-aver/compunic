@@ -40,7 +40,7 @@ const Auth = {
                     apellido: data.user.apellido,
                     rol: data.user.rol.toLowerCase(), // 'ADMIN' -> 'admin', 'VENDEDOR' -> 'vendedor'
                     id_empleado: data.user.id_empleado,
-                    id_vendedor: data.user.id_vendedor, // ⭐ IMPORTANTE: Para auto-asignar en ventas
+                    id_empleado: data.user.id_empleado, // ⭐ IMPORTANTE: Para auto-asignar en ventas
                     area: data.user.area,
                     email: data.user.email,
                     timestamp: new Date().getTime()
@@ -90,9 +90,9 @@ const Auth = {
     },
 
     // ⭐ NUEVA FUNCIÓN: Obtener ID_VENDEDOR del usuario logueado
-    getVendedorId: function () {
+    getEmpleadoId: function () {
         const session = sessionStorage.getItem(AUTH_KEY);
-        return session ? JSON.parse(session).id_vendedor : null;
+        return session ? JSON.parse(session).id_empleado : null;
     },
 
     // ⭐ NUEVA FUNCIÓN: Obtener nombre completo del usuario

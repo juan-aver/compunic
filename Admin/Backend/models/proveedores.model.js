@@ -1,12 +1,3 @@
-/*
- * ==========================================
- * MÓDULO: proveedores.model.js
- * PROPÓSITO: Modelo de BD. Define las consultas SQL e interacción con la base de datos directa. ¡Ojo con las inyecciones SQL!
- * FECHA: 8 de abril de 2026
- * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
- */
 // models/proveedores.model.js
 const db = require('../config/db.js');
 
@@ -36,11 +27,12 @@ const Proveedor = {
   },
 
   // Agregar un proveedor nuevo
-  // Nota: Se usa ID_ADMINISTRADOR = 401 por defecto (Miguel Jimenez)
+  // Agregar un proveedor nuevo
+  // Nota: Se usa ID_EMPLEADO = 401 por defecto (Miguel Jimenez)
   agregar: async ({ id_proveedor, nombre_empresa, persona_contacto, telefono, direccion, pagina_web, email }) => {
     const sql = `
       INSERT INTO PROVEEDORES 
-      (ID_PROVEEDOR, NOMBRE_EMPRESA, PERSONA_CONTACTO, TELEFONO, DIRECCION, PAGINA_WEB, EMAIL, ID_ADMINISTRADOR)
+      (ID_PROVEEDOR, NOMBRE_EMPRESA, PERSONA_CONTACTO, TELEFONO, DIRECCION, PAGINA_WEB, EMAIL, ID_EMPLEADO)
       VALUES (?, ?, ?, ?, ?, ?, ?, 401)
     `;
     try {

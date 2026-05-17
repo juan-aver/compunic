@@ -316,7 +316,7 @@ function guardarVenta() {
     let idVendedor = document.getElementById('vendedor-id')?.value;
     if (!idVendedor) {
         const session = Auth.getSession();
-        idVendedor = session?.id_vendedor;
+        idVendedor = session?.id_empleado;
     }
 
     const fecha = document.getElementById('fecha-venta').value;
@@ -334,7 +334,7 @@ function guardarVenta() {
 
     const payload = {
         id_cliente: idCliente,
-        id_vendedor: idVendedor,
+        id_empleado: idVendedor,
         fecha: fecha,
         factura: factura,
         items: itemsVenta.map(item => ({

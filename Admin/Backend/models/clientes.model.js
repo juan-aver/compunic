@@ -4,7 +4,7 @@
  * @date 8 de abril de 2026
  * 
  * Este componente centraliza la lógica respectiva para evitar código espagueti.
- * Estructurado a mano con paciencia y un red bull.
+
  */
 const db = require('../config/db.js');
 
@@ -63,10 +63,10 @@ const Cliente = {
   },
 
   // LLAMADO A PROCEDIMIENTO ALMACENADO sp_NuevoCliente
-  agregarRapido: async (nombre, apellido, telefono, email, id_vendedor) => {
+  agregarRapido: async (nombre, apellido, telefono, email, id_empleado) => {
     try {
       const sql = 'CALL sp_NuevoCliente(?, ?, ?, ?, ?)';
-      const [result] = await db.query(sql, [nombre, apellido, telefono, email, id_vendedor]);
+      const [result] = await db.query(sql, [nombre, apellido, telefono, email, id_empleado]);
       return result;
     } catch (err) {
       throw new Error('Error al registrar cliente rápido: ' + err.message);

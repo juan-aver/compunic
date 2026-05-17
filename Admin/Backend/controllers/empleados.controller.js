@@ -1,75 +1,211 @@
-/*
- * ==========================================
- * MÓDULO: empleados.controller.js
- * PROPÓSITO: Controlador maestro. Manejador de requests y responses. La lógica de negocio vive aquí.
- * FECHA: 8 de abril de 2026
- * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
- */
-const Empleado = require('../models/empleados.model.js');
+const Empleado = require('../models/empleados.model');
+const AuthModel = require('../models/auth.model');
+const EmailService = require('../services/email.service');
 
-const empleadosController = {
-    listar: async (req, res) => {
+// Controlador para todas las operaciones de empleados
+const EmpleadosController = {
+    // ---- OBTENER TODOS ----
+    obtenerTodos: async (req, res) => {
         try {
             const resultados = await Empleado.obtenerTodos();
             res.json(resultados);
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: 'Error al listar empleados' });
+        } catch (error) {
+            res.status(500).send(error.message);
         }
     },
-
-    buscar: async (req, res) => {
-        const { q } = req.query;
-        if (!q) return res.json([]);
+    obtenerVendedores: async (req, res) => {
         try {
-            const resultados = await Empleado.buscar(q);
+            const resultados = await Empleado.obtenerTodos('VENDEDOR');
             res.json(resultados);
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: 'Error al buscar empleados' });
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
+    obtenerAdministradores: async (req, res) => {
+        try {
+            const resultados = await Empleado.obtenerTodos('ADMIN');
+            res.json(resultados);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
+    obtenerTemporales: async (req, res) => {
+        try {
+            const resultados = await Empleado.obtenerTodos('TEMPORAL');
+            res.json(resultados);
+        } catch (error) {
+            res.status(500).send(error.message);
         }
     },
 
-    agregar: async (req, res) => {
-        const { nombre, apellido, sexo, f_nacimiento } = req.body;
-
-        if (!nombre || !apellido) {
-            return res.status(400).json({ error: 'Nombre y Apellido son obligatorios' });
-        }
-
+    // ---- BUSCAR ----
+    buscarTodos: async (req, res) => {
         try {
-            const result = await Empleado.agregar([nombre, apellido, sexo, f_nacimiento]);
-            res.json({ mensaje: 'Empleado creado', id: result.insertId });
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: 'Error al crear empleado' });
+            const termino = req.params.termino;
+            const resultados = await Empleado.buscar(termino);
+            res.json(resultados);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
+    buscarVendedores: async (req, res) => {
+        try {
+            const termino = req.params.termino;
+            const resultados = await Empleado.buscar(termino, 'VENDEDOR');
+            res.json(resultados);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
+    buscarAdministradores: async (req, res) => {
+        try {
+            const termino = req.params.termino;
+            const resultados = await Empleado.buscar(termino, 'ADMIN');
+            res.json(resultados);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
+    buscarTemporales: async (req, res) => {
+        try {
+            const termino = req.params.termino;
+            const resultados = await Empleado.buscar(termino, 'TEMPORAL');
+            res.json(resultados);
+        } catch (error) {
+            res.status(500).send(error.message);
         }
     },
 
-    actualizar: async (req, res) => {
-        const { id } = req.params;
-        const { nombre, apellido, sexo, f_nacimiento } = req.body;
+    // ---- AGREGAR ----
+    agregarEmpleado: async (req, res) => {
         try {
-            await Empleado.actualizar([nombre, apellido, sexo, f_nacimiento, id]);
-            res.json({ mensaje: 'Empleado actualizado' });
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: 'Error al actualizar empleado' });
+            const { nombre, apellido, telefono, email, direccion, sexo, f_nacimiento, area, horario, username, rol } = req.body;
+            
+            // Validar ROL obligatorio
+            if (!rol || !['ADMIN', 'VENDEDOR', 'TEMPORAL'].includes(rol)) {
+                return res.status(400).send('Rol inválido o faltante');
+            }
+
+            // ADMIN y VENDEDOR inician como ESTADO=0 (inactivo) hasta que creen su contraseña
+            // TEMPORAL inicia como ESTADO=1 (activo) porque no tiene acceso al sistema
+            const estadoInicial = (rol === 'TEMPORAL') ? 1 : 0;
+
+            const datos = [
+                nombre || null, 
+                apellido || null, 
+                telefono || null, 
+                email || null, 
+                direccion || null, 
+                sexo || null, 
+                f_nacimiento || null, 
+                area || null, 
+                horario || null, 
+                username || null, 
+                rol,
+                estadoInicial
+            ];
+
+            const result = await Empleado.agregar(datos);
+            const nuevoId = result.insertId;
+
+            // Si es ADMIN o VENDEDOR, enviar correo para crear contraseña
+            if ((rol === 'ADMIN' || rol === 'VENDEDOR') && email) {
+                try {
+                    // Crear token de bienvenida (2 horas de expiración)
+                    const tokenResult = await AuthModel.createWelcomePasswordToken(email);
+                    
+                    if (tokenResult) {
+                        const nombreCompleto = `${nombre} ${apellido}`;
+                        await EmailService.sendNewEmployeePasswordEmail(
+                            email,
+                            tokenResult.token,
+                            nombreCompleto,
+                            rol
+                        );
+                        console.log(`📧 Correo de bienvenida enviado a ${email}`);
+                        
+                        return res.status(201).json({ 
+                            id: nuevoId, 
+                            mensaje: `Empleado agregado correctamente. Se envió un correo a ${email} para que cree su contraseña.`,
+                            correoEnviado: true
+                        });
+                    }
+                } catch (emailError) {
+                    console.error('⚠️ Error enviando correo de bienvenida:', emailError);
+                    // El empleado se creó, pero el correo falló - no es crítico
+                    return res.status(201).json({ 
+                        id: nuevoId, 
+                        mensaje: 'Empleado agregado, pero hubo un error al enviar el correo de bienvenida. Se puede reenviar manualmente.',
+                        correoEnviado: false
+                    });
+                }
+            }
+
+            // Para temporales o sin email
+            res.status(201).json({ 
+                id: nuevoId, 
+                mensaje: 'Empleado agregado correctamente',
+                correoEnviado: false
+            });
+        } catch (error) {
+            res.status(500).send(error.message);
         }
     },
 
-    eliminar: async (req, res) => {
-        const { id } = req.params;
+    // ---- ACTUALIZAR ----
+    actualizarEmpleado: async (req, res) => {
         try {
+            const id = req.params.id;
+            const { nombre, apellido, telefono, email, direccion, sexo, f_nacimiento, area, horario, username, rol } = req.body;
+            
+            if (!rol || !['ADMIN', 'VENDEDOR', 'TEMPORAL'].includes(rol)) {
+                return res.status(400).send('Rol inválido o faltante');
+            }
+
+            const datos = [
+                nombre || null, 
+                apellido || null, 
+                telefono || null, 
+                email || null, 
+                direccion || null, 
+                sexo || null, 
+                f_nacimiento || null, 
+                area || null, 
+                horario || null, 
+                username || null, 
+                rol,
+                id // ID_EMPLEADO
+            ];
+
+            await Empleado.actualizar(datos);
+            res.send('Empleado actualizado correctamente');
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
+
+    // ---- ELIMINAR ----
+    eliminarEmpleado: async (req, res) => {
+        try {
+            const id = req.params.id;
             await Empleado.eliminar(id);
-            res.json({ mensaje: 'Empleado eliminado' });
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: 'Error al eliminar empleado' });
+            res.send('Empleado eliminado (soft delete) correctamente');
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
+
+    // ---- CAMBIAR ESTADO ----
+    cambiarEstado: async (req, res) => {
+        try {
+            const id = req.params.id;
+            const { estado } = req.body;
+            await Empleado.cambiarEstado(id, estado);
+            res.send('Estado actualizado correctamente');
+        } catch (error) {
+            res.status(500).send(error.message);
         }
     }
 };
 
-module.exports = empleadosController;
+module.exports = EmpleadosController;

@@ -1,12 +1,3 @@
-/*
- * ==========================================
- * MÓDULO: productos.model.js
- * PROPÓSITO: Modelo de BD. Define las consultas SQL e interacción con la base de datos directa. ¡Ojo con las inyecciones SQL!
- * FECHA: 8 de abril de 2026
- * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
- */
 // models/productos.model.js
 
 const db = require('../config/db.js');
@@ -14,7 +5,7 @@ const db = require('../config/db.js');
 const Producto = {
   obtenerTodos: async () => {
     try {
-      // 🛑 CONSULTA SQL REESCRITA PARA CALCULAR STOCK Y UNIR GARANTÍA
+      // CONSULTA SQL REESCRITA PARA CALCULAR STOCK Y UNIR GARANTÍA
       const query = `
         SELECT 
           p.ID_PRODUCTO,
@@ -130,12 +121,12 @@ const Producto = {
     try {
       let result;
       if (datos.length === 11) {
-        // [id_producto, nombre, modelo, descripcion, imagen_url, precio_compra, precio_venta, id_marca, id_administrador, id_garantias, id_proveedor]
-        const sqlWithId = `INSERT INTO PRODUCTOS (ID_PRODUCTO, NOMBRE_PRODUCTO, MODELO, DESCRIPCION, IMAGEN_URL, PRECIO_COMPRA, PRECIO_VENTA, ID_MARCA, ID_ADMINISTRADOR, ID_GARANTIAS, ID_PROVEEDOR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        // [id_producto, nombre, modelo, descripcion, imagen_url, precio_compra, precio_venta, id_marca, id_empleado, id_garantias, id_proveedor]
+        const sqlWithId = `INSERT INTO PRODUCTOS (ID_PRODUCTO, NOMBRE_PRODUCTO, MODELO, DESCRIPCION, IMAGEN_URL, PRECIO_COMPRA, PRECIO_VENTA, ID_MARCA, ID_EMPLEADO, ID_GARANTIAS, ID_PROVEEDOR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         [result] = await db.query(sqlWithId, datos);
       } else {
-        // [nombre, modelo, descripcion, imagen_url, precio_compra, precio_venta, id_marca, id_administrador, id_garantias, id_proveedor]
-        const sql = `INSERT INTO PRODUCTOS (NOMBRE_PRODUCTO, MODELO, DESCRIPCION, IMAGEN_URL, PRECIO_COMPRA, PRECIO_VENTA, ID_MARCA, ID_ADMINISTRADOR, ID_GARANTIAS, ID_PROVEEDOR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        // [nombre, modelo, descripcion, imagen_url, precio_compra, precio_venta, id_marca, id_empleado, id_garantias, id_proveedor]
+        const sql = `INSERT INTO PRODUCTOS (NOMBRE_PRODUCTO, MODELO, DESCRIPCION, IMAGEN_URL, PRECIO_COMPRA, PRECIO_VENTA, ID_MARCA, ID_EMPLEADO, ID_GARANTIAS, ID_PROVEEDOR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         [result] = await db.query(sql, datos);
       }
       return result;
@@ -147,7 +138,7 @@ const Producto = {
   actualizar: async (datos) => {
     const sql = `
       UPDATE PRODUCTOS 
-      SET NOMBRE_PRODUCTO = ?, MODELO = ?, DESCRIPCION = ?, IMAGEN_URL = ?, PRECIO_COMPRA = ?, PRECIO_VENTA = ?, ID_MARCA = ?, ID_ADMINISTRADOR = ?, ID_GARANTIAS = ?, ID_PROVEEDOR = ?
+      SET NOMBRE_PRODUCTO = ?, MODELO = ?, DESCRIPCION = ?, IMAGEN_URL = ?, PRECIO_COMPRA = ?, PRECIO_VENTA = ?, ID_MARCA = ?, ID_EMPLEADO = ?, ID_GARANTIAS = ?, ID_PROVEEDOR = ?
       WHERE ID_PRODUCTO = ?
     `;
     try {

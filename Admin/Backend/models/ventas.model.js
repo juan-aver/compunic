@@ -1,12 +1,4 @@
-/*
- * ==========================================
- * MÓDULO: ventas.model.js
- * PROPÓSITO: Modelo de BD. Define las consultas SQL e interacción con la base de datos directa. ¡Ojo con las inyecciones SQL!
- * FECHA: 8 de abril de 2026
- * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
- */
+
 // ventas.model.js
 
 const db = require('../config/db');
@@ -24,8 +16,7 @@ const Ventas = {
                 CONCAT(e.NOMBRE, ' ', e.APELLIDO) AS NOMBRE_VENDEDOR
             FROM VENTAS v
             INNER JOIN CLIENTES c ON v.ID_CLIENTE = c.ID_CLIENTE
-            LEFT JOIN VENDEDOR ven ON v.ID_VENDEDOR = ven.ID_VENDEDOR
-            LEFT JOIN EMPLEADOS e ON ven.ID_EMPLEADO = e.ID
+            LEFT JOIN EMPLEADOS e ON v.ID_EMPLEADO = e.ID_EMPLEADO
             ORDER BY v.ID_VENTA DESC
         `;
 
@@ -43,8 +34,8 @@ const Ventas = {
       const tempFactura = `TEMP-${Date.now()}`;
 
       const [resultVenta] = await connection.query(
-        'INSERT INTO VENTAS (FECHA, ID_CLIENTE, ID_VENDEDOR, FACTURA) VALUES (?, ?, ?, ?)',
-        [venta.fecha, venta.id_cliente, venta.id_vendedor, tempFactura]
+        'INSERT INTO VENTAS (FECHA, ID_CLIENTE, ID_EMPLEADO, FACTURA) VALUES (?, ?, ?, ?)',
+        [venta.fecha, venta.id_cliente, venta.id_empleado, tempFactura]
       );
       const idVenta = resultVenta.insertId;
 
@@ -99,8 +90,7 @@ const Ventas = {
         CONCAT(e.NOMBRE, ' ', e.APELLIDO) AS NOMBRE_VENDEDOR
       FROM VENTAS v
       INNER JOIN CLIENTES c ON v.ID_CLIENTE = c.ID_CLIENTE
-      LEFT JOIN VENDEDOR ven ON v.ID_VENDEDOR = ven.ID_VENDEDOR
-      LEFT JOIN EMPLEADOS e ON ven.ID_EMPLEADO = e.ID
+      LEFT JOIN EMPLEADOS e ON v.ID_EMPLEADO = e.ID_EMPLEADO
       WHERE v.ID_VENTA = ?
       ORDER BY v.ID_VENTA DESC
     `;
@@ -132,10 +122,10 @@ const Ventas = {
   },
 
   // LLAMADO A PROCEDIMIENTO ALMACENADO sp_VentasPorVendedor
-  obtenerPorVendedor: async (idVendedor) => {
+  obtenerPorVendedor: async (id_empleado) => {
     try {
       const sql = 'CALL sp_VentasPorVendedor(?)';
-      const [resultados] = await db.query(sql, [idVendedor]);
+      const [resultados] = await db.query(sql, [id_empleado]);
       return resultados[0];
     } catch (err) {
       throw new Error('Error al obtener ventas del vendedor: ' + err.message);

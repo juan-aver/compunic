@@ -20,14 +20,14 @@ exports.findAll = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  if (!req.body.id_cliente || !req.body.id_vendedor || !req.body.items || req.body.items.length === 0) {
+  if (!req.body.id_cliente || !req.body.id_empleado || !req.body.items || req.body.items.length === 0) {
     return res.status(400).send({ message: "Contenido vacío." });
   }
 
   const venta = {
     fecha: req.body.fecha || new Date(),
     id_cliente: req.body.id_cliente,
-    id_vendedor: req.body.id_vendedor,
+    id_empleado: req.body.id_empleado,
     items: req.body.items
   };
 
@@ -94,12 +94,12 @@ exports.findById = async (req, res) => {
 // LLAMADO A PROCEDIMIENTO ALMACENADO sp_VentasPorVendedor
 exports.findByVendedor = async (req, res) => {
   try {
-    const idVendedor = req.params.id;
-    if (!idVendedor) {
-      return res.status(400).send({ message: "Se requiere el ID del vendedor." });
+    const idEmpleado = req.params.id;
+    if (!idEmpleado) {
+      return res.status(400).send({ message: "Se requiere el ID del empleado." });
     }
 
-    const ventasVendedor = await Ventas.obtenerPorVendedor(idVendedor);
+    const ventasVendedor = await Ventas.obtenerPorVendedor(idEmpleado);
     res.send(ventasVendedor);
   } catch (err) {
     res.status(500).send({ message: err.message });

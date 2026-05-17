@@ -1,19 +1,25 @@
-/**
- * @file empleados.routes.js
- * @description Rutas del API. Define los endpoints. Siempre validar auth antes de dar acceso.
- * @date 8 de abril de 2026
- * 
- * Este componente centraliza la lógica respectiva para evitar código espagueti.
- * Estructurado a mano con paciencia y un red bull.
- */
 const express = require('express');
 const router = express.Router();
-const controlador = require('../controllers/empleados.controller.js');
+const empleadosController = require('../controllers/empleados.controller');
 
-router.get('/buscar', controlador.buscar);
-router.get('/', controlador.listar);
-router.post('/', controlador.agregar);
-router.put('/:id', controlador.actualizar);
-router.delete('/:id', controlador.eliminar);
+// Rutas para Vendedores
+router.get('/vendedores', empleadosController.obtenerVendedores);
+router.get('/vendedores/buscar/:termino', empleadosController.buscarVendedores);
+
+// Rutas para Administradores
+router.get('/administradores', empleadosController.obtenerAdministradores);
+router.get('/administradores/buscar/:termino', empleadosController.buscarAdministradores);
+
+// Rutas para Temporales
+router.get('/temporales', empleadosController.obtenerTemporales);
+router.get('/temporales/buscar/:termino', empleadosController.buscarTemporales);
+
+// Rutas Generales de CRUD (Sirven para todos, se diferencian por el 'rol' que venga en el body)
+router.get('/', empleadosController.obtenerTodos);
+router.get('/buscar/:termino', empleadosController.buscarTodos);
+router.post('/', empleadosController.agregarEmpleado);
+router.put('/:id', empleadosController.actualizarEmpleado);
+router.delete('/:id', empleadosController.eliminarEmpleado);
+router.patch('/:id/estado', empleadosController.cambiarEstado);
 
 module.exports = router;

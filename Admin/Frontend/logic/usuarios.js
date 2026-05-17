@@ -1,316 +1,132 @@
-/*
- * ==========================================
- * MÓDULO: usuarios.js
- * PROPÓSITO: Lógica clave del sistema modularizado.
- * FECHA: 8 de abril de 2026
- * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
- */
-function cargarClientes() {
-    // TODO: Refactorizar esto después... o tal vez nunca jajaja
 
-    fetch(`${API_BASE}/clientes`)
-        .then(res => res.json())
-        .then(clientes => {
-            const tbody = document.getElementById('tablaClientes');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+// ========================================================================================================
+// LÓGICA DE EMPLEADOS (UNIFICADA) — Con acordeones y envío de correo de bienvenida
+// ========================================================================================================
 
-            clientes.forEach(c => {
-                const tr = document.createElement('tr');
-                tr.style.cursor = "pointer";
-                tr.onclick = () => seleccionarCliente(c);
-
-                tr.innerHTML = `
-          <td>${c.ID_CLIENTE}</td>
-          <td>${c.NOMBRE}</td>
-          <td>${c.APELLIDO}</td>
-          <td>${c.TELEFONO}</td>
-          <td>${c.EMAIL}</td>
-        `;
-                tbody.appendChild(tr);
-            });
-        })
-        .catch(err => console.error('Error cargando clientes:', err));
-}
-
-function buscarCliente() {
-    const termino = document.getElementById('buscar_nombre').value.trim();
-    if (!termino) {
-        cargarClientes();
-        return;
+// Inicializar eventos del módulo de empleados (llamado por el router al cargar la vista)
+function initEmpleadosEventos() {
+    const rolSelect = document.getElementById('ROL');
+    if(rolSelect) {
+        rolSelect.addEventListener('change', mostrarCamposPorRol);
     }
-
-    fetch(`${API_BASE}/clientes/buscar?q=${encodeURIComponent(termino)}`)
-        .then(res => res.json())
-        .then(clientes => {
-            const tbody = document.getElementById('tablaClientes');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            if (clientes.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5">No se encontraron clientes</td></tr>';
-                return;
-            }
-
-            clientes.forEach(c => {
-                const tr = document.createElement('tr');
-                tr.style.cursor = "pointer";
-                tr.onclick = () => seleccionarCliente(c);
-
-                tr.innerHTML = `
-          <td>${c.ID_CLIENTE}</td>
-          <td>${c.NOMBRE}</td>
-          <td>${c.APELLIDO}</td>
-          <td>${c.TELEFONO}</td>
-          <td>${c.EMAIL}</td>
-        `;
-                tbody.appendChild(tr);
-            });
-        })
-        .catch(err => console.error('Error buscando clientes:', err));
 }
 
-function recolectarDatosCliente() {
-    return {
-        nombre: document.getElementById('NOMBRE').value,
-        apellido: document.getElementById('APELLIDO').value,
-        telefono: document.getElementById('TELEFONO').value,
-        email: document.getElementById('EMAIL').value
+// ============================================
+// FUNCIONES DE ACORDEÓN
+// ============================================
+
+function toggleAcordeon(contenidoId, headerEl) {
+    const contenido = document.getElementById(contenidoId);
+    const flecha = headerEl.querySelector('.acordeon-flecha');
+    
+    if (contenido.classList.contains('acordeon-abierto')) {
+        contenido.classList.remove('acordeon-abierto');
+        if (flecha) flecha.classList.add('cerrado');
+    } else {
+        contenido.classList.add('acordeon-abierto');
+        if (flecha) flecha.classList.remove('cerrado');
+    }
+}
+
+function abrirAcordeon(seccionId, contenidoId) {
+    const seccion = document.getElementById(seccionId);
+    const contenido = document.getElementById(contenidoId);
+    if (seccion) {
+        seccion.style.display = 'block';
+        if (contenido) {
+            contenido.classList.add('acordeon-abierto');
+            const flecha = seccion.querySelector('.acordeon-flecha');
+            if (flecha) flecha.classList.remove('cerrado');
+        }
+    }
+}
+
+function cerrarAcordeon(seccionId) {
+    const seccion = document.getElementById(seccionId);
+    if (seccion) seccion.style.display = 'none';
+}
+
+// ============================================
+// MOSTRAR/OCULTAR CAMPOS SEGÚN ROL
+// ============================================
+
+function mostrarCamposPorRol() {
+    const rol = document.getElementById('ROL').value;
+
+    // Ocultar todos los acordeones primero
+    cerrarAcordeon('acordeon-generales');
+    cerrarAcordeon('acordeon-acceso');
+    cerrarAcordeon('acordeon-vendedor');
+    cerrarAcordeon('acordeon-temporal');
+
+    if (!rol) return; // Si no hay rol, todo queda oculto
+
+    // Siempre mostrar datos generales
+    abrirAcordeon('acordeon-generales', 'contenido-generales');
+
+    if (rol === 'ADMIN') {
+        abrirAcordeon('acordeon-acceso', 'contenido-acceso');
+    } else if (rol === 'VENDEDOR') {
+        abrirAcordeon('acordeon-acceso', 'contenido-acceso');
+        abrirAcordeon('acordeon-vendedor', 'contenido-vendedor');
+    } else if (rol === 'TEMPORAL') {
+        abrirAcordeon('acordeon-temporal', 'contenido-temporal');
+    }
+}
+
+// ============================================
+// RENDERIZAR FILA DE TABLA (Reutilizable)
+// ============================================
+
+function renderFilaEmpleado(e) {
+    const tr = document.createElement('tr');
+    
+    // Clicking row selects employee (except when clicking the toggle)
+    tr.onclick = (event) => {
+        if(event.target.tagName !== 'INPUT' && !event.target.classList.contains('slider') && !event.target.classList.contains('estado-texto')) {
+            seleccionarEmpleado(e);
+        }
     };
+    tr.style.cursor = "pointer";
+
+    const isChecked = e.ESTADO === 1 ? 'checked' : '';
+    const estadoTexto = e.ESTADO === 1 ? 'Activo' : 'Inactivo';
+    const estadoClase = e.ESTADO === 1 ? 'activo' : 'inactivo';
+    
+    // Determinar la clase del badge según el rol
+    let badgeClase = 'temporal';
+    if (e.ROL === 'ADMIN') badgeClase = 'admin';
+    else if (e.ROL === 'VENDEDOR') badgeClase = 'vendedor';
+
+    // Sexo legible
+    let sexoTexto = '';
+    if (e.SEXO === 'M') sexoTexto = 'Masculino';
+    else if (e.SEXO === 'F') sexoTexto = 'Femenino';
+
+    tr.innerHTML = `
+      <td>${e.ID_EMPLEADO}</td>
+      <td>${e.NOMBRE} ${e.APELLIDO}</td>
+      <td><span class="badge-rol ${badgeClase}">${e.ROL}</span></td>
+      <td>${e.EMAIL || ''}</td>
+      <td>${e.TELEFONO || ''}</td>
+      <td>${sexoTexto}</td>
+      <td>${e.DIRECCION || '—'}</td>
+      <td onclick="event.stopPropagation();">
+        <div class="estado-toggle-container">
+          <label class="switch">
+            <input type="checkbox" onchange="cambiarEstadoEmpleado(${e.ID_EMPLEADO}, this.checked)" ${isChecked}>
+            <span class="slider round"></span>
+          </label>
+          <span class="estado-texto ${estadoClase}">${estadoTexto}</span>
+        </div>
+      </td>
+    `;
+    return tr;
 }
 
-function seleccionarCliente(c) {
-    document.getElementById('NOMBRE').value = c.NOMBRE;
-    document.getElementById('APELLIDO').value = c.APELLIDO;
-    document.getElementById('TELEFONO').value = c.TELEFONO;
-    document.getElementById('EMAIL').value = c.EMAIL;
-
-    const form = document.getElementById('formulario-clientes');
-    form.dataset.idCliente = c.ID_CLIENTE;
-    console.log("Cliente seleccionado:", c.ID_CLIENTE);
-}
-
-function agregarCliente() {
-    const datos = recolectarDatosCliente();
-    if (!datos.nombre || !datos.apellido) return alert("Nombre y Apellido son obligatorios");
-
-    fetch(`${API_BASE}/clientes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datos)
-    })
-        .then(res => res.json())
-        .then(() => {
-            alert('Cliente agregado');
-            limpiarFormularioClientes();
-            cargarClientes();
-        })
-        .catch(err => console.error(err));
-}
-
-function modificarCliente() {
-    const form = document.getElementById('formulario-clientes');
-    const id = form.dataset.idCliente;
-    if (!id) return alert("Selecciona un cliente de la tabla");
-
-    fetch(`${API_BASE}/clientes/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(recolectarDatosCliente())
-    })
-        .then(res => res.json())
-        .then(() => {
-            alert('Cliente actualizado');
-            limpiarFormularioClientes();
-            cargarClientes();
-        })
-        .catch(err => console.error(err));
-}
-
-function eliminarCliente() {
-    const form = document.getElementById('formulario-clientes');
-    const id = form.dataset.idCliente;
-    if (!id) return alert("Selecciona un cliente de la tabla");
-    if (!confirm("¿Eliminar este cliente?")) return;
-
-    fetch(`${API_BASE}/clientes/${id}`, { method: 'DELETE' })
-        .then(res => res.json())
-        .then(() => {
-            alert('Cliente eliminado');
-            limpiarFormularioClientes();
-            cargarClientes();
-        })
-        .catch(err => console.error(err));
-}
-
-function limpiarFormularioClientes() {
-    const form = document.getElementById('formulario-clientes');
-    if (form) {
-        form.reset();
-        delete form.dataset.idCliente;
-    }
-}
-
-// ========================================================================================================
-// LÓGICA DE VENDEDORES
-// ========================================================================================================
-
-function cargarVendedores() {
-    fetch(`${API_BASE}/vendedores`)
-        .then(res => res.json())
-        .then(vendedores => {
-            const tbody = document.getElementById('tablaVendedores');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            vendedores.forEach(v => {
-                const tr = document.createElement('tr');
-                tr.style.cursor = "pointer";
-                tr.onclick = () => seleccionarVendedor(v);
-
-                tr.innerHTML = `
-          <td>${v.ID_VENDEDOR}</td>
-          <td>${v.AREA || ''}</td>
-          <td>${v.HORARIO || ''}</td>
-          <td>${v.TELEFONO || ''}</td>
-          <td>${v.EMAIL || ''}</td>
-          <td>${v.ID_EMPLEADO || ''}</td>
-        `;
-                tbody.appendChild(tr);
-            });
-        })
-        .catch(err => console.error('Error cargando vendedores:', err));
-}
-
-function recolectarDatosVendedor() {
-    return {
-        area: document.getElementById('AREA').value,
-        horario: document.getElementById('HORARIO').value,
-        telefono: document.getElementById('TELEFONO').value,
-        email: document.getElementById('EMAIL').value,
-        id_empleado: document.getElementById('ID_EMPLEADO').value
-    };
-}
-
-function seleccionarVendedor(v) {
-    document.getElementById('AREA').value = v.AREA || '';
-    document.getElementById('HORARIO').value = v.HORARIO || '';
-    document.getElementById('TELEFONO').value = v.TELEFONO || '';
-    document.getElementById('EMAIL').value = v.EMAIL || '';
-    document.getElementById('ID_EMPLEADO').value = v.ID_EMPLEADO || '';
-
-    const form = document.getElementById('formulario-vendedores');
-    form.dataset.idVendedor = v.ID_VENDEDOR;
-    console.log("Vendedor seleccionado:", v.ID_VENDEDOR);
-}
-
-function agregarVendedor() {
-    const datos = recolectarDatosVendedor();
-    if (!datos.area || !datos.id_empleado) return alert("Área e ID Empleado son obligatorios");
-
-    fetch(`${API_BASE}/vendedores`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datos)
-    })
-        .then(res => res.json())
-        .then(() => {
-            alert('Vendedor agregado');
-            limpiarFormularioVendedores();
-            cargarVendedores();
-        })
-        .catch(err => console.error(err));
-}
-
-function buscarVendedor() {
-    const termino = document.getElementById('buscar_vendedor').value.trim();
-    if (!termino) {
-        cargarVendedores();
-        return;
-    }
-
-    fetch(`${API_BASE}/vendedores/buscar?q=${encodeURIComponent(termino)}`)
-        .then(res => res.json())
-        .then(vendedores => {
-            const tbody = document.getElementById('tablaVendedores');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            if (vendedores.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6">No se encontraron vendedores</td></tr>';
-                return;
-            }
-
-            vendedores.forEach(v => {
-                const tr = document.createElement('tr');
-                tr.style.cursor = "pointer";
-                tr.onclick = () => seleccionarVendedor(v);
-
-                tr.innerHTML = `
-          <td>${v.ID_VENDEDOR}</td>
-          <td>${v.AREA || ''}</td>
-          <td>${v.HORARIO || ''}</td>
-          <td>${v.TELEFONO || ''}</td>
-          <td>${v.EMAIL || ''}</td>
-          <td>${v.ID_EMPLEADO || ''}</td>
-        `;
-                tbody.appendChild(tr);
-            });
-        })
-        .catch(err => console.error('Error buscando vendedores:', err));
-}
-
-function modificarVendedor() {
-    const form = document.getElementById('formulario-vendedores');
-    const id = form.dataset.idVendedor;
-    if (!id) return alert("Selecciona un vendedor de la tabla");
-
-    fetch(`${API_BASE}/vendedores/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(recolectarDatosVendedor())
-    })
-        .then(res => res.json())
-        .then(() => {
-            alert('Vendedor actualizado');
-            limpiarFormularioVendedores();
-            cargarVendedores();
-        })
-        .catch(err => console.error(err));
-}
-
-function eliminarVendedor() {
-    const form = document.getElementById('formulario-vendedores');
-    const id = form.dataset.idVendedor;
-    if (!id) return alert("Selecciona un vendedor de la tabla");
-    if (!confirm("¿Eliminar este vendedor?")) return;
-
-    fetch(`${API_BASE}/vendedores/${id}`, { method: 'DELETE' })
-        .then(async res => {
-            if (!res.ok) throw new Error("No se puede eliminar (quizás tiene clientes asignados)");
-            return res.json();
-        })
-        .then(() => {
-            alert('Vendedor eliminado');
-            limpiarFormularioVendedores();
-            cargarVendedores();
-        })
-        .catch(err => alert(err.message));
-}
-
-function limpiarFormularioVendedores() {
-    const form = document.getElementById('formulario-vendedores');
-    if (form) {
-        form.reset();
-        delete form.dataset.idVendedor;
-    }
-}
-
-// ========================================================================================================
-// LÓGICA DE EMPLEADOS
-// ========================================================================================================
+// ============================================
+// CARGAR EMPLEADOS
+// ============================================
 
 function cargarEmpleados() {
     fetch(`${API_BASE}/empleados`)
@@ -321,47 +137,92 @@ function cargarEmpleados() {
             tbody.innerHTML = '';
 
             empleados.forEach(e => {
-                const tr = document.createElement('tr');
-                tr.style.cursor = "pointer";
-                tr.onclick = () => seleccionarEmpleado(e);
-
-                const fecha = e.F_NACIMIENTO ? new Date(e.F_NACIMIENTO).toISOString().split('T')[0] : '';
-
-                tr.innerHTML = `
-          <td>${e.ID}</td>
-          <td>${e.NOMBRE}</td>
-          <td>${e.APELLIDO}</td>
-          <td>${e.SEXO}</td>
-          <td>${fecha}</td>
-        `;
-                tbody.appendChild(tr);
+                tbody.appendChild(renderFilaEmpleado(e));
             });
         })
         .catch(err => console.error('Error cargando empleados:', err));
 }
 
+// ============================================
+// CAMBIAR ESTADO (Toggle)
+// ============================================
+
+function cambiarEstadoEmpleado(id, isActivo) {
+    const nuevoEstado = isActivo ? 1 : 0;
+    fetch(`${API_BASE}/empleados/${id}/estado`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: nuevoEstado })
+    })
+    .then(res => {
+        if(!res.ok) throw new Error("Error al cambiar estado");
+        console.log(`Estado de empleado ${id} actualizado a ${nuevoEstado}`);
+        // Actualizar solo el texto del toggle sin recargar todo
+        cargarEmpleados();
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Hubo un error al actualizar el estado del empleado.");
+        cargarEmpleados(); // Reload to reset toggle visual state
+    });
+}
+
+// ============================================
+// RECOLECTAR DATOS DEL FORMULARIO (Sin password)
+// ============================================
+
 function recolectarDatosEmpleado() {
     return {
+        rol: document.getElementById('ROL').value,
         nombre: document.getElementById('NOMBRE').value,
         apellido: document.getElementById('APELLIDO').value,
         sexo: document.getElementById('SEXO').value,
-        f_nacimiento: document.getElementById('F_NACIMIENTO').value
+        f_nacimiento: document.getElementById('F_NACIMIENTO').value,
+        telefono: document.getElementById('TELEFONO').value,
+        email: document.getElementById('EMAIL').value,
+        username: document.getElementById('USERNAME') ? document.getElementById('USERNAME').value : null,
+        area: document.getElementById('AREA') ? document.getElementById('AREA').value : null,
+        horario: document.getElementById('HORARIO') ? document.getElementById('HORARIO').value : null,
+        direccion: document.getElementById('DIRECCION') ? document.getElementById('DIRECCION').value : null
     };
 }
 
-function seleccionarEmpleado(e) {
-    document.getElementById('NOMBRE').value = e.NOMBRE;
-    document.getElementById('APELLIDO').value = e.APELLIDO;
-    document.getElementById('SEXO').value = e.SEXO;
+// ============================================
+// SELECCIONAR EMPLEADO DE LA TABLA
+// ============================================
 
+function seleccionarEmpleado(e) {
+    // Set Role first and trigger UI update
+    document.getElementById('ROL').value = e.ROL;
+    mostrarCamposPorRol();
+
+    // Populate common fields
+    document.getElementById('NOMBRE').value = e.NOMBRE || '';
+    document.getElementById('APELLIDO').value = e.APELLIDO || '';
+    document.getElementById('TELEFONO').value = e.TELEFONO || '';
+    document.getElementById('EMAIL').value = e.EMAIL || '';
+    document.getElementById('SEXO').value = e.SEXO || '';
+    
     if (e.F_NACIMIENTO) {
         document.getElementById('F_NACIMIENTO').value = new Date(e.F_NACIMIENTO).toISOString().split('T')[0];
+    } else {
+        document.getElementById('F_NACIMIENTO').value = '';
     }
 
+    // Populate specific fields
+    if(document.getElementById('USERNAME')) document.getElementById('USERNAME').value = e.USERNAME || '';
+    if(document.getElementById('AREA')) document.getElementById('AREA').value = e.AREA || '';
+    if(document.getElementById('HORARIO')) document.getElementById('HORARIO').value = e.HORARIO || '';
+    if(document.getElementById('DIRECCION')) document.getElementById('DIRECCION').value = e.DIRECCION || '';
+
     const form = document.getElementById('formulario-empleados');
-    form.dataset.idEmpleado = e.ID;
-    console.log("Empleado seleccionado:", e.ID);
+    form.dataset.idEmpleado = e.ID_EMPLEADO;
+    console.log("Empleado seleccionado:", e.ID_EMPLEADO);
 }
+
+// ============================================
+// BUSCAR EMPLEADO
+// ============================================
 
 function buscarEmpleado() {
     const termino = document.getElementById('buscar_empleado').value.trim();
@@ -370,7 +231,7 @@ function buscarEmpleado() {
         return;
     }
 
-    fetch(`${API_BASE}/empleados/buscar?q=${encodeURIComponent(termino)}`)
+    fetch(`${API_BASE}/empleados/buscar/${encodeURIComponent(termino)}`)
         .then(res => res.json())
         .then(empleados => {
             const tbody = document.getElementById('tablaEmpleados');
@@ -378,33 +239,35 @@ function buscarEmpleado() {
             tbody.innerHTML = '';
 
             if (empleados.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5">No se encontraron empleados</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8">No se encontraron empleados</td></tr>';
                 return;
             }
 
             empleados.forEach(e => {
-                const tr = document.createElement('tr');
-                tr.style.cursor = "pointer";
-                tr.onclick = () => seleccionarEmpleado(e);
-
-                const fecha = e.F_NACIMIENTO ? new Date(e.F_NACIMIENTO).toISOString().split('T')[0] : '';
-
-                tr.innerHTML = `
-          <td>${e.ID}</td>
-          <td>${e.NOMBRE}</td>
-          <td>${e.APELLIDO}</td>
-          <td>${e.SEXO}</td>
-          <td>${fecha}</td>
-        `;
-                tbody.appendChild(tr);
+                tbody.appendChild(renderFilaEmpleado(e));
             });
         })
         .catch(err => console.error('Error buscando empleados:', err));
 }
 
+// ============================================
+// AGREGAR EMPLEADO (con correo de bienvenida)
+// ============================================
+
 function agregarEmpleado() {
     const datos = recolectarDatosEmpleado();
+    if (!datos.rol) return alert("Debe seleccionar un Rol");
     if (!datos.nombre || !datos.apellido) return alert("Nombre y Apellido son obligatorios");
+
+    // Validar email obligatorio para ADMIN/VENDEDOR
+    if ((datos.rol === 'ADMIN' || datos.rol === 'VENDEDOR') && !datos.email) {
+        return alert("El Email es obligatorio para Administradores y Vendedores (se enviará el correo de activación).");
+    }
+
+    // Validar username obligatorio para ADMIN/VENDEDOR
+    if ((datos.rol === 'ADMIN' || datos.rol === 'VENDEDOR') && !datos.username) {
+        return alert("El Nombre de Usuario es obligatorio para Administradores y Vendedores.");
+    }
 
     fetch(`${API_BASE}/empleados`, {
         method: 'POST',
@@ -412,25 +275,40 @@ function agregarEmpleado() {
         body: JSON.stringify(datos)
     })
         .then(res => res.json())
-        .then(() => {
-            alert('Empleado agregado');
+        .then(data => {
+            if (data.correoEnviado) {
+                alert(`✅ ${data.mensaje}`);
+            } else if (datos.rol === 'TEMPORAL') {
+                alert('✅ Empleado temporal agregado correctamente.');
+            } else {
+                alert(`⚠️ ${data.mensaje}`);
+            }
             limpiarFormularioEmpleado();
             cargarEmpleados();
         })
-        .catch(err => console.error(err));
+        .catch(err => {
+            console.error(err);
+            alert('Error al agregar empleado.');
+        });
 }
+
+// ============================================
+// MODIFICAR EMPLEADO
+// ============================================
 
 function modificarEmpleado() {
     const form = document.getElementById('formulario-empleados');
     const id = form.dataset.idEmpleado;
     if (!id) return alert("Selecciona un empleado de la tabla");
 
+    const datos = recolectarDatosEmpleado();
+
     fetch(`${API_BASE}/empleados/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(recolectarDatosEmpleado())
+        body: JSON.stringify(datos)
     })
-        .then(res => res.json())
+        .then(res => res.text())
         .then(() => {
             alert('Empleado actualizado');
             limpiarFormularioEmpleado();
@@ -439,384 +317,15 @@ function modificarEmpleado() {
         .catch(err => console.error(err));
 }
 
-function eliminarEmpleado() {
-    const form = document.getElementById('formulario-empleados');
-    const id = form.dataset.idEmpleado;
-    if (!id) return alert("Selecciona un empleado de la tabla");
-    if (!confirm("¿Eliminar este empleado?")) return;
-
-    fetch(`${API_BASE}/empleados/${id}`, { method: 'DELETE' })
-        .then(res => res.json())
-        .then(() => {
-            alert('Empleado eliminado');
-            limpiarFormularioEmpleado();
-            cargarEmpleados();
-        })
-        .catch(err => console.error(err));
-}
+// ============================================
+// LIMPIAR FORMULARIO
+// ============================================
 
 function limpiarFormularioEmpleado() {
     const form = document.getElementById('formulario-empleados');
     if (form) {
         form.reset();
         delete form.dataset.idEmpleado;
+        mostrarCamposPorRol(); // Reset visibility (hides all accordions)
     }
-}
-
-// ========================================================================================================
-// LÓGICA DE GARANTÍAS
-// ========================================================================================================
-
-function cargarGarantias() {
-    fetch(`${API_BASE}/garantias`)
-        .then(res => res.json())
-        .then(garantias => {
-            const tbody = document.getElementById('tablaGarantias');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            garantias.forEach(g => {
-                const tr = document.createElement('tr');
-                tr.style.cursor = "pointer";
-                tr.onclick = () => seleccionarGarantia(g);
-
-                const fecha = g.FECHA ? new Date(g.FECHA).toISOString().split('T')[0] : '';
-
-                tr.innerHTML = `
-          <td>${g.ID_GARANTIA}</td>
-          <td>${fecha}</td>
-          <td>${g.NOMBRE_TIPO || g.ID_GARANTIA_TIPO}</td>
-          <td>${g.NOMBRE_ESTADO || g.ID_GARANTIA_ESTADO}</td>
-          <td>${g.DURACION_MESES}</td>
-          <td>${g.CONDICION}</td>
-        `;
-                tbody.appendChild(tr);
-            });
-        })
-        .catch(err => console.error('Error cargando garantías:', err));
-}
-
-function cargarTiposGarantia() {
-    fetch(`${API_BASE}/garantias/tipos`)
-        .then(res => res.json())
-        .then(tipos => {
-            const selectForm = document.getElementById('ID_GARANTIA_TIPO');
-            const selectBusqueda = document.getElementById('buscar_tipo');
-
-            if (selectForm) {
-                selectForm.innerHTML = '<option value="">Seleccione Tipo...</option>';
-                tipos.forEach(t => {
-                    selectForm.innerHTML += `<option value="${t.ID_GARANTIA_TIPO}">${t.TIPO}</option>`;
-                });
-            }
-
-            if (selectBusqueda) {
-                selectBusqueda.innerHTML = '<option value="">Todos los Tipos</option>';
-                tipos.forEach(t => {
-                    selectBusqueda.innerHTML += `<option value="${t.ID_GARANTIA_TIPO}">${t.TIPO}</option>`;
-                });
-            }
-        })
-        .catch(err => console.error('Error cargando tipos de garantía:', err));
-}
-
-function cargarEstadosGarantia() {
-    fetch(`${API_BASE}/garantias/estados`)
-        .then(res => res.json())
-        .then(estados => {
-            const selectForm = document.getElementById('ID_GARANTIA_ESTADO');
-            const selectBusqueda = document.getElementById('buscar_estado');
-
-            if (selectForm) {
-                selectForm.innerHTML = '<option value="">Seleccione Estado...</option>';
-                estados.forEach(e => {
-                    selectForm.innerHTML += `<option value="${e.ID_GARANTIA_ESTADO}">${e.ESTADO}</option>`;
-                });
-            }
-
-            if (selectBusqueda) {
-                selectBusqueda.innerHTML = '<option value="">Todos los Estados</option>';
-                estados.forEach(e => {
-                    selectBusqueda.innerHTML += `<option value="${e.ID_GARANTIA_ESTADO}">${e.ESTADO}</option>`;
-                });
-            }
-        })
-        .catch(err => console.error('Error cargando estados de garantía:', err));
-}
-
-function buscarGarantia() {
-    const tipo = document.getElementById('buscar_tipo').value;
-    const estado = document.getElementById('buscar_estado').value;
-    const duracion = document.getElementById('buscar_duracion').value.trim();
-
-    let query = `${API_BASE}/garantias/buscar?`;
-    if (tipo) query += `tipo=${tipo}&`;
-    if (estado) query += `estado=${estado}&`;
-    if (duracion) query += `duracion=${duracion}&`;
-
-    fetch(query)
-        .then(res => res.json())
-        .then(garantias => {
-            const tbody = document.getElementById('tablaGarantias');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            if (garantias.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6">No se encontraron garantías</td></tr>';
-                return;
-            }
-
-            garantias.forEach(g => {
-                const tr = document.createElement('tr');
-                tr.style.cursor = "pointer";
-                tr.onclick = () => seleccionarGarantia(g);
-
-                const fecha = g.FECHA ? new Date(g.FECHA).toISOString().split('T')[0] : '';
-
-                tr.innerHTML = `
-          <td>${g.ID_GARANTIA}</td>
-          <td>${fecha}</td>
-          <td>${g.NOMBRE_TIPO || g.ID_GARANTIA_TIPO}</td>
-          <td>${g.NOMBRE_ESTADO || g.ID_GARANTIA_ESTADO}</td>
-          <td>${g.DURACION_MESES}</td>
-          <td>${g.CONDICION}</td>
-        `;
-                tbody.appendChild(tr);
-            });
-        })
-        .catch(err => console.error('Error buscando garantías:', err));
-}
-
-function seleccionarGarantia(g) {
-    document.getElementById('ID_GARANTIA').value = g.ID_GARANTIA;
-    document.getElementById('ID_GARANTIA').disabled = true;
-    if (g.FECHA) {
-        document.getElementById('FECHA').value = new Date(g.FECHA).toISOString().split('T')[0];
-    }
-    document.getElementById('HORA').value = g.HORA;
-    document.getElementById('DURACION_MESES').value = g.DURACION_MESES;
-    document.getElementById('ID_GARANTIA_TIPO').value = g.ID_GARANTIA_TIPO;
-    document.getElementById('ID_GARANTIA_ESTADO').value = g.ID_GARANTIA_ESTADO;
-    document.getElementById('CONDICION').value = g.CONDICION;
-    document.getElementById('EXCLUSIONES').value = g.EXCLUSIONES;
-
-    const form = document.getElementById('formulario-garantias');
-    form.dataset.idOriginal = g.ID_GARANTIA;
-}
-
-function recolectarDatosGarantia() {
-    return {
-        id_garantia: document.getElementById('ID_GARANTIA').value,
-        fecha: document.getElementById('FECHA').value,
-        hora: document.getElementById('HORA').value,
-        duracion_meses: document.getElementById('DURACION_MESES').value,
-        id_garantia_tipo: document.getElementById('ID_GARANTIA_TIPO').value,
-        id_garantia_estado: document.getElementById('ID_GARANTIA_ESTADO').value,
-        condicion: document.getElementById('CONDICION').value,
-        exclusiones: document.getElementById('EXCLUSIONES').value
-    };
-}
-
-function agregarGarantia() {
-    const datos = recolectarDatosGarantia();
-    if (!datos.id_garantia || !datos.fecha) return alert("ID y Fecha son obligatorios");
-
-    fetch(`${API_BASE}/garantias`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datos)
-    })
-        .then(res => res.json())
-        .then(() => {
-            alert('Garantía agregada');
-            limpiarFormularioGarantia();
-            cargarGarantias();
-        })
-        .catch(err => console.error(err));
-}
-
-function modificarGarantia() {
-    const form = document.getElementById('formulario-garantias');
-    const id = form.dataset.idOriginal;
-    if (!id) return alert("Selecciona una garantía");
-
-    fetch(`${API_BASE}/garantias/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(recolectarDatosGarantia())
-    })
-        .then(res => res.json())
-        .then(() => {
-            alert('Garantía actualizada');
-            limpiarFormularioGarantia();
-            cargarGarantias();
-        })
-        .catch(err => console.error(err));
-}
-
-function eliminarGarantia() {
-    const form = document.getElementById('formulario-garantias');
-    const id = form.dataset.idOriginal;
-    if (!id) return alert("Selecciona una garantía");
-    if (!confirm("¿Eliminar esta garantía?")) return;
-
-    fetch(`${API_BASE}/garantias/${id}`, { method: 'DELETE' })
-        .then(res => res.json())
-        .then(() => {
-            alert('Garantía eliminada');
-            limpiarFormularioGarantia();
-            cargarGarantias();
-        })
-        .catch(err => console.error(err));
-}
-
-function limpiarFormularioGarantia() {
-    const form = document.getElementById('formulario-garantias');
-    if (form) {
-        form.reset();
-        delete form.dataset.idOriginal;
-        document.getElementById('ID_GARANTIA').disabled = false;
-    }
-}
-
-// ========================================================================================================
-// LÓGICA DE ADMINISTRADORES
-// ========================================================================================================
-
-function inicializarEventos() {
-    document.getElementById("btn_agregar")?.addEventListener("click", agregarProducto);
-    document.getElementById("btn_modificar")?.addEventListener("click", modificarProducto);
-    document.getElementById("btn_eliminar")?.addEventListener("click", eliminarProducto);
-    document.getElementById("btn_buscar")?.addEventListener("click", buscarProducto);
-
-    document.getElementById("btn_agregar_venta")?.addEventListener("click", agregarVenta);
-    fetch(`${API_BASE}/administradores`)
-        .then(res => res.json())
-        .then(admins => {
-            const tbody = document.getElementById('tablaAdministradores');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            admins.forEach(a => {
-                const tr = document.createElement('tr');
-                tr.style.cursor = 'pointer';
-                tr.onclick = () => seleccionarAdministrador(a);
-
-                tr.innerHTML = `
-          <td>${a.ID_ADMINISTRADOR}</td>
-          <td>${a.NOMBRE} ${a.APELLIDO}</td>
-          <td>${a.TELEFONO}</td>
-          <td>${a.EMAIL}</td>
-        `;
-                tbody.appendChild(tr);
-            });
-        })
-        .catch(err => console.error('Error cargando administradores:', err));
-}
-
-function seleccionarAdministrador(a) {
-    document.getElementById('ID_ADMINISTRADOR').value = a.ID_ADMINISTRADOR;
-    document.getElementById('ID_EMPLEADO').value = a.ID_EMPLEADO || '';
-    document.getElementById('TELEFONO').value = a.TELEFONO || '';
-    document.getElementById('EMAIL').value = a.EMAIL || '';
-}
-
-function buscarAdministrador() {
-    const termino = document.getElementById('buscar_administrador').value.trim();
-    if (!termino) {
-        cargarAdministradores();
-        return;
-    }
-
-    fetch(`${API_BASE}/administradores/buscar?q=${encodeURIComponent(termino)}`)
-        .then(res => res.json())
-        .then(admins => {
-            const tbody = document.getElementById('tablaAdministradores');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            if (admins.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4">No se encontraron administradores</td></tr>';
-                return;
-            }
-
-            admins.forEach(a => {
-                const tr = document.createElement('tr');
-                tr.style.cursor = 'pointer';
-                tr.onclick = () => seleccionarAdministrador(a);
-
-                tr.innerHTML = `
-          <td>${a.ID_ADMINISTRADOR}</td>
-          <td>${a.NOMBRE} ${a.APELLIDO}</td>
-          <td>${a.TELEFONO}</td>
-          <td>${a.EMAIL}</td>
-        `;
-                tbody.appendChild(tr);
-            });
-        })
-        .catch(err => console.error('Error buscando administradores:', err));
-}
-
-function agregarAdministrador() {
-    const id_empleado = document.getElementById('ID_EMPLEADO').value;
-    const telefono = document.getElementById('TELEFONO').value;
-    const email = document.getElementById('EMAIL').value;
-
-    fetch(`${API_BASE}/administradores`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_empleado, telefono, email })
-    })
-        .then(res => res.json())
-        .then(() => {
-            alert('Administrador agregado');
-            cargarAdministradores();
-            limpiarFormularioAdministrador();
-        })
-        .catch(err => console.error('Error agregando administrador:', err));
-}
-
-function modificarAdministrador() {
-    const id = document.getElementById('ID_ADMINISTRADOR').value;
-    const id_empleado = document.getElementById('ID_EMPLEADO').value;
-    const telefono = document.getElementById('TELEFONO').value;
-    const email = document.getElementById('EMAIL').value;
-
-    if (!id) return alert('Seleccione un administrador para modificar');
-
-    fetch(`${API_BASE}/administradores/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_empleado, telefono, email })
-    })
-        .then(res => res.json())
-        .then(() => {
-            alert('Administrador modificado');
-            cargarAdministradores();
-            limpiarFormularioAdministrador();
-        })
-        .catch(err => console.error('Error modificando administrador:', err));
-}
-
-function eliminarAdministrador() {
-    const id = document.getElementById('ID_ADMINISTRADOR').value;
-    if (!id) return alert('Seleccione un administrador para eliminar');
-
-    if (!confirm('¿Seguro que desea eliminar este administrador?')) return;
-
-    fetch(`${API_BASE}/administradores/${id}`, {
-        method: 'DELETE'
-    })
-        .then(res => res.json())
-        .then(() => {
-            alert('Administrador eliminado');
-            cargarAdministradores();
-            limpiarFormularioAdministrador();
-        })
-        .catch(err => console.error('Error eliminando administrador:', err));
-}
-
-function limpiarFormularioAdministrador() {
-    document.getElementById('formulario-administradores')?.reset();
-    if (document.getElementById('ID_ADMINISTRADOR')) document.getElementById('ID_ADMINISTRADOR').value = '';
 }

@@ -31,8 +31,8 @@ const serviciosController = {
 
     create: async (req, res) => {
         try {
-            const { descripcion, fecha_solicitud, fecha_ejecucion, costo, id_temporal, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado } = req.body;
-            const datos = [descripcion, fecha_solicitud, fecha_ejecucion, costo, id_temporal, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado];
+            const { descripcion, fecha_solicitud, fecha_ejecucion, costo, id_empleado, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado } = req.body;
+            const datos = [descripcion, fecha_solicitud, fecha_ejecucion, costo, id_empleado, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado];
             const result = await Servicio.agregar(datos);
             res.status(201).json({ message: 'Servicio creado', id: result.insertId });
         } catch (err) {
@@ -42,8 +42,8 @@ const serviciosController = {
 
     update: async (req, res) => {
         try {
-            const { descripcion, fecha_solicitud, fecha_ejecucion, costo, id_temporal, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado } = req.body;
-            const datos = [descripcion, fecha_solicitud, fecha_ejecucion, costo, id_temporal, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado];
+            const { descripcion, fecha_solicitud, fecha_ejecucion, costo, id_empleado, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado } = req.body;
+            const datos = [descripcion, fecha_solicitud, fecha_ejecucion, costo, id_empleado, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado];
             const result = await Servicio.actualizar(req.params.id, datos);
             if (result.affectedRows === 0) {
                 return res.status(404).json({ message: 'Servicio no encontrado' });

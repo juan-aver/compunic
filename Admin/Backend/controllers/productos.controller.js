@@ -116,7 +116,7 @@ const productosController = {
   },
 
   crear: async (req, res) => {
-    const { nombre, modelo, descripcion, id_marca, id_administrador, id_garantias, id_proveedor, id_categoria } = req.body;
+    const { nombre, modelo, descripcion, id_marca, id_empleado, id_garantias, id_proveedor, id_categoria } = req.body;
 
     let imagenUrl = null;
     try {
@@ -128,10 +128,10 @@ const productosController = {
         }
       }
 
-      let adminId = id_administrador;
+      let adminId = id_empleado;
       if (!adminId) {
-        const [rows] = await db.query('SELECT ID_ADMINISTRADOR FROM ADMINISTRADOR LIMIT 1');
-        adminId = rows[0]?.ID_ADMINISTRADOR;
+        const [rows] = await db.query("SELECT ID_EMPLEADO FROM EMPLEADOS WHERE ROL='ADMIN' LIMIT 1");
+        adminId = rows[0]?.ID_EMPLEADO;
       }
 
       const explicitId = req.body.id_producto ?? req.body.id;
@@ -158,7 +158,7 @@ const productosController = {
 
   actualizar: async (req, res) => {
     const { id } = req.params;
-    const { nombre, modelo, descripcion, precio_compra, precio_venta, id_marca, id_administrador, id_garantias, id_proveedor, id_categoria, stock } = req.body;
+    const { nombre, modelo, descripcion, precio_compra, precio_venta, id_marca, id_empleado, id_garantias, id_proveedor, id_categoria, stock } = req.body;
 
     try {
       const [productoActual] = await db.query('SELECT IMAGEN_URL FROM PRODUCTOS WHERE ID_PRODUCTO = ?', [id]);
@@ -177,10 +177,10 @@ const productosController = {
       const [pStock] = await Producto.obtenerStockCalculado(id);
       const stockAnterior = pStock ? pStock.stock : 0;
 
-      let adminId = id_administrador;
+      let adminId = id_empleado;
       if (!adminId) {
-        const [rows] = await db.query('SELECT ID_ADMINISTRADOR FROM ADMINISTRADOR LIMIT 1');
-        adminId = rows[0]?.ID_ADMINISTRADOR;
+        const [rows] = await db.query("SELECT ID_EMPLEADO FROM EMPLEADOS WHERE ROL='ADMIN' LIMIT 1");
+        adminId = rows[0]?.ID_EMPLEADO;
       }
 
       await Producto.actualizar([nombre, modelo, descripcion, imagenUrl, precio_compra, precio_venta, id_marca, adminId, id_garantias, id_proveedor, id]);

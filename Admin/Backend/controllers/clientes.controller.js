@@ -66,15 +66,15 @@ const clientesController = {
 
   // LLAMADO A PROCEDIMIENTO ALMACENADO sp_NuevoCliente
   agregarRapido: async (req, res) => {
-    const { nombre, apellido, telefono, email, id_vendedor } = req.body;
+    const { nombre, apellido, telefono, email, id_empleado } = req.body;
     
     // Validación básica
-    if (!nombre || !apellido || !id_vendedor) {
-      return res.status(400).json({ error: 'Nombre, apellido y ID de vendedor son obligatorios' });
+    if (!nombre || !apellido || !id_empleado) {
+      return res.status(400).json({ error: 'Nombre, apellido y ID de empleado son obligatorios' });
     }
 
     try {
-      const result = await Cliente.agregarRapido(nombre, apellido, telefono, email, id_vendedor);
+      const result = await Cliente.agregarRapido(nombre, apellido, telefono, email, id_empleado);
       res.json({ mensaje: 'Cliente registrado rápidamente', result });
     } catch (err) {
       console.error('Error en registro rápido:', err);

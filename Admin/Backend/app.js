@@ -14,13 +14,13 @@ const marcasRoutes = require('./routes/marcas.routes.js');
 const movimientosStockRoutes = require('./routes/movimientos_stock.routes');
 const comprasRoutes = require('./routes/compras.routes.js');
 const proveedoresRoutes = require('./routes/proveedores.routes.js');
-const vendedoresRoutes = require('./routes/vendedores.routes.js');
+
 const clientesRoutes = require('./routes/clientes.routes.js');
 const empleadosRoutes = require('./routes/empleados.routes.js');
 const garantiasRoutes = require('./routes/garantias.routes.js');
-const administradoresRoutes = require('./routes/administradores.routes.js');
+
 const serviciosRoutes = require('./routes/servicios.routes.js');
-const eTemporalesRoutes = require('./routes/e_temporales.routes.js');
+
 const devolucionesRoutes = require('./routes/devoluciones.routes.js');
 const dashboardRoutes = require('./routes/dashboard.routes.js');
 const storeRoutes = require('./routes/store.routes.js');
@@ -50,13 +50,13 @@ app.use('/api/movimientos-stock', movimientosStockRoutes);
 app.use('/api/compras', comprasRoutes);
 app.use('/api/proveedores', proveedoresRoutes);
 app.use('/api/marcas', marcasRoutes);
-app.use('/api/vendedores', vendedoresRoutes);
+
 app.use('/api/clientes', clientesRoutes);
 app.use('/api/empleados', empleadosRoutes);
 app.use('/api/garantias', garantiasRoutes);
-app.use('/api/administradores', administradoresRoutes);
+
 app.use('/api/servicios', serviciosRoutes);
-app.use('/api/e_temporales', eTemporalesRoutes);
+
 app.use('/api/devoluciones', devolucionesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/store', storeRoutes);

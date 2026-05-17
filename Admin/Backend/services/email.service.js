@@ -274,9 +274,97 @@ async function sendInvoiceEmail(email, nombreCliente, numeroFactura, pdfBuffer, 
     }
 }
 
+/**
+ * Enviar correo de bienvenida a nuevo empleado para crear su contraseña
+ * @param {string} email - Correo del destinatario
+ * @param {string} token - Token de creación de contraseña
+ * @param {string} nombreCompleto - Nombre del empleado
+ * @param {string} rol - Rol asignado (ADMIN/VENDEDOR)
+ */
+async function sendNewEmployeePasswordEmail(email, token, nombreCompleto, rol) {
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${token}&welcome=1`;
+
+    const rolTexto = rol === 'ADMIN' ? 'Administrador' : 'Vendedor';
+
+    const mailOptions = {
+        from: `"COMPUNIC - Sistema" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: '🎉 ¡Bienvenido a COMPUNIC! - Crea tu contraseña',
+        html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+                    .button { display: inline-block; padding: 15px 30px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+                    .button:hover { background: #218838; }
+                    .info-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0; border-radius: 4px; }
+                    .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+                    .footer { text-align: center; color: #666; font-size: 12px; margin-top: 20px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>🎉 ¡Bienvenido a COMPUNIC!</h1>
+                        <p style="margin: 0; font-size: 16px;">Sistema de Gestión Empresarial</p>
+                    </div>
+                    <div class="content">
+                        <p>Hola <strong>${nombreCompleto}</strong>,</p>
+                        
+                        <p>Has sido registrado en el sistema COMPUNIC como <strong>${rolTexto}</strong>.</p>
+                        
+                        <div class="info-box">
+                            <strong>🔐 Crea tu contraseña para activar tu cuenta</strong>
+                            <p>Para comenzar a usar el sistema, necesitas crear una contraseña segura.</p>
+                        </div>
+                        
+                        <p>Haz clic en el siguiente botón para crear tu contraseña:</p>
+                        
+                        <div style="text-align: center;">
+                            <a href="${resetUrl}" class="button">Crear Mi Contraseña</a>
+                        </div>
+                        
+                        <p>O copia y pega este enlace en tu navegador:</p>
+                        <p style="background: white; padding: 10px; border-radius: 5px; word-break: break-all;">
+                            ${resetUrl}
+                        </p>
+                        
+                        <div class="warning">
+                            <strong>⏰ Importante:</strong> Este enlace es válido por <strong>2 horas</strong> y solo puede usarse una vez. Tu cuenta se activará automáticamente cuando crees tu contraseña.
+                        </div>
+                        
+                        <p><strong>¿Necesitas ayuda?</strong></p>
+                        <p>Si tienes problemas para crear tu contraseña, contacta al administrador del sistema.</p>
+                        
+                        <div class="footer">
+                            <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+                            <p>&copy; ${new Date().getFullYear()} COMPUNIC - Sistema de Gestión</p>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('✅ Correo de bienvenida enviado:', info.messageId);
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error('❌ Error enviando correo de bienvenida:', error);
+        throw new Error('No se pudo enviar el correo de bienvenida');
+    }
+}
+
 module.exports = {
     sendPasswordResetEmail,
     verifyEmailService,
     sendAccountLockoutEmail,
-    sendInvoiceEmail
+    sendInvoiceEmail,
+    sendNewEmployeePasswordEmail
 };

@@ -42,7 +42,6 @@ const AuthController = {
                     apellido: user.apellido,
                     username: user.username,
                     rol: user.rol,
-                    id_vendedor: user.id_vendedor,
                     area: user.area,
                     email: user.email
                 }

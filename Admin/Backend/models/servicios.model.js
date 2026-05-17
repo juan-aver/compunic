@@ -1,10 +1,3 @@
-/*
- * ¡Puf! Qué noche tan larga programando esto ☕.
- * Módulo: servicios.model.js
- * Descripción: Modelo de BD. Define las consultas SQL e interacción con la base de datos directa. ¡Ojo con las inyecciones SQL!
- * Última actualización: 8 de abril de 2026 a las 3:00 AM (probablemente).
- * Nota: Si vas a tocar aquí, ten cuidado con las dependencias circulares.
- */
 const db = require('../config/db.js');
 
 const Servicio = {
@@ -17,7 +10,7 @@ const Servicio = {
           s.FECHA_SOLICITUD,
           s.FECHA_EJECUCION,
           s.COSTO,
-          s.ID_TEMPORAL,
+          s.ID_EMPLEADO,
           s.ID_CLIENTE,
           s.ID_GARANTIA,
           s.ID_SERVICIO_TIPO,
@@ -55,9 +48,9 @@ const Servicio = {
 
     agregar: async (datos) => {
         try {
-            // datos: [descripcion, fecha_solicitud, fecha_ejecucion, costo, id_temporal, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado]
+            // datos: [descripcion, fecha_solicitud, fecha_ejecucion, costo, id_empleado, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado]
             const sql = `
-        INSERT INTO SERVICIOS (DESCRIPCION, FECHA_SOLICITUD, FECHA_EJECUCION, COSTO, ID_TEMPORAL, ID_CLIENTE, ID_GARANTIA, ID_SERVICIO_TIPO, ID_SERVICIO_ESTADO)
+        INSERT INTO SERVICIOS (DESCRIPCION, FECHA_SOLICITUD, FECHA_EJECUCION, COSTO, ID_EMPLEADO, ID_CLIENTE, ID_GARANTIA, ID_SERVICIO_TIPO, ID_SERVICIO_ESTADO)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
             const [result] = await db.query(sql, datos);
@@ -71,7 +64,7 @@ const Servicio = {
         try {
             const sql = `
         UPDATE SERVICIOS 
-        SET DESCRIPCION = ?, FECHA_SOLICITUD = ?, FECHA_EJECUCION = ?, COSTO = ?, ID_TEMPORAL = ?, ID_CLIENTE = ?, ID_GARANTIA = ?, ID_SERVICIO_TIPO = ?, ID_SERVICIO_ESTADO = ?
+        SET DESCRIPCION = ?, FECHA_SOLICITUD = ?, FECHA_EJECUCION = ?, COSTO = ?, ID_EMPLEADO = ?, ID_CLIENTE = ?, ID_GARANTIA = ?, ID_SERVICIO_TIPO = ?, ID_SERVICIO_ESTADO = ?
         WHERE ID_SERVICIO = ?
       `;
             // datos debe incluir los campos en orden y al final el ID

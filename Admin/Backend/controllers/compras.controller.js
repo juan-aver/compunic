@@ -47,12 +47,12 @@ exports.createCompra = async (req, res) => {
     const iva_monto = subtotal * (iva_porcentaje / 100);
     const total_compra = subtotal + iva_monto;
 
-    const id_administrador = 401; // ID temporal o fijo
+    const id_empleado = 401; // ID temporal o fijo
 
     // 1. Crear la Compra en la BD (Esto actualiza el stock en DETALLE_COMPRA)
     const idCompra = await Compras.crearCompra({
       id_proveedor,
-      id_administrador,
+      id_empleado,
       numero_factura,
       total_compra,
       iva_porcentaje: 15.00, // IVA fijo al 15%

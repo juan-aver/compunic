@@ -21,7 +21,7 @@ function inicializarVendedorAutomatico() {
     }
 
     // Verificar que tenga ID_VENDEDOR
-    if (!session.id_vendedor) {
+    if (!session.id_empleado) {
         console.error('❌ El usuario no tiene ID_VENDEDOR asignado');
         alert('Error: Su usuario no está configurado como vendedor. Contacte al administrador.');
         return;
@@ -49,20 +49,20 @@ function inicializarVendedorAutomatico() {
         const inputId = document.createElement('input');
         inputId.type = 'hidden';
         inputId.id = 'vendedor-id';
-        inputId.value = session.id_vendedor;
+        inputId.value = session.id_empleado;
 
         // Reemplazar
         vendedorSelect.style.display = 'none';
         container.appendChild(inputDisplay);
         container.appendChild(inputId);
 
-        console.log('✅ Vendedor auto-asignado (select reemplazado):', `${session.nombre} ${session.apellido}`, 'ID:', session.id_vendedor);
+        console.log('✅ Vendedor auto-asignado (select reemplazado):', `${session.nombre} ${session.apellido}`, 'ID:', session.id_empleado);
     }
     // Si ya existen los inputs (versión nueva)
     else if (vendedorDisplay && vendedorId) {
         vendedorDisplay.value = `${session.nombre} ${session.apellido}`;
-        vendedorId.value = session.id_vendedor;
-        console.log('✅ Vendedor auto-asignado:', `${session.nombre} ${session.apellido}`, 'ID:', session.id_vendedor);
+        vendedorId.value = session.id_empleado;
+        console.log('✅ Vendedor auto-asignado:', `${session.nombre} ${session.apellido}`, 'ID:', session.id_empleado);
     }
     else {
         console.warn('⚠️ No se encontraron los elementos del vendedor en el DOM');
