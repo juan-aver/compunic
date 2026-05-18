@@ -1,12 +1,4 @@
-/*
- * ==========================================
- * MÓDULO: pedidos.model.js
- * PROPÓSITO: Modelo de BD. Define las consultas SQL e interacción con la base de datos directa. ¡Ojo con las inyecciones SQL!
- * FECHA: 8 de abril de 2026
- * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
- */
+
 // models/pedidos.model.js
 // Modelo para gestionar pedidos desde la tienda web
 
@@ -45,35 +37,26 @@ const Pedidos = {
                 }
             }
 
-            // 2. Obtener o crear vendedor "Tienda Web"
-            let idVendedor;
+            // 2. Obtener o crear empleado "Tienda Web"
+            let idEmpleadoVenta;
 
-            // Buscar vendedor "Tienda Web"
-            const [vendedorWeb] = await connection.query(`
-                SELECT v.ID_VENDEDOR 
-                FROM VENDEDOR v
-                JOIN EMPLEADOS e ON v.ID_EMPLEADO = e.ID
-                WHERE e.NOMBRE = 'Tienda' AND e.APELLIDO = 'Web'
+            // Buscar empleado "Tienda Web"
+            const [empleadoWeb] = await connection.query(`
+                SELECT ID_EMPLEADO 
+                FROM EMPLEADOS
+                WHERE NOMBRE = 'Tienda' AND APELLIDO = 'Web'
             `);
 
-            if (vendedorWeb.length > 0) {
-                idVendedor = vendedorWeb[0].ID_VENDEDOR;
+            if (empleadoWeb.length > 0) {
+                idEmpleadoVenta = empleadoWeb[0].ID_EMPLEADO;
             } else {
-                // Crear empleado "Tienda Web"
+                // Crear empleado "Tienda Web" como VENDEDOR
                 const [resultEmpleado] = await connection.query(`
-                    INSERT INTO EMPLEADOS (NOMBRE, APELLIDO, SEXO, F_NACIMIENTO)
-                    VALUES ('Tienda', 'Web', 'O', '2000-01-01')
+                    INSERT INTO EMPLEADOS (NOMBRE, APELLIDO, SEXO, F_NACIMIENTO, AREA, HORARIO, ROL, ESTADO, USERNAME)
+                    VALUES ('Tienda', 'Web', 'M', '2000-01-01', 'Tienda Web', '24/7', 'VENDEDOR', 1, 'tienda.web')
                 `);
 
-                const idEmpleado = resultEmpleado.insertId;
-
-                // Crear vendedor "Tienda Web"
-                const [resultVendedor] = await connection.query(`
-                    INSERT INTO VENDEDOR (AREA, HORARIO, TELEFONO, EMAIL, ID_EMPLEADO)
-                    VALUES ('Tienda Web', '24/7', 'N/A', 'tiendaweb@compunic.com', ?)
-                `, [idEmpleado]);
-
-                idVendedor = resultVendedor.insertId;
+                idEmpleadoVenta = resultEmpleado.insertId;
             }
 
             // 3. Buscar o crear cliente
@@ -122,9 +105,9 @@ const Pedidos = {
 
             // 6. Crear venta con vendedor "Tienda Web"
             const [resultVenta] = await connection.query(`
-                INSERT INTO VENTAS (FECHA, TOTAL, ID_VENDEDOR, ID_CLIENTE, FACTURA)
+                INSERT INTO VENTAS (FECHA, TOTAL, ID_EMPLEADO, ID_CLIENTE, FACTURA)
                 VALUES (NOW(), ?, ?, ?, ?)
-            `, [total, idVendedor, idCliente, facturaTemp]);
+            `, [total, idEmpleadoVenta, idCliente, facturaTemp]);
 
             const idVenta = resultVenta.insertId;
 
@@ -236,7 +219,7 @@ const Pedidos = {
                 factura: facturaFinal,
                 total: total,
                 id_cliente: idCliente,
-                id_vendedor: idVendedor
+                id_empleado: idEmpleadoVenta
             };
 
         } catch (error) {

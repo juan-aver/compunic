@@ -1,10 +1,4 @@
-/*
- * ¡Puf! Qué noche tan larga programando esto ☕.
- * Módulo: movimientos_stock.model.js
- * Descripción: Modelo de BD. Define las consultas SQL e interacción con la base de datos directa. ¡Ojo con las inyecciones SQL!
- * Última actualización: 8 de abril de 2026 a las 3:00 AM (probablemente).
- * Nota: Si vas a tocar aquí, ten cuidado con las dependencias circulares.
- */
+
 // models/movimientos_stock.model.js
 const pool = require('../config/db');
 
@@ -13,8 +7,8 @@ const movimientosStockModel = {
   // 1. REGISTRAR UN MOVIMIENTO NUEVO (Tiempo Real)
   registrarMovimiento: async (productoId, nombreProducto, tipoMovimiento, motivo, cantidad, stockResultante) => {
     const sql = `
-      INSERT INTO compunic_v5.movimientos_stock 
-        (ID_PRODUCTO, NOMBRE_PRODUCTO, TIPO_MOVIMIENTO, MOTIVO, CANTIDAD, STOCK_RESULTANTE, ID_USUARIO)
+      INSERT INTO MOVIMIENTOS_STOCK 
+        (ID_PRODUCTO, NOMBRE_PRODUCTO, TIPO_MOVIMIENTO, MOTIVO, CANTIDAD, STOCK_RESULTANTE, ID_EMPLEADO)
       VALUES (?, ?, ?, ?, ?, ?, NULL)
     `;
     await pool.query(sql, [productoId, nombreProducto, tipoMovimiento, motivo, cantidad, stockResultante]);
@@ -22,7 +16,7 @@ const movimientosStockModel = {
 
   // 2. OBTENER EL HISTORIAL (Para la Tabla del Frontend)
   obtenerHistorial: async () => {
-    const sql = `SELECT * FROM compunic_v5.movimientos_stock ORDER BY FECHA_MOVIMIENTO DESC`;
+    const sql = `SELECT * FROM MOVIMIENTOS_STOCK ORDER BY FECHA_MOVIMIENTO DESC`;
     const [rows] = await pool.query(sql);
     return rows;
   },
@@ -31,7 +25,7 @@ const movimientosStockModel = {
   sincronizarSiEstaVacio: async () => {
     try {
       // A. Verificar si la tabla ya tiene datos
-      const [check] = await pool.query("SELECT COUNT(*) as total FROM compunic_v5.movimientos_stock");
+      const [check] = await pool.query("SELECT COUNT(*) as total FROM MOVIMIENTOS_STOCK");
       if (check[0].total > 0) {
         console.log("✅ Historial de stock verificado (Ya contiene datos).");
         return;
@@ -48,9 +42,9 @@ const movimientosStockModel = {
           c.FECHA_COMPRA as FECHA, 
           c.NUMERO_FACTURA_PROVEEDOR as REF, 
           'entrada' as TIPO
-        FROM compunic_v5.detalle_compra dc
-        JOIN compunic_v5.compras c ON dc.ID_COMPRA = c.ID_COMPRA
-        JOIN compunic_v5.productos p ON dc.ID_PRODUCTO = p.ID_PRODUCTO
+        FROM DETALLE_COMPRA dc
+        JOIN COMPRAS c ON dc.ID_COMPRA = c.ID_COMPRA
+        JOIN PRODUCTOS p ON dc.ID_PRODUCTO = p.ID_PRODUCTO
       `;
       const [compras] = await pool.query(sqlCompras);
 
@@ -63,9 +57,9 @@ const movimientosStockModel = {
           v.FECHA, 
           v.FACTURA as REF, 
           'salida' as TIPO
-        FROM compunic_v5.ventas_productos vp
-        JOIN compunic_v5.ventas v ON vp.ID_VENTA = v.ID_VENTA
-        JOIN compunic_v5.productos p ON vp.ID_PRODUCTO = p.ID_PRODUCTO
+        FROM VENTAS_PRODUCTOS vp
+        JOIN VENTAS v ON vp.ID_VENTA = v.ID_VENTA
+        JOIN PRODUCTOS p ON vp.ID_PRODUCTO = p.ID_PRODUCTO
       `;
       const [ventas] = await pool.query(sqlVentas);
 
@@ -111,7 +105,7 @@ const movimientosStockModel = {
       // F. Insertar en Base de Datos
       if (inserts.length > 0) {
         const sqlInsert = `
-          INSERT INTO compunic_v5.movimientos_stock 
+          INSERT INTO MOVIMIENTOS_STOCK 
           (ID_PRODUCTO, NOMBRE_PRODUCTO, TIPO_MOVIMIENTO, MOTIVO, CANTIDAD, STOCK_RESULTANTE, FECHA_MOVIMIENTO)
           VALUES ?
         `;

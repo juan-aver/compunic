@@ -48,7 +48,7 @@ const Compras = {
       // Manejo de error para restricción única UQ_PROVEEDOR_FACTURA
       try {
         const [resCompra] = await connection.query(
-          'INSERT INTO COMPRAS (ID_PROVEEDOR, ID_ADMINISTRADOR, FECHA_COMPRA, NUMERO_FACTURA_PROVEEDOR, TOTAL_COMPRA) VALUES (?, ?, CURRENT_DATE, ?, ?)',
+          'INSERT INTO COMPRAS (ID_PROVEEDOR, ID_EMPLEADO, FECHA_COMPRA, NUMERO_FACTURA_PROVEEDOR, TOTAL_COMPRA) VALUES (?, ?, CURRENT_DATE, ?, ?)',
           [id_proveedor, id_administrador, numero_factura, total_compra]
         );
         var idCompra = resCompra.insertId;
