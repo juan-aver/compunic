@@ -739,7 +739,7 @@
     align-items: center;
     gap: 1.5rem;
     transition: all 0.3s ease;
-    border: 1px solid rgba(0,0,0,0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .highlight-card:hover {
@@ -826,6 +826,19 @@
     margin: 0;
     opacity: 0.9;
     font-size: 1.1rem;
+}
+
+/* NAVBAR USERNAME */
+#user-display {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #1e293b;
+    background: linear-gradient(135deg, #145D90, #56A5DD);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.5px;
+    margin-right: 15px;
 }
 
 /* RESPONSIVE UPDATES */

@@ -9,7 +9,7 @@
 const AUTH_KEY = 'compunic_session';
 
 // Selector dinámico de API_BASE y SERVER_URL: Si corre en puerto local 5500 vs Nube (Netlify)
-const isLocal = window.location.hostname === 'localhost' && window.location.port !== '';
+const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '';
 const SERVER_URL = isLocal ? 'http://localhost:3001' : '';
 const API_BASE = isLocal ? 'http://localhost:3001/api' : '/api';
 

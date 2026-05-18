@@ -173,11 +173,11 @@ ul {
 }
 
 .user-avatar {
-    width: 36px;
-    height: 36px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #e9ecef;
+    border: 2px solid #56A5DD;
 }
 
 /* MAIN CONTENT */
