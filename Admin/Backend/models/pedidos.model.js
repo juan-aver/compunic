@@ -14,7 +14,7 @@ const Pedidos = {
      * @param {Array} productos - Lista de productos del pedido
      * @returns {Object} Datos del pedido creado
      */
-    crearPedido: async (datosCliente, productos) => {
+    crearPedido: async (datosCliente, productos, puntosUsados = 0) => {
         const connection = await db.getConnection();
 
         try {
@@ -96,8 +96,27 @@ const Pedidos = {
                 idCliente = resultCliente.insertId;
             }
 
-            // 4. Calcular total
-            const total = productos.reduce((sum, item) => sum + (item.precio_unitario * item.cantidad), 0);
+            // 4. Calcular total y manejar puntos
+            const subtotalCompra = productos.reduce((sum, item) => sum + (item.precio_unitario * item.cantidad), 0);
+            const total = Math.max(0, subtotalCompra - puntosUsados);
+
+            // Validar que el cliente tenga suficientes puntos si está usando
+            if (puntosUsados > 0) {
+                const [clienteData] = await connection.query('SELECT PUNTOS FROM CLIENTES WHERE ID_CLIENTE = ?', [idCliente]);
+                const puntosActuales = clienteData[0]?.PUNTOS || 0;
+                if (puntosUsados > puntosActuales) {
+                    throw new Error('El cliente no tiene suficientes puntos para este descuento.');
+                }
+                
+                // Descontar puntos
+                await connection.query('UPDATE CLIENTES SET PUNTOS = PUNTOS - ? WHERE ID_CLIENTE = ?', [puntosUsados, idCliente]);
+            }
+
+            // Calcular puntos ganados (1 punto por cada 10 C$ del total pagado)
+            const puntosGanados = Math.floor(total / 10);
+            if (puntosGanados > 0) {
+                await connection.query('UPDATE CLIENTES SET PUNTOS = PUNTOS + ? WHERE ID_CLIENTE = ?', [puntosGanados, idCliente]);
+            }
 
             // 5. Generar número de factura automático
             const timestamp = Date.now();

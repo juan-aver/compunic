@@ -5,6 +5,7 @@
   ¡Atención! Este HTML fue ensamblado a altas horas de la noche ☕. 
   Si ves un div anidado 5 veces, lo siento, era necesario para centrar un botón.
 -->
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,13 +35,22 @@
             </a>
 
             <div class="navbar-actions">
+                <!-- Botón de ir al panel admin (Salir de tienda) -->
+                <div class="navbar-user" onclick="window.location.href='/index.html'"
+                    style="cursor: pointer; background: rgba(239, 68, 68, 0.1); border-radius: 12px; padding: 0.5rem 1rem;">
+                    <div class="navbar-user-avatar"
+                        style="background: transparent; color: #ef4444; width: auto; height: auto;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <span style="color: #ef4444;">Salir</span>
+                </div>
+
                 <div class="navbar-cart" onclick="window.location.href='cart.html'" style="cursor: pointer;">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="navbar-cart-badge" id="cartCount">0</span>
                 </div>
 
-                <div class="navbar-user" id="exitButton" onclick="window.location.href='/index.html'"
-                    style="cursor: pointer;">
+                <div class="navbar-user" id="exitButton" style="cursor: pointer;">
                     <div class="navbar-user-avatar">
                         <i class="fas fa-sign-out-alt"></i>
                     </div>
@@ -120,6 +130,21 @@
                                     placeholder="Ej: Managua, Nicaragua"></textarea>
                             </div>
 
+                            <!-- Sección de Puntos (Solo visibles si el usuario está logueado y tiene puntos) -->
+                            <div class="form-group" id="pointsSection"
+                                style="display: none; background: rgba(245, 158, 11, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                <h4
+                                    style="color: #d97706; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-star"></i> Tienes <span id="availablePoints">0</span> Puntos
+                                    (equivale a <span id="availablePointsMoney">0</span> C$)
+                                </h4>
+                                <label for="usePoints"
+                                    style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: #1e293b; font-weight: 600;">
+                                    <input type="checkbox" id="usePoints" style="width: 18px; height: 18px;">
+                                    Quiero usar mis puntos para obtener un descuento
+                                </label>
+                            </div>
+
                             <div class="form-actions">
                                 <a href="cart.html" class="btn btn-outline">
                                     <i class="fas fa-arrow-left"></i>
@@ -157,6 +182,10 @@
                                 <span>Envío:</span>
                                 <span class="text-success">Gratis</span>
                             </div>
+                            <div class="summary-row text-success" id="discountRow" style="display: none;">
+                                <span>Descuento (Puntos):</span>
+                                <span id="discountAmount">-0.00 C$</span>
+                            </div>
                             <div class="summary-divider"></div>
                             <div class="summary-row summary-total">
                                 <span>Total:</span>
@@ -184,6 +213,7 @@
 
     <!-- JavaScript -->
     <script src="../public/js/api.js"></script>
+    <script src="../public/js/store-auth.js"></script>
     <script src="../public/js/checkout.js"></script>
 
 </body>

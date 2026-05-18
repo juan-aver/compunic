@@ -46,6 +46,7 @@
 
 /* Tablets: Formularios 2 columnas */
 @media (min-width: 769px) and (max-width: 1024px) {
+
     .formulario form,
     #formulario-garantias,
     .form-section form {
@@ -55,8 +56,8 @@
     }
 
     /* Botones y secciones span completo */
-    .formulario form > div[style*="display: flex"],
-    .formulario form > .form-buttons,
+    .formulario form>div[style*="display: flex"],
+    .formulario form>.form-buttons,
     .formulario h2,
     .busqueda h2 {
         grid-column: 1 / -1;
@@ -65,6 +66,7 @@
 
 /* Móvil: Todo a 1 columna */
 @media (max-width: 768px) {
+
     .formulario,
     .busqueda,
     .tabla {
@@ -94,7 +96,8 @@
     .busqueda select {
         width: 100% !important;
         padding: 12px !important;
-        font-size: 16px !important; /* Prevenir zoom en iOS */
+        font-size: 16px !important;
+        /* Prevenir zoom en iOS */
     }
 
     .input-with-icon {
@@ -114,6 +117,7 @@
 
 /* Móvil: Botones en stack o grid */
 @media (max-width: 768px) {
+
     /* Botones dentro de formularios */
     .formulario div[style*="display: flex"],
     .form-buttons,
@@ -164,7 +168,8 @@
         min-width: 600px;
     }
 
-    th, td {
+    th,
+    td {
         padding: 10px 8px;
         font-size: 0.9rem;
     }
@@ -330,9 +335,10 @@
    ========================================= */
 
 @media (max-width: 768px) {
+
     .modal,
     .modal-content,
-    [class*="modal"] > div {
+    [class*="modal"]>div {
         width: 95vw !important;
         max-width: 95vw !important;
         margin: 10px auto !important;
@@ -347,6 +353,7 @@
    ========================================= */
 
 @media (max-width: 768px) {
+
     .grid-2-col,
     .two-column-layout,
     .grid {
@@ -360,6 +367,7 @@
    ========================================= */
 
 @media (max-width: 768px) {
+
     /* Compras: items del carrito más compactos */
     .compra-item,
     .venta-item,
@@ -379,6 +387,7 @@
    ========================================= */
 
 @media (max-width: 768px) {
+
     /* Accordeones de empleados */
     .accordion-section {
         padding: 12px !important;
@@ -445,7 +454,8 @@
         padding: 35px;
     }
 
-    h2, h3 {
+    h2,
+    h3 {
         font-size: 1.7rem;
     }
 
@@ -453,11 +463,14 @@
         font-size: 1.05rem;
     }
 
-    th, td {
+    th,
+    td {
         padding: 16px 18px;
     }
 
-    input, select, textarea {
+    input,
+    select,
+    textarea {
         padding: 14px 18px;
         font-size: 1.05rem;
     }
@@ -486,7 +499,8 @@
         font-size: 1.1rem;
     }
 
-    h2, h3 {
+    h2,
+    h3 {
         font-size: 2rem;
     }
 }
@@ -496,6 +510,7 @@
    ========================================= */
 
 @media print {
+
     .top-nav,
     .mobile-menu-toggle,
     .mobile-menu,
@@ -515,7 +530,8 @@
         border-collapse: collapse;
     }
 
-    th, td {
+    th,
+    td {
         border: 1px solid #000;
         padding: 4px 8px;
     }
@@ -562,6 +578,7 @@
    ========================================= */
 
 @media (max-width: 768px) {
+
     .factura-container,
     .invoice-container {
         width: 95% !important;
@@ -582,6 +599,7 @@
    ========================================= */
 
 @media (hover: none) and (pointer: coarse) {
+
     /* Dispositivos táctiles */
     button,
     a,

@@ -6,6 +6,8 @@
 // ESTADO
 // ============================================
 let cart = [];
+let maxPoints = 0;
+let pointsUsed = 0;
 
 // ============================================
 // FUNCIONES DE UTILIDAD
@@ -52,10 +54,54 @@ function renderSummary() {
 
     // Calcular totales
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const total = subtotal; // Sin envío por ahora
+    const total = Math.max(0, subtotal - pointsUsed); // Sin envío por ahora, restar puntos
 
     document.getElementById('subtotal').textContent = formatPrice(subtotal);
     document.getElementById('total').textContent = formatPrice(total);
+    
+    // Si se usan puntos
+    if (pointsUsed > 0) {
+        document.getElementById('discountRow').style.display = 'flex';
+        document.getElementById('discountAmount').textContent = `-${formatPrice(pointsUsed)}`;
+    } else {
+        document.getElementById('discountRow').style.display = 'none';
+    }
+}
+
+// Cargar usuario si está logueado
+async function loadUserData() {
+    if (typeof StoreAuth !== 'undefined' && StoreAuth.isLoggedIn()) {
+        try {
+            const res = await StoreAuth.fetchProtected('http://localhost:3001/api/store/auth/me');
+            const data = await res.json();
+            
+            if (data.success && data.cliente) {
+                document.getElementById('nombre').value = `${data.cliente.NOMBRE} ${data.cliente.APELLIDO || ''}`.trim();
+                document.getElementById('email').value = data.cliente.EMAIL;
+                document.getElementById('telefono').value = data.cliente.TELEFONO;
+                
+                // Mostrar puntos si tiene
+                maxPoints = parseInt(data.cliente.PUNTOS) || 0;
+                if (maxPoints > 0) {
+                    document.getElementById('pointsSection').style.display = 'block';
+                    document.getElementById('availablePoints').textContent = maxPoints;
+                    document.getElementById('availablePointsMoney').textContent = maxPoints;
+                    
+                    document.getElementById('usePoints').addEventListener('change', (e) => {
+                        if (e.target.checked) {
+                            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                            pointsUsed = Math.min(maxPoints, subtotal); // No usar más puntos que el total
+                        } else {
+                            pointsUsed = 0;
+                        }
+                        renderSummary();
+                    });
+                }
+            }
+        } catch(e) {
+            console.error("Error loading user data:", e);
+        }
+    }
 }
 
 // ============================================
@@ -99,10 +145,31 @@ async function procesarPedido(datosCliente) {
         }));
 
         // Calcular total
-        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const total = Math.max(0, subtotal - pointsUsed);
+        
+        // Agregar puntos usados a los datos que enviaremos a nuestra API central de crearPedido
+        // Usaremos fetch normal para incluir autorización si es necesario
+        
+        const headers = { 'Content-Type': 'application/json' };
+        if (typeof StoreAuth !== 'undefined' && StoreAuth.isLoggedIn()) {
+            headers['Authorization'] = `Bearer ${StoreAuth.getToken()}`;
+        }
+        
+        const payload = {
+            cliente: datosCliente,
+            productos: productos,
+            total: total,
+            puntos_usados: pointsUsed
+        };
 
-        // Enviar pedido al backend
-        const resultado = await StoreAPI.crearPedido(datosCliente, productos, total);
+        const response = await fetch('http://localhost:3001/api/store/pedidos', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(payload)
+        });
+        
+        const resultado = await response.json();
 
         return resultado;
 
@@ -165,6 +232,7 @@ function showNotification(message, type = 'info') {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadCart();
+    loadUserData();
 
     const form = document.getElementById('checkoutForm');
     const submitBtn = document.getElementById('submitBtn');

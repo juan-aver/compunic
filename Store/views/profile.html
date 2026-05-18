@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - COMPUNIC</title>
+    <link rel="stylesheet" href="../public/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { 
+            background: var(--bg-secondary); 
+            color: var(--text-primary);
+        }
+        
+        .profile-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        .profile-sidebar {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(86, 165, 221, 0.1);
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            height: fit-content;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 1rem;
+            box-shadow: 0 8px 25px rgba(20, 93, 144, 0.2);
+        }
+
+        .profile-name { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .profile-email { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; }
+
+        .points-card {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .points-card h3 { margin-bottom: 0.5rem; font-size: 1rem; opacity: 0.9; color: white; }
+        .points-card .points { font-size: 2.5rem; font-weight: 800; }
+        .points-card p { font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.9; color: white; }
+
+        .btn-logout {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover { background: rgba(239, 68, 68, 0.2); }
+
+        /* Main Content */
+        .profile-content {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(86, 165, 221, 0.1);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .content-header {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        .content-header h2 { color: var(--text-primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+
+        /* Table */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: rgba(255,255,255,0.05); color: var(--text-muted); font-weight: 600; text-align: left; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        td { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-secondary); }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        
+        .factura-badge {
+            background: rgba(86, 165, 221, 0.15);
+            color: var(--primary);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: 1px solid rgba(86, 165, 221, 0.3);
+        }
+
+        .total-amount { font-weight: 700; color: var(--success); }
+
+        .empty-state { text-align: center; padding: 3rem 0; color: var(--text-muted); }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; color: rgba(255,255,255,0.1); }
+
+        /* Navbar Simple Override for Dark Mode */
+        .navbar {
+            background: var(--bg-card) !important;
+            border-bottom: 1px solid rgba(86, 165, 221, 0.1) !important;
+        }
+        .navbar-brand {
+            color: var(--text-primary) !important;
+        }
+        .navbar-brand i {
+            color: var(--primary) !important;
+        }
+
+        @media (max-width: 768px) {
+            .profile-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar (Simplified) -->
+    <nav class="navbar" style="background: white; border-bottom: 1px solid #e2e8f0;">
+        <div class="container navbar-content" style="padding: 1rem 20px; display: flex; justify-content: space-between;">
+            <a href="index.html" class="navbar-brand" style="color: #145D90; text-decoration: none; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-bolt"></i> COMPUNIC
+            </a>
+            <a href="index.html" style="color: #64748b; text-decoration: none; font-weight: 500;"><i class="fas fa-store"></i> Volver a Tienda</a>
+        </div>
+    </nav>
+
+    <div class="profile-container">
+        <!-- Sidebar -->
+        <div class="profile-sidebar">
+            <div class="profile-avatar"><i class="fas fa-user"></i></div>
+            <h2 class="profile-name" id="userName">Cargando...</h2>
+            <p class="profile-email" id="userEmail">cargando@...</p>
+
+            <div class="points-card">
+                <h3><i class="fas fa-star"></i> Puntos Acumulados</h3>
+                <div class="points" id="userPoints">0</div>
+                <p>1 Punto = 1 C$ de descuento</p>
+            </div>
+
+            <button class="btn-logout" onclick="StoreAuth.logout()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="profile-content">
+            <div class="content-header">
+                <h2><i class="fas fa-shopping-bag"></i> Mi Historial de Compras</h2>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Factura</th>
+                            <th>Artículos</th>
+                            <th>Total Pagado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comprasTableBody">
+                        <!-- Loading -->
+                        <tr><td colspan="4" style="text-align: center; padding: 2rem;">Cargando compras...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="../public/js/store-auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!StoreAuth.isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Load profile data
+            try {
+                const res = await StoreAuth.fetchProtected('http://localhost:3001/api/store/auth/me');
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById('userName').textContent = `${data.cliente.NOMBRE} ${data.cliente.APELLIDO || ''}`;
+                    document.getElementById('userEmail').textContent = data.cliente.EMAIL;
+                    document.getElementById('userPoints').textContent = data.cliente.PUNTOS;
+                }
+            } catch (err) {
+                console.error('Error fetching profile:', err);
+            }
+
+            // Load history
+            try {
+                const res = await StoreAuth.fetchProtected('http://localhost:3001/api/store/auth/compras');
+                const data = await res.json();
+                const tbody = document.getElementById('comprasTableBody');
+
+                if (data.success && data.compras.length > 0) {
+                    tbody.innerHTML = '';
+                    data.compras.forEach(compra => {
+                        const date = new Date(compra.FECHA).toLocaleDateString('es-NI', { year: 'numeric', month: 'short', day: 'numeric' });
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${date}</td>
+                                <td><span class="factura-badge">${compra.FACTURA}</span></td>
+                                <td>${compra.ARTICULOS}</td>
+                                <td class="total-amount">${parseFloat(compra.TOTAL).toLocaleString('en-US', {minimumFractionDigits: 2})} C$</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state">
+                                    <i class="fas fa-box-open"></i>
+                                    <h3>Aún no tienes compras</h3>
+                                    <p>Tus compras aparecerán aquí.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (err) {
+                console.error('Error fetching compras:', err);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -22,7 +22,7 @@ const pedidosController = {
             console.log('=== CREAR PEDIDO ===');
             console.log('Body recibido:', JSON.stringify(req.body, null, 2));
 
-            const { cliente, productos, total } = req.body;
+            const { cliente, productos, total, puntos_usados } = req.body;
 
             // Validar datos requeridos
             if (!cliente || !cliente.nombre || !cliente.email || !cliente.telefono) {
@@ -73,7 +73,7 @@ const pedidosController = {
             console.log('Validaciones pasadas, creando pedido...');
 
             // Crear el pedido
-            const resultado = await Pedidos.crearPedido(cliente, productos);
+            const resultado = await Pedidos.crearPedido(cliente, productos, puntos_usados || 0);
 
             console.log('Pedido creado exitosamente:', resultado);
 

@@ -24,6 +24,7 @@ const serviciosRoutes = require('./routes/servicios.routes.js');
 const devolucionesRoutes = require('./routes/devoluciones.routes.js');
 const dashboardRoutes = require('./routes/dashboard.routes.js');
 const storeRoutes = require('./routes/store.routes.js');
+const storeAuthRoutes = require('./routes/store.auth.routes.js');
 const movimientosStockModel = require('./models/movimientos_stock.model');
 
 const app = express();
@@ -59,6 +60,7 @@ app.use('/api/servicios', serviciosRoutes);
 
 app.use('/api/devoluciones', devolucionesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/store/auth', storeAuthRoutes);
 app.use('/api/store', storeRoutes);
 
 

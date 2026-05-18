@@ -7,6 +7,7 @@
   Ojo con borrar las clases, el CSS depende de esto como mi vida del café.
   ========================================== 
 -->
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,13 +37,22 @@
             </a>
 
             <div class="navbar-actions">
-                <div class="navbar-cart" id="cartButton">
+                <!-- Botón de ir al panel admin (Salir de tienda) -->
+                <div class="navbar-user" onclick="window.location.href='/index.html'"
+                    style="cursor: pointer; background: rgba(239, 68, 68, 0.1); border-radius: 12px; padding: 0.5rem 1rem;">
+                    <div class="navbar-user-avatar"
+                        style="background: transparent; color: #ef4444; width: auto; height: auto;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <span style="color: #ef4444;">Salir</span>
+                </div>
+
+                <div class="navbar-cart" onclick="window.location.href='cart.html'" style="cursor: pointer;">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="navbar-cart-badge" id="cartCount">0</span>
                 </div>
 
-                <div class="navbar-user" id="exitButton" onclick="window.location.href='/index.html'"
-                    style="cursor: pointer;">
+                <div class="navbar-user" id="exitButton" style="cursor: pointer;">
                     <div class="navbar-user-avatar">
                         <i class="fas fa-sign-out-alt"></i>
                     </div>
