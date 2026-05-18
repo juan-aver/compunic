@@ -1,0 +1,610 @@
+/* =========================================
+   RESPONSIVE UNIVERSAL - Compunic
+   Adaptación completa: Teléfonos, Tablets, PCs, TVs
+   ========================================= */
+
+/* =========================================
+   NAVEGACIÓN RESPONSIVA
+   ========================================= */
+
+/* En móvil y tablet pequeña: ocultar nav desktop, mostrar hamburguesa */
+@media (max-width: 768px) {
+    .top-nav {
+        padding: 0.5rem 1rem !important;
+    }
+
+    .top-nav .nav-menu {
+        display: none !important;
+    }
+
+    .top-nav .user-profile {
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .top-nav .user-profile #user-display {
+        font-size: 0.85rem;
+        margin-right: 5px;
+    }
+
+    .top-nav .user-profile .user-avatar {
+        width: 35px;
+        height: 35px;
+    }
+
+    .top-nav .user-profile button {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        min-height: 35px;
+        min-width: auto;
+    }
+}
+
+/* =========================================
+   FORMULARIOS RESPONSIVOS
+   ========================================= */
+
+/* Tablets: Formularios 2 columnas */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .formulario form,
+    #formulario-garantias,
+    .form-section form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    /* Botones y secciones span completo */
+    .formulario form > div[style*="display: flex"],
+    .formulario form > .form-buttons,
+    .formulario h2,
+    .busqueda h2 {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Móvil: Todo a 1 columna */
+@media (max-width: 768px) {
+    .formulario,
+    .busqueda,
+    .tabla {
+        padding: 12px !important;
+        margin-bottom: 15px !important;
+        border-radius: 10px !important;
+    }
+
+    .formulario h2,
+    .busqueda h2,
+    .tabla h2 {
+        font-size: 1.15rem;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+    }
+
+    .formulario form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .formulario input,
+    .formulario select,
+    .formulario textarea,
+    .busqueda input,
+    .busqueda select {
+        width: 100% !important;
+        padding: 12px !important;
+        font-size: 16px !important; /* Prevenir zoom en iOS */
+    }
+
+    .input-with-icon {
+        width: 100%;
+    }
+
+    .input-with-icon input,
+    .input-with-icon select {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+/* =========================================
+   BOTONES RESPONSIVOS
+   ========================================= */
+
+/* Móvil: Botones en stack o grid */
+@media (max-width: 768px) {
+    /* Botones dentro de formularios */
+    .formulario div[style*="display: flex"],
+    .form-buttons,
+    .busqueda div[style*="display: flex"] {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .formulario div[style*="display: flex"] button,
+    .form-buttons button {
+        flex: 1 1 calc(50% - 4px) !important;
+        max-width: none !important;
+        min-height: 44px;
+        font-size: 0.9rem !important;
+    }
+
+    /* Búsqueda: stack vertical */
+    .busqueda div[style*="display: flex"] {
+        flex-direction: column !important;
+    }
+
+    .busqueda div[style*="display: flex"] select,
+    .busqueda div[style*="display: flex"] input,
+    .busqueda div[style*="display: flex"] button {
+        width: 100% !important;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+    .formulario div[style*="display: flex"] button {
+        flex: 1 1 100% !important;
+    }
+}
+
+/* =========================================
+   TABLAS RESPONSIVAS (complementa responsive-tables.css)
+   ========================================= */
+
+/* Tablet: Scroll horizontal si la tabla es muy ancha */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .tabla {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    th, td {
+        padding: 10px 8px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Móvil: Ya se convierten a cards via responsive-tables.css */
+/* Mejoras adicionales para las cards */
+@media (max-width: 768px) {
+    .tabla {
+        overflow: visible;
+    }
+
+    /* Mejorar scroll en contenido de tabla */
+    table {
+        min-width: auto !important;
+    }
+}
+
+/* =========================================
+   CONTENIDO PRINCIPAL RESPONSIVO
+   ========================================= */
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 0.75rem !important;
+        max-width: 100% !important;
+    }
+
+    .page-header {
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .page-header h1 {
+        font-size: 1.3rem;
+    }
+
+    .subtitle {
+        font-size: 0.85rem;
+    }
+
+    /* Content area (SPA views) */
+    #content {
+        padding: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 0.5rem !important;
+    }
+
+    .page-header h1 {
+        font-size: 1.1rem;
+    }
+}
+
+/* =========================================
+   DASHBOARD CARDS RESPONSIVAS
+   ========================================= */
+
+@media (max-width: 768px) {
+    .stat-card {
+        padding: 1rem;
+        min-height: auto;
+        gap: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.4rem !important;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    /* Highlight cards */
+    .highlight-card {
+        padding: 1rem;
+        gap: 1rem;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .highlight-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+    }
+
+    .highlight-info h3 {
+        font-size: 1.1rem;
+    }
+
+    /* Chart cards */
+    .chart-card {
+        padding: 1rem;
+        min-height: 300px;
+    }
+
+    .chart-placeholder {
+        height: 250px;
+    }
+
+    /* Dashboard greeting */
+    .dashboard-greeting {
+        padding: 1.25rem;
+    }
+
+    .dashboard-greeting h2 {
+        font-size: 1.4rem;
+    }
+
+    .dashboard-greeting p {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+    }
+
+    .stat-value {
+        font-size: 1.2rem !important;
+    }
+
+    .highlight-card {
+        flex-direction: row;
+        text-align: left;
+    }
+
+    .highlight-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+
+    .highlight-info h4 {
+        font-size: 0.75rem;
+    }
+
+    .highlight-info h3 {
+        font-size: 1rem;
+        border: none;
+        padding: 0;
+    }
+
+    .dashboard-greeting h2 {
+        font-size: 1.15rem;
+    }
+}
+
+/* =========================================
+   MODALES RESPONSIVOS
+   ========================================= */
+
+@media (max-width: 768px) {
+    .modal,
+    .modal-content,
+    [class*="modal"] > div {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        margin: 10px auto !important;
+        padding: 15px !important;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+}
+
+/* =========================================
+   GRIDS RESPONSIVOS 2-COLUMNAS (Compras, etc)
+   ========================================= */
+
+@media (max-width: 768px) {
+    .grid-2-col,
+    .two-column-layout,
+    .grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+}
+
+/* =========================================
+   ESPECÍFICOS DE VISTAS - COMPRAS
+   ========================================= */
+
+@media (max-width: 768px) {
+    /* Compras: items del carrito más compactos */
+    .compra-item,
+    .venta-item,
+    .cart-item {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .compra-item input,
+    .venta-item input {
+        width: 100% !important;
+    }
+}
+
+/* =========================================
+   ESPECÍFICOS DE VISTAS - EMPLEADOS
+   ========================================= */
+
+@media (max-width: 768px) {
+    /* Accordeones de empleados */
+    .accordion-section {
+        padding: 12px !important;
+    }
+
+    .accordion-header {
+        padding: 10px !important;
+        font-size: 0.95rem;
+    }
+
+    .accordion-body {
+        padding: 10px !important;
+    }
+
+    .accordion-body .form-group {
+        margin-bottom: 10px;
+    }
+}
+
+/* =========================================
+   PANTALLAS GRANDES - TV / 4K (≥1920px)
+   ========================================= */
+
+@media (min-width: 1920px) {
+    .main-content {
+        max-width: 1600px !important;
+        padding: 2.5rem 3rem !important;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+    }
+
+    .charts-grid {
+        gap: 2rem;
+    }
+
+    .dashboard-highlights {
+        gap: 2rem;
+    }
+
+    .stat-card {
+        padding: 2rem;
+        min-height: 180px;
+    }
+
+    .stat-value {
+        font-size: 2.2rem !important;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+    }
+
+    .chart-card {
+        min-height: 500px;
+        padding: 2rem;
+    }
+
+    .formulario,
+    .busqueda,
+    .tabla {
+        padding: 35px;
+    }
+
+    h2, h3 {
+        font-size: 1.7rem;
+    }
+
+    table {
+        font-size: 1.05rem;
+    }
+
+    th, td {
+        padding: 16px 18px;
+    }
+
+    input, select, textarea {
+        padding: 14px 18px;
+        font-size: 1.05rem;
+    }
+
+    button {
+        padding: 14px 28px;
+        font-size: 1.05rem;
+    }
+}
+
+/* Pantallas extra grandes (4K) */
+@media (min-width: 2560px) {
+    .main-content {
+        max-width: 2000px !important;
+    }
+
+    .stat-value {
+        font-size: 2.6rem !important;
+    }
+
+    .dashboard-grid {
+        gap: 2.5rem;
+    }
+
+    table {
+        font-size: 1.1rem;
+    }
+
+    h2, h3 {
+        font-size: 2rem;
+    }
+}
+
+/* =========================================
+   PRINT STYLES (Opcional pero útil)
+   ========================================= */
+
+@media print {
+    .top-nav,
+    .mobile-menu-toggle,
+    .mobile-menu,
+    .mobile-menu-backdrop,
+    button,
+    .busqueda,
+    .formulario {
+        display: none !important;
+    }
+
+    .main-content {
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 1px solid #000;
+        padding: 4px 8px;
+    }
+}
+
+/* =========================================
+   UTILIDADES RESPONSIVAS
+   ========================================= */
+
+/* Ocultar en móvil */
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+/* Ocultar en desktop */
+@media (min-width: 769px) {
+    .hide-desktop {
+        display: none !important;
+    }
+}
+
+/* Ocultar en tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .hide-tablet {
+        display: none !important;
+    }
+}
+
+/* Safe area para dispositivos con notch (iPhone X+) */
+@supports (padding: env(safe-area-inset-bottom)) {
+    .top-nav {
+        padding-top: calc(0.8rem + env(safe-area-inset-top));
+    }
+
+    .mobile-menu {
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+}
+
+/* =========================================
+   FACTURA / INVOICE RESPONSIVE
+   ========================================= */
+
+@media (max-width: 768px) {
+    .factura-container,
+    .invoice-container {
+        width: 95% !important;
+        padding: 15px !important;
+        font-size: 0.85rem;
+    }
+
+    .factura-header,
+    .invoice-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+}
+
+/* =========================================
+   TOUCH-FRIENDLY IMPROVEMENTS
+   ========================================= */
+
+@media (hover: none) and (pointer: coarse) {
+    /* Dispositivos táctiles */
+    button,
+    a,
+    .nav-link,
+    .mobile-menu-link,
+    .dropdown-menu li a {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Eliminar hover effects en touch */
+    .stat-card:hover {
+        transform: none;
+    }
+
+    tbody tr:hover {
+        transform: none;
+    }
+
+    /* Scroll suave para listas */
+    .tabla,
+    .mobile-menu {
+        -webkit-overflow-scrolling: touch;
+    }
+}
