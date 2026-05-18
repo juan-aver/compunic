@@ -53,6 +53,16 @@
           const el = document.getElementById(id);
           if (el) el.style.display = 'none';
         });
+
+        // Configuración visual del Dashboard para Vendedor
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.vendedor-only').forEach(el => el.style.display = 'block');
+        
+        // Asignar nombre
+        const greetingName = document.getElementById('vendedor-nombre-greeting');
+        if(greetingName && user) {
+            greetingName.textContent = user.split(' ')[0] || user;
+        }
       }
 
       // Cargar estadísticas del dashboard
@@ -222,7 +232,7 @@
         <!-- Dashboard Mejorado -->
         <div class="dashboard-grid">
           <!-- Tarjeta 1: Ingresos -->
-          <div class="stat-card stat-card-blue stagger-item">
+          <div class="stat-card stat-card-blue stagger-item" onclick="cargarVista('gestion-lista-ventas')" style="cursor: pointer;">
             <div class="stat-icon">
               <i class="fas fa-dollar-sign" style="font-size: 40px;"></i>
             </div>
@@ -238,7 +248,7 @@
           </div>
 
           <!-- Tarjeta 2: Servicios -->
-          <div class="stat-card stat-card-red stagger-item">
+          <div class="stat-card stat-card-red stagger-item" onclick="cargarVista('gestion-servicios', true)" style="cursor: pointer;">
             <div class="stat-icon">
               <i class="fas fa-clipboard-list" style="font-size: 40px;"></i>
             </div>
@@ -252,8 +262,8 @@
             </div>
           </div>
 
-          <!-- Tarjeta 3: Stock Crítico -->
-          <div class="stat-card stat-card-yellow stagger-item">
+          <!-- Tarjeta 3: Stock Crítico (Solo Admin) -->
+          <div class="stat-card stat-card-yellow stagger-item admin-only" onclick="cargarVista('gestion-productos', true)" style="cursor: pointer;">
             <div class="stat-icon">
               <i class="fas fa-box" style="font-size: 40px;"></i>
             </div>
@@ -266,7 +276,7 @@
           </div>
 
           <!-- Tarjeta 4: Clientes Nuevos -->
-          <div class="stat-card stat-card-green stagger-item">
+          <div class="stat-card stat-card-green stagger-item" onclick="cargarVista('gestion-clientes')" style="cursor: pointer;">
             <div class="stat-icon">
               <i class="fas fa-users" style="font-size: 40px;"></i>
             </div>
@@ -279,8 +289,47 @@
           </div>
         </div>
 
-        <!-- Gráficos -->
-        <div class="charts-grid mt-4">
+        <!-- Secciones Exclusivas de Administrador -->
+        <div class="dashboard-highlights admin-only">
+          <div class="highlight-card highlight-client">
+            <div class="highlight-icon">🏆</div>
+            <div class="highlight-info">
+              <h4>Cliente Top</h4>
+              <h3 id="top-cliente-nombre">Cargando...</h3>
+              <p><i class="fas fa-shopping-bag"></i> <span id="top-cliente-compras">0</span> compras</p>
+              <p class="highlight-amount" id="top-cliente-monto">0.00 C$</p>
+            </div>
+          </div>
+          
+          <div class="highlight-card highlight-best-product">
+            <div class="highlight-icon">📈</div>
+            <div class="highlight-info">
+              <h4>Producto Más Vendido</h4>
+              <h3 id="best-product-nombre">Cargando...</h3>
+              <p><i class="fas fa-box-open"></i> <span id="best-product-unidades">0</span> unid. vendidas</p>
+              <p class="highlight-amount" id="best-product-monto">0.00 C$ generados</p>
+            </div>
+          </div>
+
+          <div class="highlight-card highlight-worst-product">
+            <div class="highlight-icon">📉</div>
+            <div class="highlight-info">
+              <h4>Producto Menos Vendido</h4>
+              <h3 id="worst-product-nombre">Cargando...</h3>
+              <p><i class="fas fa-box-open"></i> <span id="worst-product-unidades">0</span> unid. vendidas</p>
+              <p class="highlight-amount" id="worst-product-monto">0.00 C$ generados</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección Exclusiva para Vendedor -->
+        <div class="vendedor-only dashboard-greeting" style="display: none;">
+          <h2>¡Hola, <span id="vendedor-nombre-greeting">Vendedor</span>! 👋</h2>
+          <p>Aquí tienes un resumen de tu rendimiento y las tareas pendientes.</p>
+        </div>
+
+        <!-- Gráficos (Solo Admin) -->
+        <div class="charts-grid mt-4 admin-only">
           <div class="chart-card">
             <h4>Ventas vs. Costos (Últimos 6 Meses)</h4>
             <div class="chart-placeholder" id="chart-ventas-costos">

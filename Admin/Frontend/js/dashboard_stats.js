@@ -18,7 +18,10 @@ async function cargarEstadisticasDashboard() {
             cargarIngresosMes(),
             cargarServiciosPendientes(),
             cargarStockCritico(),
-            cargarClientesNuevos()
+            cargarClientesNuevos(),
+            cargarTopCliente(),
+            cargarProductoMasVendido(),
+            cargarProductoMenosVendido()
         ]);
 
         // Cargar gráficos (opcional, puedes implementarlos después)
@@ -104,6 +107,63 @@ async function cargarClientesNuevos() {
     } catch (error) {
         console.error('Error al cargar clientes nuevos:', error);
         document.getElementById('clientes-total').textContent = 'Error al cargar';
+    }
+}
+
+// Cargar Cliente Top
+async function cargarTopCliente() {
+    try {
+        const response = await fetch(`${API_BASE_DASHBOARD}/top-cliente`);
+        const data = await response.json();
+        
+        if(data.encontrado && data.cliente) {
+            document.getElementById('top-cliente-nombre').textContent = data.cliente.nombre;
+            document.getElementById('top-cliente-compras').textContent = data.cliente.total_compras;
+            document.getElementById('top-cliente-monto').textContent = `${data.cliente.monto_total.toLocaleString('es-NI', {minimumFractionDigits: 2})} C$`;
+        } else {
+            document.getElementById('top-cliente-nombre').textContent = 'No hay datos';
+        }
+    } catch (error) {
+        console.error('Error al cargar top cliente:', error);
+        document.getElementById('top-cliente-nombre').textContent = 'Error';
+    }
+}
+
+// Cargar Producto Más Vendido
+async function cargarProductoMasVendido() {
+    try {
+        const response = await fetch(`${API_BASE_DASHBOARD}/producto-mas-vendido`);
+        const data = await response.json();
+        
+        if(data.encontrado && data.producto) {
+            document.getElementById('best-product-nombre').textContent = data.producto.nombre;
+            document.getElementById('best-product-unidades').textContent = data.producto.total_vendido;
+            document.getElementById('best-product-monto').textContent = `${data.producto.ingresos.toLocaleString('es-NI', {minimumFractionDigits: 2})} C$ generados`;
+        } else {
+            document.getElementById('best-product-nombre').textContent = 'No hay datos';
+        }
+    } catch (error) {
+        console.error('Error al cargar producto más vendido:', error);
+        document.getElementById('best-product-nombre').textContent = 'Error';
+    }
+}
+
+// Cargar Producto Menos Vendido
+async function cargarProductoMenosVendido() {
+    try {
+        const response = await fetch(`${API_BASE_DASHBOARD}/producto-menos-vendido`);
+        const data = await response.json();
+        
+        if(data.encontrado && data.producto) {
+            document.getElementById('worst-product-nombre').textContent = data.producto.nombre;
+            document.getElementById('worst-product-unidades').textContent = data.producto.total_vendido;
+            document.getElementById('worst-product-monto').textContent = `${data.producto.ingresos.toLocaleString('es-NI', {minimumFractionDigits: 2})} C$ generados`;
+        } else {
+            document.getElementById('worst-product-nombre').textContent = 'No hay datos';
+        }
+    } catch (error) {
+        console.error('Error al cargar producto menos vendido:', error);
+        document.getElementById('worst-product-nombre').textContent = 'Error';
     }
 }
 

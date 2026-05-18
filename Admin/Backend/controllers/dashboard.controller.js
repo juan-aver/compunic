@@ -194,3 +194,121 @@ exports.getStockPorCategoria = async (req, res) => {
         res.status(500).json({ error: 'Error al obtener stock por categoría' });
     }
 };
+
+// Obtener el cliente con más compras
+exports.getTopCliente = async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                c.ID_CLIENTE,
+                c.NOMBRE,
+                c.APELLIDO,
+                c.TELEFONO,
+                COUNT(v.ID_VENTA) as total_compras,
+                COALESCE(SUM(v.TOTAL), 0) as monto_total
+            FROM CLIENTES c
+            INNER JOIN VENTAS v ON c.ID_CLIENTE = v.ID_CLIENTE
+            GROUP BY c.ID_CLIENTE, c.NOMBRE, c.APELLIDO, c.TELEFONO
+            ORDER BY total_compras DESC, monto_total DESC
+            LIMIT 1
+        `;
+        const [resultado] = await db.query(query);
+
+        if (resultado.length > 0) {
+            res.json({
+                encontrado: true,
+                cliente: {
+                    nombre: `${resultado[0].NOMBRE} ${resultado[0].APELLIDO}`,
+                    telefono: resultado[0].TELEFONO || 'N/A',
+                    total_compras: resultado[0].total_compras,
+                    monto_total: parseFloat(resultado[0].monto_total)
+                }
+            });
+        } else {
+            res.json({ encontrado: false });
+        }
+    } catch (err) {
+        console.error('❌ Error al obtener top cliente:', err);
+        res.status(500).json({ error: 'Error al obtener top cliente' });
+    }
+};
+
+// Obtener el producto más vendido
+exports.getProductoMasVendido = async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                p.ID_PRODUCTO,
+                p.NOMBRE_PRODUCTO,
+                p.IMAGEN_URL,
+                p.PRECIO_VENTA,
+                SUM(vp.cantidad_neta) as total_vendido,
+                COALESCE(SUM(vp.sub_total), 0) as ingresos_generados
+            FROM VENTAS_PRODUCTOS vp
+            INNER JOIN PRODUCTOS p ON vp.ID_PRODUCTO = p.ID_PRODUCTO
+            GROUP BY p.ID_PRODUCTO, p.NOMBRE_PRODUCTO, p.IMAGEN_URL, p.PRECIO_VENTA
+            ORDER BY total_vendido DESC
+            LIMIT 1
+        `;
+        const [resultado] = await db.query(query);
+
+        if (resultado.length > 0) {
+            res.json({
+                encontrado: true,
+                producto: {
+                    id: resultado[0].ID_PRODUCTO,
+                    nombre: resultado[0].NOMBRE_PRODUCTO,
+                    imagen: resultado[0].IMAGEN_URL,
+                    precio: parseFloat(resultado[0].PRECIO_VENTA || 0),
+                    total_vendido: resultado[0].total_vendido,
+                    ingresos: parseFloat(resultado[0].ingresos_generados)
+                }
+            });
+        } else {
+            res.json({ encontrado: false });
+        }
+    } catch (err) {
+        console.error('❌ Error al obtener producto más vendido:', err);
+        res.status(500).json({ error: 'Error al obtener producto más vendido' });
+    }
+};
+
+// Obtener el producto menos vendido (que tenga al menos 1 venta)
+exports.getProductoMenosVendido = async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                p.ID_PRODUCTO,
+                p.NOMBRE_PRODUCTO,
+                p.IMAGEN_URL,
+                p.PRECIO_VENTA,
+                SUM(vp.cantidad_neta) as total_vendido,
+                COALESCE(SUM(vp.sub_total), 0) as ingresos_generados
+            FROM VENTAS_PRODUCTOS vp
+            INNER JOIN PRODUCTOS p ON vp.ID_PRODUCTO = p.ID_PRODUCTO
+            GROUP BY p.ID_PRODUCTO, p.NOMBRE_PRODUCTO, p.IMAGEN_URL, p.PRECIO_VENTA
+            ORDER BY total_vendido ASC
+            LIMIT 1
+        `;
+        const [resultado] = await db.query(query);
+
+        if (resultado.length > 0) {
+            res.json({
+                encontrado: true,
+                producto: {
+                    id: resultado[0].ID_PRODUCTO,
+                    nombre: resultado[0].NOMBRE_PRODUCTO,
+                    imagen: resultado[0].IMAGEN_URL,
+                    precio: parseFloat(resultado[0].PRECIO_VENTA || 0),
+                    total_vendido: resultado[0].total_vendido,
+                    ingresos: parseFloat(resultado[0].ingresos_generados)
+                }
+            });
+        } else {
+            res.json({ encontrado: false });
+        }
+    } catch (err) {
+        console.error('❌ Error al obtener producto menos vendido:', err);
+        res.status(500).json({ error: 'Error al obtener producto menos vendido' });
+    }
+};

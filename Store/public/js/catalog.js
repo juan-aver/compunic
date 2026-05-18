@@ -262,7 +262,7 @@ function renderProducts(products) {
         const stockStatus = getStockStatus(product.stock);
         const gradient = getGradientForProduct(product.id);
         const imageContent = product.imageUrl
-            ? `<img src="http://localhost:3001/${product.imageUrl}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: contain; padding: 1.5rem;" loading="lazy" />`
+            ? `<img src="http://localhost:3001/${product.imageUrl}" alt="${product.name}" loading="lazy" />`
             : `<div style="font-size: 4rem; color: rgba(255,255,255,0.2);"><i class="fas fa-laptop"></i></div>`;
 
         return `

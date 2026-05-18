@@ -18,4 +18,9 @@ router.get('/clientes-nuevos', dashboardController.getClientesNuevos);
 router.get('/ventas-vs-costos', dashboardController.getVentasVsCostos);
 router.get('/stock-por-categoria', dashboardController.getStockPorCategoria);
 
+// Nuevas estadísticas de negocio
+router.get('/top-cliente', dashboardController.getTopCliente);
+router.get('/producto-mas-vendido', dashboardController.getProductoMasVendido);
+router.get('/producto-menos-vendido', dashboardController.getProductoMenosVendido);
+
 module.exports = router;

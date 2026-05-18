@@ -1441,17 +1441,19 @@ textarea[readonly] {
 .product-card .card-image {
   width: 100%;
   height: 170px;
-  background: linear-gradient(135deg, #f5f7fa, #e8ecf1);
+  background: #f0f2f5;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  position: relative;
 }
 
 .product-card .card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
   transition: transform 0.3s ease;
 }
 
@@ -2289,6 +2291,7 @@ textarea[readonly] {
   width: 100%;
   height: 100px;
   object-fit: cover;
+  display: block;
 }
 
 .ventas-pos-product-card .pos-card-placeholder {
