@@ -1,0 +1,26 @@
+{
+  "name": "aurum",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm run start:aurum\" \"npm run start:noxtrum\"",
+    "start:aurum": "node server.js",
+    "start:noxtrum": "cd noxtrum/backend/Noxtrum.API && dotnet run",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

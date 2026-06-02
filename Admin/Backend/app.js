@@ -26,6 +26,8 @@ const dashboardRoutes = require('./routes/dashboard.routes.js');
 const storeRoutes = require('./routes/store.routes.js');
 const storeAuthRoutes = require('./routes/store.auth.routes.js');
 const movimientosStockModel = require('./models/movimientos_stock.model');
+const aurumRoutes = require('./routes/aurum.routes.js');
+const aurumService = require('./services/aurum.service');
 
 const app = express();
 
@@ -62,13 +64,16 @@ app.use('/api/devoluciones', devolucionesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/store/auth', storeAuthRoutes);
 app.use('/api/store', storeRoutes);
-
+app.use('/api/aurum', aurumRoutes);
 
 
 
 // 2. Ejecutar la sincronización (no bloquea el arranque del servidor)
 // Esto se ejecutará en segundo plano cada vez que guardes o reinicies
 movimientosStockModel.sincronizarSiEstaVacio();
+
+// 3. Inicializar AURUM (Gemini IA)
+aurumService.inicializarGemini();
 
 
 module.exports = app;
