@@ -27,6 +27,9 @@
   <link rel="stylesheet" href="css/responsive-universal.css">
   <!-- AURUM Chatbot IA -->
   <link rel="stylesheet" href="css/aurum-chat.css">
+  <!-- AURUM Onboarding Tutorial -->
+  <link rel="stylesheet" href="css/aurum-tutorial.css">
+  <script src="js/aurum-tutorial.js" defer></script>
   <script src="js/mobile-menu.js" defer></script>
   <script src="js/touch-gestures.js" defer></script>
   <script src="js/table-data-labels.js" defer></script>
@@ -70,6 +73,18 @@
 
       // Cargar estadísticas del dashboard
       cargarEstadisticasDashboard();
+
+      // Auto-iniciar el tutorial interactivo de AURUM si no se ha completado
+      setTimeout(() => {
+        if (typeof AurumTutorial !== 'undefined') {
+          if (sessionStorage.getItem('aurum_tutorial_start_on_load') === 'true') {
+            sessionStorage.removeItem('aurum_tutorial_start_on_load');
+            AurumTutorial.start(false);
+          } else {
+            AurumTutorial.start(true);
+          }
+        }
+      }, 1000);
     });
   </script>
   <!-- ===== Módulos de Lógica (reemplazan app_logic.js) ===== -->
@@ -146,6 +161,7 @@
       <div class="user-profile">
         <span id="user-display">Usuario: ADMIN</span>
         <img src="assets/img/icon user.png" alt="User" class="user-avatar">
+        <button onclick="AurumTutorial.start(false)" class="btn-tutorial">✨ Guía Aurum</button>
         <button onclick="Auth.logout()"
           style="margin-left: 20px; background: #d00505; border: none; color: #ffffff; padding: 10px 20px; cursor: pointer; font-weight: bold;">Salir</button>
       </div>
@@ -228,6 +244,12 @@
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-pagos-web')">
             <span class="mobile-menu-icon">💳</span>
             Pagos Web
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="#" class="mobile-menu-link" onclick="AurumTutorial.start(false); document.querySelector('.mobile-menu-toggle').click();">
+            <span class="mobile-menu-icon">✨</span>
+            Guía Aurum
           </a>
         </li>
       </ul>

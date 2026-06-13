@@ -1,0 +1,376 @@
+/* =========================================
+   COMPUNIC - AURUM ONBOARDING TUTORIAL CSS
+   Estilos premium de diseño glassmorphism
+   ========================================= */
+
+/* Backdrop general del tutorial (para pasos centrados) */
+.aurum-tutorial-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(10, 22, 25, 0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 99990;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.aurum-tutorial-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Bloqueador de clics para evitar que el usuario haga clic fuera del elemento destacado */
+.aurum-tutorial-blocker {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99980;
+    pointer-events: auto;
+    cursor: default;
+    display: none;
+}
+
+.aurum-tutorial-active .aurum-tutorial-blocker {
+    display: block;
+}
+
+/* Clase aplicada al elemento destacado para resaltarlo sobre el fondo oscuro */
+.aurum-tutorial-focus {
+    position: relative !important;
+    z-index: 99995 !important;
+    box-shadow: 0 0 0 9999px rgba(10, 22, 25, 0.75), 
+                0 0 0 4px var(--primary-400),
+                0 10px 30px rgba(0, 0, 0, 0.5) !important;
+    border-radius: var(--radius-md, 8px) !important;
+    pointer-events: none !important; /* Evitar clics accidentales en el propio elemento durante la explicación */
+    transition: box-shadow 0.3s ease, transform 0.3s ease !important;
+}
+
+/* Popover / Burbuja de diálogo de AURUM */
+.aurum-tutorial-popover {
+    position: fixed;
+    z-index: 100000;
+    width: 380px;
+    max-width: 90vw;
+    background: rgba(22, 36, 40, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-xl, 12px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    padding: var(--space-5, 20px);
+    color: #ffffff;
+    font-family: var(--font-primary), sans-serif;
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+    transition: opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: auto;
+}
+
+.aurum-tutorial-popover.active {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+/* Cabecera del Popover */
+.aurum-tutorial-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: var(--space-3, 12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+}
+
+.aurum-tutorial-avatar {
+    font-size: 28px;
+    background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(86, 165, 221, 0.4);
+    flex-shrink: 0;
+}
+
+.aurum-tutorial-title-area {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.aurum-tutorial-title {
+    font-size: var(--text-base, 16px);
+    font-weight: var(--font-bold, 700);
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.aurum-tutorial-subtitle {
+    font-size: var(--text-xs, 12px);
+    color: var(--primary-300, #8ec0e5);
+    margin: 0;
+    font-weight: 500;
+}
+
+.aurum-tutorial-close-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 18px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    padding: 0 4px;
+}
+
+.aurum-tutorial-close-btn:hover {
+    color: var(--error-400, #f87171);
+}
+
+/* Cuerpo del Popover */
+.aurum-tutorial-body {
+    font-size: var(--text-sm, 14px);
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: var(--space-5, 20px);
+}
+
+.aurum-tutorial-body p {
+    margin: 0 0 10px 0;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.aurum-tutorial-body p:last-child {
+    margin-bottom: 0;
+}
+
+/* Caja de tareas/pasos dentro del cuerpo */
+.aurum-tutorial-task-box {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid var(--primary-400);
+    padding: 10px;
+    border-radius: 0 var(--radius-md, 6px) var(--radius-md, 6px) 0;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+/* Barra de Progreso */
+.aurum-tutorial-progress-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4, 16px);
+}
+
+.aurum-tutorial-progress-bar {
+    flex-grow: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-full);
+    margin-right: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.aurum-tutorial-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-400), var(--success-400));
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.aurum-tutorial-step-text {
+    font-size: var(--text-xs, 12px);
+    color: rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+}
+
+/* Botonera de Acciones */
+.aurum-tutorial-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.aurum-tutorial-btn {
+    padding: 8px 14px;
+    border-radius: var(--radius-md, 6px);
+    font-size: var(--text-xs, 12px);
+    font-weight: var(--font-bold, 700);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aurum-tutorial-btn-next {
+    background: var(--primary-500, #388acb);
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(56, 138, 203, 0.3);
+}
+
+.aurum-tutorial-btn-next:hover {
+    background: var(--primary-600, #256eab);
+    transform: translateY(-1px);
+}
+
+.aurum-tutorial-btn-prev {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.aurum-tutorial-btn-prev:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.aurum-tutorial-btn-skip {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 8px 6px;
+}
+
+.aurum-tutorial-btn-skip:hover {
+    color: var(--error-400, #f87171);
+}
+
+/* Botón flotante global para saltar el tutorial en todo momento */
+.aurum-tutorial-global-skip {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100005;
+    background: rgba(220, 38, 38, 0.85);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius-full, 9999px);
+    padding: 10px 18px;
+    font-size: var(--text-xs, 12px);
+    font-weight: var(--font-bold, 700);
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aurum-tutorial-global-skip:hover {
+    background: rgb(220, 38, 38);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(220, 38, 38, 0.5);
+}
+
+.aurum-tutorial-global-skip:active {
+    transform: translateY(1px);
+}
+
+/* Flechas indicadoras del Popover */
+.aurum-tutorial-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+.aurum-tutorial-popover[data-placement="top"] .aurum-tutorial-arrow {
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 8px 8px 0 8px;
+    border-color: rgba(22, 36, 40, 0.95) transparent transparent transparent;
+}
+
+.aurum-tutorial-popover[data-placement="bottom"] .aurum-tutorial-arrow {
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 8px 8px 8px;
+    border-color: transparent transparent rgba(22, 36, 40, 0.95) transparent;
+}
+
+.aurum-tutorial-popover[data-placement="left"] .aurum-tutorial-arrow {
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 8px 0 8px 8px;
+    border-color: transparent transparent transparent rgba(22, 36, 40, 0.95);
+}
+
+.aurum-tutorial-popover[data-placement="right"] .aurum-tutorial-arrow {
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 8px 8px 8px 0;
+    border-color: transparent rgba(22, 36, 40, 0.95) transparent transparent;
+}
+
+/* Posición centrada como Modal (cuando no hay elemento al que apuntar) */
+.aurum-tutorial-popover.modal-center {
+    position: fixed;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -40%) scale(0.9) !important;
+    max-width: 450px;
+    width: 90vw;
+}
+
+.aurum-tutorial-popover.modal-center.active {
+    transform: translate(-50%, -50%) scale(1) !important;
+}
+
+.aurum-tutorial-popover.modal-center .aurum-tutorial-arrow {
+    display: none;
+}
+
+/* Botón estético en el navbar */
+.btn-tutorial {
+    margin-left: 20px;
+    background: linear-gradient(135deg, var(--primary-500, #388acb), var(--secondary-500, #6366f1));
+    border: none;
+    color: #ffffff;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-weight: var(--font-bold, 700);
+    border-radius: var(--radius-md, 6px);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+    transition: all 0.2s ease;
+}
+
+.btn-tutorial:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(99, 102, 241, 0.4);
+    filter: brightness(1.1);
+}
+
+.btn-tutorial:active {
+    transform: translateY(1px);
+}
+
+@media (max-width: 768px) {
+    .btn-tutorial {
+        padding: 8px 12px;
+        font-size: 12px;
+        margin-left: 10px;
+    }
+}
