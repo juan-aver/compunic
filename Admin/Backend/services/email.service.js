@@ -361,10 +361,245 @@ async function sendNewEmployeePasswordEmail(email, token, nombreCompleto, rol) {
     }
 }
 
+/**
+ * Email: Pedido recibido — pendiente de verificación de pago
+ * Detecta automáticamente si es pago en físico o transferencia bancaria.
+ */
+async function sendPedidoPendienteEmail(email, nombreCliente, numeroFactura, total, metodoPago) {
+    const datosPayload = {
+        'Depósito Bancario':     { banco: 'BANPRO', cuenta: '1001-020-502133-2', titular: 'COMPUNIC S.A.', tipo: 'Cuenta Corriente en Córdobas' },
+        'Transferencia Bancaria': { banco: 'BANPRO', cuenta: '1001-020-502133-2', titular: 'COMPUNIC S.A.', tipo: 'Cuenta Corriente en Córdobas' },
+        'SINPE / Transferencia':  { banco: 'BAC',    cuenta: '357-001234-5',       titular: 'COMPUNIC S.A.', tipo: 'Cuenta de Ahorros' }
+    };
+
+    // Detectar si el cliente eligió pago en tienda / efectivo
+    const m = (metodoPago || '').toLowerCase();
+    const esFisico = m.includes('efectivo') || m.includes('entrega') || m.includes('retirar') ||
+                     m.includes('fisico') || m.includes('físico') || m.includes('cash') || m.includes('presencial');
+
+    const datos = datosPayload[metodoPago] || datosPayload['Depósito Bancario'];
+
+    // Bloque de contenido principal del email según tipo de pago
+    const contenidoPago = esFisico ? `
+        <div style="background:#ecfdf5;border-left:4px solid #10b981;padding:20px;border-radius:8px;margin:20px 0">
+            <h3 style="margin:0 0 10px;color:#065f46">💵 Instrucciones para pago en tienda</h3>
+            <p style="margin:0;font-size:14px;color:#064e3b">
+                Elegiste pagar en <strong>efectivo al retirar en nuestra tienda</strong>. No necesitas hacer ningún depósito ni subir comprobante.
+            </p>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:20px 0">
+            <table style="width:100%;border-collapse:collapse">
+                <tr><td style="padding:8px 0;border-bottom:1px dashed #e2e8f0;font-size:14px;color:#64748b;width:45%">📋 Nº de Pedido</td><td style="font-weight:700">${numeroFactura}</td></tr>
+                <tr><td style="padding:8px 0;border-bottom:1px dashed #e2e8f0;font-size:14px;color:#64748b">💳 Método</td><td style="font-weight:700">${metodoPago}</td></tr>
+                <tr><td style="padding:8px 0;font-size:14px;color:#64748b">💰 Total a pagar</td><td style="font-weight:700;font-size:18px;color:#1d4ed8">C$ ${parseFloat(total).toFixed(2)}</td></tr>
+            </table>
+        </div>
+        <p><strong>¿Qué necesitas hacer?</strong></p>
+        <ol style="counter-reset:step;list-style:none;padding:0;margin:0">
+            <li style="display:flex;align-items:flex-start;gap:12px;margin:10px 0;font-size:14px"><span style="background:#10b981;color:#fff;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:12px">1</span>Lleva tu número de pedido <strong>${numeroFactura}</strong> cuando vengas a recoger</li>
+            <li style="display:flex;align-items:flex-start;gap:12px;margin:10px 0;font-size:14px"><span style="background:#10b981;color:#fff;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:12px">2</span>Paga en caja el monto exacto de <strong>C$ ${parseFloat(total).toFixed(2)}</strong></li>
+            <li style="display:flex;align-items:flex-start;gap:12px;margin:10px 0;font-size:14px"><span style="background:#10b981;color:#fff;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:12px">3</span>Recibirás un email de confirmación una vez el cajero registre tu pago</li>
+        </ol>
+        <div style="background:#fff7ed;border-radius:8px;padding:12px 16px;margin:18px 0;font-size:13px;color:#92400e">
+            📍 <strong>Dirección:</strong> COMPUNIC, Managua, Nicaragua — Lunes a Sábado 8am–6pm
+        </div>` :
+    `
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:20px 0">
+            <table style="width:100%;border-collapse:collapse">
+                <tr><td style="padding:8px 0;border-bottom:1px dashed #e2e8f0;font-size:14px;color:#64748b;width:45%">📋 Nº de Pedido</td><td style="font-weight:700">${numeroFactura}</td></tr>
+                <tr><td style="padding:8px 0;border-bottom:1px dashed #e2e8f0;font-size:14px;color:#64748b">💳 Método</td><td style="font-weight:700">${metodoPago}</td></tr>
+                <tr><td style="padding:8px 0;border-bottom:1px dashed #e2e8f0;font-size:14px;color:#64748b">🏦 Banco</td><td style="font-weight:700">${datos.banco}</td></tr>
+                <tr><td style="padding:8px 0;border-bottom:1px dashed #e2e8f0;font-size:14px;color:#64748b">📁 Tipo de cuenta</td><td style="font-weight:700">${datos.tipo}</td></tr>
+                <tr><td style="padding:8px 0;font-size:14px;color:#64748b">👤 Titular</td><td style="font-weight:700">${datos.titular}</td></tr>
+            </table>
+        </div>
+        <p style="color:#64748b;font-size:13px;margin-bottom:4px">Número de cuenta:</p>
+        <div style="background:#0f172a;color:#7dd3fc;padding:14px 18px;border-radius:6px;font-family:monospace;font-size:16px;letter-spacing:2px;text-align:center;margin:10px 0">${datos.cuenta}</div>
+        <div style="background:#eff6ff;border-radius:8px;padding:14px 18px;font-size:18px;font-weight:700;color:#1d4ed8;text-align:center;margin:18px 0">Total a depositar: C$ ${parseFloat(total).toFixed(2)}</div>
+        <p><strong>¿Cómo confirmar tu pago?</strong></p>
+        <ol style="list-style:decimal;padding-left:20px;font-size:14px">
+            <li>Realiza el depósito o transferencia por <strong>C$ ${parseFloat(total).toFixed(2)}</strong></li>
+            <li>Toma una foto o captura pantalla del comprobante</li>
+            <li>Sube tu comprobante desde la página de tu pedido</li>
+            <li>Verificaremos tu pago en menos de <strong>2 horas hábiles</strong></li>
+        </ol>
+        <div style="text-align:center;margin:24px 0">
+            <a href="${process.env.FRONTEND_URL}/Store/views/order-confirmation.html?order=${numeroFactura.replace('WEB-','')}"
+               style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">
+                📎 Subir Comprobante de Pago
+            </a>
+        </div>`;
+
+    const mailOptions = {
+        from: `"COMPUNIC - Tienda" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: esFisico
+            ? `🛍️ Pedido ${numeroFactura} recibido — Paga al retirar en tienda`
+            : `⏳ Pedido ${numeroFactura} recibido — Pendiente de pago`,
+        html: `<!DOCTYPE html><html><head><style>
+            body{font-family:Arial,sans-serif;line-height:1.6;color:#333;margin:0;padding:0}
+            .wrap{max-width:600px;margin:0 auto;background:#fff}
+            .header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:#fff;padding:32px 30px;text-align:center}
+            .header h1{margin:0 0 6px;font-size:22px;font-weight:700}
+            .header p{margin:0;opacity:.8;font-size:14px}
+            .body{padding:28px 30px}
+            .alert-box{background:#fff7ed;border-left:4px solid #f97316;padding:16px 18px;border-radius:6px;margin:20px 0}
+            .footer{background:#f8fafc;padding:20px 30px;text-align:center;color:#94a3b8;font-size:12px;border-top:1px solid #e2e8f0}
+        </style></head><body><div class="wrap">
+            <div class="header">
+                <h1>⚡ COMPUNIC</h1>
+                <p>${esFisico ? 'Tu pedido fue recibido — Ven a pagar en tienda' : 'Tu pedido fue recibido — Realiza tu pago para confirmarlo'}</p>
+            </div>
+            <div class="body">
+                <p>Hola <strong>${nombreCliente}</strong>,</p>
+                <p>Recibimos tu pedido correctamente. Elegiste pagar por <strong>${metodoPago}</strong>.</p>
+                <div class="alert-box">
+                    <strong>⏰ Importante:</strong> Tu pedido se reserva por <strong>48 horas</strong>.
+                    Pasado ese tiempo, si no recibimos confirmación de pago, se cancelará automáticamente.
+                </div>
+                ${contenidoPago}
+            </div>
+            <div class="footer">
+                <p>© ${new Date().getFullYear()} COMPUNIC — Managua, Nicaragua | soporte@compunic.com</p>
+                <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+            </div>
+        </div></body></html>`
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error('❌ Error enviando email de pedido pendiente:', error);
+        throw error;
+    }
+}
+
+/**
+ * Email: Pago confirmado — pedido aprobado
+ * @param {string} metodoPago - Opcional, para personalizar el mensaje según el método
+ */
+async function sendPagoConfirmadoEmail(email, nombreCliente, numeroFactura, total, metodoPago = '') {
+    const m = (metodoPago || '').toLowerCase();
+    const esFisico = m.includes('efectivo') || m.includes('entrega') || m.includes('retirar') ||
+                     m.includes('fisico') || m.includes('físico') || m.includes('cash') || m.includes('presencial');
+
+    const mensajePrincipal = esFisico
+        ? `<div style="background:#d1fae5;border-left:4px solid #10b981;padding:18px;border-radius:6px;margin:20px 0">
+               <strong>🎉 ¡Pago registrado!</strong> Tu pago en efectivo ha sido confirmado por nuestro equipo en tienda.
+           </div>
+           <p>Puedes pasar a recoger tus productos cuando gustes. Presenta tu número de pedido en caja.</p>`
+        : `<div style="background:#d1fae5;border-left:4px solid #10b981;padding:18px;border-radius:6px;margin:20px 0">
+               <strong>🎉 ¡Excelente noticia!</strong> Hemos verificado tu comprobante de pago y tu pedido ha sido <strong>aprobado</strong>.
+           </div>
+           <p>Nos pondremos en contacto contigo para coordinar la entrega o retiro en tienda. Si tienes alguna pregunta, escríbenos.</p>`;
+
+    const mailOptions = {
+        from: `"COMPUNIC - Ventas" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: `✅ ¡Pago confirmado! Pedido ${numeroFactura} aprobado`,
+        html: `<!DOCTYPE html><html><head><style>
+            body{font-family:Arial,sans-serif;line-height:1.6;color:#333;margin:0;padding:0}
+            .wrap{max-width:600px;margin:0 auto;background:#fff}
+            .header{background:linear-gradient(135deg,#065f46 0%,#059669 100%);color:#fff;padding:32px 30px;text-align:center}
+            .body{padding:28px 30px}
+            .info-card{background:#f8fafc;border:1px solid #d1fae5;border-radius:8px;padding:18px;margin:20px 0}
+            .footer{background:#f8fafc;padding:20px 30px;text-align:center;color:#94a3b8;font-size:12px;border-top:1px solid #e2e8f0}
+        </style></head><body><div class="wrap">
+            <div class="header">
+                <h1>✅ ¡Pago Confirmado!</h1>
+                <p>Tu pedido ha sido aprobado</p>
+            </div>
+            <div class="body">
+                <p>Hola <strong>${nombreCliente}</strong>,</p>
+                ${mensajePrincipal}
+                <div class="info-card">
+                    <p><strong>Nº de Pedido:</strong> ${numeroFactura}</p>
+                    <p><strong>Total:</strong> C$ ${parseFloat(total).toFixed(2)}</p>
+                    ${metodoPago ? `<p><strong>Método de pago:</strong> ${metodoPago}</p>` : ''}
+                    <p><strong>Estado:</strong> ✅ Confirmado</p>
+                </div>
+                <p>¡Gracias por confiar en COMPUNIC!</p>
+            </div>
+            <div class="footer">
+                <p>© ${new Date().getFullYear()} COMPUNIC — Managua, Nicaragua</p>
+            </div>
+        </div></body></html>`
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error('❌ Error enviando email de pago confirmado:', error);
+        throw error;
+    }
+}
+
+/**
+ * Email: Pago rechazado — con motivo
+ */
+async function sendPagoRechazadoEmail(email, nombreCliente, numeroFactura, motivo) {
+    const mailOptions = {
+        from: `"COMPUNIC - Ventas" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: `⚠️ Problema con tu pago — Pedido ${numeroFactura}`,
+        html: `<!DOCTYPE html><html><head><style>
+            body{font-family:Arial,sans-serif;line-height:1.6;color:#333;margin:0;padding:0}
+            .wrap{max-width:600px;margin:0 auto;background:#fff}
+            .header{background:linear-gradient(135deg,#7f1d1d 0%,#dc2626 100%);color:#fff;padding:32px 30px;text-align:center}
+            .body{padding:28px 30px}
+            .warn-box{background:#fef2f2;border-left:4px solid #dc2626;padding:18px;border-radius:6px;margin:20px 0}
+            .motivo-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:16px;margin:20px 0}
+            .steps{list-style:decimal;padding-left:20px;font-size:14px}
+            .steps li{margin:8px 0}
+            .footer{background:#f8fafc;padding:20px 30px;text-align:center;color:#94a3b8;font-size:12px;border-top:1px solid #e2e8f0}
+        </style></head><body><div class="wrap">
+            <div class="header">
+                <h1>⚠️ Pago No Verificado</h1>
+                <p>Pedido ${numeroFactura}</p>
+            </div>
+            <div class="body">
+                <p>Hola <strong>${nombreCliente}</strong>,</p>
+                <div class="warn-box">
+                    Hemos revisado tu comprobante de pago, pero no fue posible verificarlo correctamente.
+                </div>
+                <div class="motivo-box">
+                    <strong>Motivo:</strong><br>
+                    ${motivo}
+                </div>
+                <p><strong>¿Qué puedes hacer?</strong></p>
+                <ol class="steps">
+                    <li>Verifica que el monto depositado sea exacto</li>
+                    <li>Asegúrate de subir una imagen clara del comprobante</li>
+                    <li>Vuelve a tu pedido y sube el comprobante correcto</li>
+                    <li>Si tienes dudas, contáctanos por WhatsApp o email</li>
+                </ol>
+                <p>Pedimos disculpas por los inconvenientes. Estamos aquí para ayudarte.</p>
+            </div>
+            <div class="footer">
+                <p>© ${new Date().getFullYear()} COMPUNIC — soporte@compunic.com</p>
+            </div>
+        </div></body></html>`
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error('❌ Error enviando email de rechazo:', error);
+        throw error;
+    }
+}
+
 module.exports = {
     sendPasswordResetEmail,
     verifyEmailService,
     sendAccountLockoutEmail,
     sendInvoiceEmail,
-    sendNewEmployeePasswordEmail
+    sendNewEmployeePasswordEmail,
+    sendPedidoPendienteEmail,
+    sendPagoConfirmadoEmail,
+    sendPagoRechazadoEmail
 };
+

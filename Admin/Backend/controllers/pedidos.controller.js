@@ -10,7 +10,34 @@
 // controllers/pedidos.controller.js
 // Controlador para gestionar pedidos desde la tienda web
 
-const Pedidos = require('../models/pedidos.model');
+const Pedidos  = require('../models/pedidos.model');
+const multer    = require('multer');
+const path      = require('path');
+const fs        = require('fs');
+
+// --- Configuración de Multer para comprobantes ---
+const uploadsDir = path.join(__dirname, '..', 'uploads', 'comprobantes');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+const storage = multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, uploadsDir),
+    filename:    (_req, file, cb) => {
+        const ext  = path.extname(file.originalname);
+        const name = `comprobante_${Date.now()}${ext}`;
+        cb(null, name);
+    }
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 8 * 1024 * 1024 }, // 8 MB
+    fileFilter: (_req, file, cb) => {
+        const allowed = /jpeg|jpg|png|gif|webp|pdf/;
+        const ok = allowed.test(file.mimetype) && allowed.test(path.extname(file.originalname).toLowerCase());
+        ok ? cb(null, true) : cb(new Error('Solo se permiten imágenes o PDF'));
+    }
+});
+
 
 const pedidosController = {
     /**
@@ -22,7 +49,7 @@ const pedidosController = {
             console.log('=== CREAR PEDIDO ===');
             console.log('Body recibido:', JSON.stringify(req.body, null, 2));
 
-            const { cliente, productos, total, puntos_usados } = req.body;
+            const { cliente, productos, total, puntos_usados, metodo_pago } = req.body;
 
             // Validar datos requeridos
             if (!cliente || !cliente.nombre || !cliente.email || !cliente.telefono) {
@@ -73,7 +100,7 @@ const pedidosController = {
             console.log('Validaciones pasadas, creando pedido...');
 
             // Crear el pedido
-            const resultado = await Pedidos.crearPedido(cliente, productos, puntos_usados || 0);
+            const resultado = await Pedidos.crearPedido(cliente, productos, puntos_usados || 0, metodo_pago || 'Depósito Bancario');
 
             console.log('Pedido creado exitosamente:', resultado);
 
@@ -160,6 +187,51 @@ const pedidosController = {
                 error: 'Error al validar stock',
                 message: error.message
             });
+        }
+    },
+
+    /**
+     * Subir comprobante de pago
+     * POST /api/store/pedidos/:id/comprobante
+     */
+    subirComprobante: [
+        upload.single('comprobante'),
+        async (req, res) => {
+            try {
+                const { id } = req.params;
+                const { notas } = req.body;
+
+                if (!req.file) {
+                    return res.status(400).json({ success: false, error: 'No se recibió ningún archivo' });
+                }
+
+                const rutaRelativa = `uploads/comprobantes/${req.file.filename}`;
+                await Pedidos.guardarComprobante(parseInt(id), rutaRelativa, req.file.originalname, notas || '');
+
+                res.json({ success: true, mensaje: 'Comprobante recibido. Tu pago está siendo verificado.' });
+            } catch (error) {
+                console.error('Error en subirComprobante:', error);
+                res.status(400).json({ success: false, error: error.message });
+            }
+        }
+    ],
+
+    /**
+     * Obtener estado de pago de un pedido
+     * GET /api/store/pedidos/:id/estado
+     */
+    obtenerEstado: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const estado = await Pedidos.obtenerEstadoPedido(parseInt(id));
+
+            if (!estado) {
+                return res.status(404).json({ success: false, error: 'Pedido no encontrado' });
+            }
+
+            res.json({ success: true, ...estado });
+        } catch (error) {
+            res.status(500).json({ success: false, error: error.message });
         }
     }
 };

@@ -72,7 +72,8 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
         'gestion-clientes': { html: 'views/G_Clientes.html', css: 'css/views/G_Clientes.css' },
         'gestion-garantias': { html: 'views/S_Garantias.html', css: 'css/views/S_Garantias.css' },
         'gestion-servicios': { html: 'views/G_Servicios.html', css: 'css/views/G_Servicios.css' },
-        'gestion-devoluciones': { html: 'views/G_Devoluciones.html', css: 'css/views/G_Devoluciones.css' }
+        'gestion-devoluciones': { html: 'views/G_Devoluciones.html', css: 'css/views/G_Devoluciones.css' },
+        'gestion-pagos-web':     { html: 'views/G_Pagos_Web.html',  css: '' }
     };
 
 
@@ -358,6 +359,9 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                                 }
                             });
                         }
+                    } else if (nombreVista === 'gestion-pagos-web') {
+                        // Pagos de la tienda web — la lógica está inline en el HTML del fragmento
+                        if (typeof window.initPagos === 'function') window.initPagos();
                     }
                 });
             })

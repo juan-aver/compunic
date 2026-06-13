@@ -2,19 +2,23 @@
 // models/pedidos.model.js
 // Modelo para gestionar pedidos desde la tienda web
 
-const db = require('../config/db');
+const path = require('path');
+const fs   = require('fs');
+const db   = require('../config/db');
 const movimientosStockModel = require('./movimientos_stock.model');
 const invoiceService = require('../services/invoice.service');
-const emailService = require('../services/email.service');
+const emailService   = require('../services/email.service');
 
 const Pedidos = {
     /**
      * Crear un nuevo pedido desde la tienda web
-     * @param {Object} datosCliente - Información del cliente
-     * @param {Array} productos - Lista de productos del pedido
+     * @param {Object} datosCliente  - Información del cliente
+     * @param {Array}  productos     - Lista de productos del pedido
+     * @param {number} puntosUsados  - Puntos de fidelidad a descontar
+     * @param {string} metodoPago    - Método de pago elegido por el cliente
      * @returns {Object} Datos del pedido creado
      */
-    crearPedido: async (datosCliente, productos, puntosUsados = 0) => {
+    crearPedido: async (datosCliente, productos, puntosUsados = 0, metodoPago = 'Depósito Bancario') => {
         const connection = await db.getConnection();
 
         try {
@@ -122,11 +126,11 @@ const Pedidos = {
             const timestamp = Date.now();
             const facturaTemp = `WEB-${timestamp}`;
 
-            // 6. Crear venta con vendedor "Tienda Web"
+            // 6. Crear venta con vendedor "Tienda Web" — estado PENDIENTE hasta verificar pago
             const [resultVenta] = await connection.query(`
-                INSERT INTO VENTAS (FECHA, TOTAL, ID_EMPLEADO, ID_CLIENTE, FACTURA)
-                VALUES (NOW(), ?, ?, ?, ?)
-            `, [total, idEmpleadoVenta, idCliente, facturaTemp]);
+                INSERT INTO VENTAS (FECHA, TOTAL, ID_EMPLEADO, ID_CLIENTE, FACTURA, ESTADO_PAGO, METODO_PAGO, ORIGEN)
+                VALUES (NOW(), ?, ?, ?, ?, 'PENDIENTE', ?, 'TIENDA_WEB')
+            `, [total, idEmpleadoVenta, idCliente, facturaTemp, metodoPago]);
 
             const idVenta = resultVenta.insertId;
 
@@ -184,52 +188,18 @@ const Pedidos = {
             // 11. Generar número de pedido
             const numeroPedido = `PED-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(idVenta).padStart(4, '0')}`;
 
-            // 12. Enviar factura por email (sin bloquear la creación del pedido)
+            // 12. Enviar email de "Pedido recibido — pendiente de pago" (NO la factura todavía)
             try {
-                // Obtener información completa de los productos para la factura
-                const productosParaFactura = [];
-                for (const item of productos) {
-                    const [producto] = await db.query(
-                        'SELECT NOMBRE_PRODUCTO FROM PRODUCTOS WHERE ID_PRODUCTO = ?',
-                        [item.id_producto]
-                    );
-
-                    productosParaFactura.push({
-                        nombre: producto[0]?.NOMBRE_PRODUCTO || 'Producto',
-                        cantidad: item.cantidad,
-                        precio_unitario: item.precio_unitario,
-                        subtotal: item.precio_unitario * item.cantidad
-                    });
-                }
-
-                // Generar PDF de la factura
-                const invoiceData = {
-                    factura: facturaFinal,
-                    fecha: new Date(),
-                    cliente: {
-                        nombre: datosCliente.nombre,
-                        email: datosCliente.email,
-                        telefono: datosCliente.telefono
-                    },
-                    productos: productosParaFactura,
-                    total: total
-                };
-
-                const pdfBuffer = await invoiceService.generateInvoicePDF(invoiceData);
-
-                // Enviar email con la factura
-                await emailService.sendInvoiceEmail(
+                await emailService.sendPedidoPendienteEmail(
                     datosCliente.email,
                     datosCliente.nombre,
                     facturaFinal,
-                    pdfBuffer,
-                    total
+                    total,
+                    metodoPago
                 );
-
-                console.log(`✅ Factura ${facturaFinal} enviada por email a ${datosCliente.email}`);
+                console.log(`✅ Email de pedido pendiente enviado a ${datosCliente.email}`);
             } catch (emailError) {
-                // No bloquear la creación del pedido si falla el email
-                console.error('⚠️ Error al enviar factura por email (pedido creado exitosamente):', emailError.message);
+                console.error('⚠️ Error al enviar email de pedido pendiente:', emailError.message);
             }
 
             return {
@@ -237,6 +207,8 @@ const Pedidos = {
                 numero_pedido: numeroPedido,
                 factura: facturaFinal,
                 total: total,
+                estado_pago: 'PENDIENTE',
+                metodo_pago: metodoPago,
                 id_cliente: idCliente,
                 id_empleado: idEmpleadoVenta
             };
@@ -321,6 +293,76 @@ const Pedidos = {
             return result[0].stock_disponible >= cantidad;
         } catch (error) {
             console.error('Error al validar stock:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Guardar comprobante de pago subido por el cliente
+     * @param {number} idVenta - ID de la venta
+     * @param {string} rutaImagen - Ruta relativa del archivo guardado
+     * @param {string} nombreArchivo - Nombre original del archivo
+     * @param {string} notasCliente - Notas opcionales del cliente
+     */
+    guardarComprobante: async (idVenta, rutaImagen, nombreArchivo, notasCliente = '') => {
+        try {
+            // Verificar que la venta existe y es de la tienda web
+            const [[venta]] = await db.query(
+                "SELECT ID_VENTA, ESTADO_PAGO FROM VENTAS WHERE ID_VENTA = ? AND ORIGEN = 'TIENDA_WEB'",
+                [idVenta]
+            );
+
+            if (!venta) throw new Error('Pedido no encontrado');
+            if (venta.ESTADO_PAGO === 'CONFIRMADO') throw new Error('El pedido ya fue confirmado');
+            if (venta.ESTADO_PAGO === 'RECHAZADO')  throw new Error('El pedido fue rechazado, contacta a soporte');
+
+            // Si ya existe comprobante previo, actualizar
+            const [[existente]] = await db.query(
+                'SELECT ID_COMPROBANTE FROM COMPROBANTES_PAGO WHERE ID_VENTA = ?',
+                [idVenta]
+            );
+
+            if (existente) {
+                await db.query(
+                    'UPDATE COMPROBANTES_PAGO SET RUTA_IMAGEN=?, NOMBRE_ARCHIVO=?, NOTAS_CLIENTE=?, FECHA_SUBIDA=NOW() WHERE ID_VENTA=?',
+                    [rutaImagen, nombreArchivo, notasCliente, idVenta]
+                );
+            } else {
+                await db.query(
+                    'INSERT INTO COMPROBANTES_PAGO (ID_VENTA, RUTA_IMAGEN, NOMBRE_ARCHIVO, NOTAS_CLIENTE) VALUES (?,?,?,?)',
+                    [idVenta, rutaImagen, nombreArchivo, notasCliente]
+                );
+            }
+
+            // Pasar estado a VERIFICANDO
+            await db.query(
+                "UPDATE VENTAS SET ESTADO_PAGO = 'VERIFICANDO' WHERE ID_VENTA = ?",
+                [idVenta]
+            );
+
+            return { ok: true };
+        } catch (error) {
+            console.error('Error al guardar comprobante:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Obtener estado de pago de un pedido
+     * @param {number} idVenta
+     */
+    obtenerEstadoPedido: async (idVenta) => {
+        try {
+            const [[row]] = await db.query(
+                `SELECT v.ESTADO_PAGO, v.METODO_PAGO, v.FACTURA, v.TOTAL, v.NOTAS_PAGO,
+                        cp.RUTA_IMAGEN IS NOT NULL AS tiene_comprobante
+                 FROM VENTAS v
+                 LEFT JOIN COMPROBANTES_PAGO cp ON cp.ID_VENTA = v.ID_VENTA
+                 WHERE v.ID_VENTA = ?`,
+                [idVenta]
+            );
+            return row || null;
+        } catch (error) {
             throw error;
         }
     }

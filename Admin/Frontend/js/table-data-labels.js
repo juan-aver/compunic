@@ -27,12 +27,12 @@
             // Obtener los headers
             const headers = Array.from(thead.querySelectorAll('th')).map(th => th.textContent.trim());
 
-            // Agregar data-label a cada celda
+            // Agregar data-label a cada celda (solo si no tiene ya el valor correcto → evita loop)
             const rows = tbody.querySelectorAll('tr');
             rows.forEach(row => {
                 const cells = row.querySelectorAll('td');
                 cells.forEach((cell, index) => {
-                    if (headers[index]) {
+                    if (headers[index] && cell.getAttribute('data-label') !== headers[index]) {
                         cell.setAttribute('data-label', headers[index]);
                     }
                 });
@@ -49,14 +49,16 @@
         addDataLabelsToTables();
     }
 
-    // Re-ejecutar cuando se carguen nuevas vistas
+    // Re-ejecutar cuando se carguen nuevas vistas — con debounce para evitar loops
+    let debounceTimer = null;
     const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.addedNodes.length) {
-                // Pequeño delay para asegurar que la tabla esté completamente renderizada
-                setTimeout(addDataLabelsToTables, 100);
-            }
-        });
+        // Solo reaccionar a adición/eliminación de nodos, NO a cambios de atributos
+        // (los cambios de data-label en td disparaban este callback infinitamente)
+        const hasNodeChanges = mutations.some(m => m.type === 'childList' && m.addedNodes.length > 0);
+        if (!hasNodeChanges) return;
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(addDataLabelsToTables, 300);
     });
 
     // Observar el contenedor principal
@@ -65,6 +67,8 @@
         observer.observe(contentDiv, {
             childList: true,
             subtree: true
+            // IMPORTANTE: NO incluir 'attributes: true' para evitar loop infinito
+            // cuando data-label se modifica en las celdas de las tablas.
         });
     }
 

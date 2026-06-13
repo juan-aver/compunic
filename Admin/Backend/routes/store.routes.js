@@ -31,6 +31,12 @@ router.post('/pedidos', pedidosController.crearPedido);
 // Obtener detalles de un pedido
 router.get('/pedidos/:id', pedidosController.obtenerPedido);
 
+// Obtener estado de pago de un pedido
+router.get('/pedidos/:id/estado', pedidosController.obtenerEstado);
+
+// Subir comprobante de pago (multipart/form-data, campo "comprobante")
+router.post('/pedidos/:id/comprobante', pedidosController.subirComprobante);
+
 // Validar stock disponible
 router.get('/validar-stock/:id/:cantidad', pedidosController.validarStock);
 

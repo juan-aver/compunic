@@ -28,6 +28,8 @@ const storeAuthRoutes = require('./routes/store.auth.routes.js');
 const movimientosStockModel = require('./models/movimientos_stock.model');
 const aurumRoutes = require('./routes/aurum.routes.js');
 const aurumService = require('./services/aurum.service');
+const pagosRoutes  = require('./routes/pagos.routes.js');
+
 
 const app = express();
 
@@ -41,6 +43,7 @@ if (!process.env.NETLIFY) {
     app.use(express.static(path.join(__dirname, '..', 'Frontend')));
     app.use('/Store', express.static(path.join(__dirname, '..', '..', 'Store')));
     app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+    app.use('/uploads/comprobantes', express.static(path.join(__dirname, 'uploads', 'comprobantes')));
 }
 
 
@@ -65,6 +68,8 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/store/auth', storeAuthRoutes);
 app.use('/api/store', storeRoutes);
 app.use('/api/aurum', aurumRoutes);
+app.use('/api/admin/pagos', pagosRoutes);
+
 
 
 

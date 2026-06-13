@@ -1,33 +1,174 @@
 /* ============================================
-   COMPUNIC STORE - CHECKOUT
+   COMPUNIC STORE — CHECKOUT MEJORADO CON PAGOS
    ============================================ */
 
 // ============================================
-// ESTADO
+// ESTADO GLOBAL
 // ============================================
 let cart = [];
 let maxPoints = 0;
 let pointsUsed = 0;
+let selectedMethod = null;
+
+// Resolver CHECKOUT_API_ROOT de forma dinámica según el entorno
+const CHECKOUT_API_ROOT = (() => {
+    if (window.location.origin && window.location.origin.startsWith('http')) {
+        return window.location.origin;
+    }
+    return 'http://localhost:3001';
+})();
+
+// Helpers seguros para localStorage (evitan que excepciones de seguridad tiren el script)
+function safeGetItem(key, fallback = null) {
+    try {
+        return localStorage.getItem(key) || fallback;
+    } catch (e) {
+        console.warn('localStorage no está disponible:', e);
+        return fallback;
+    }
+}
+function safeSetItem(key, val) {
+    try {
+        localStorage.setItem(key, val);
+    } catch (e) {
+        console.warn('localStorage no está disponible para guardar:', e);
+    }
+}
+function safeRemoveItem(key) {
+    try {
+        localStorage.removeItem(key);
+    } catch (e) {
+        console.warn('localStorage no está disponible para borrar:', e);
+    }
+}
+
+// Datos bancarios por método de pago
+const PAYMENT_DATA = {
+    'Depósito Bancario': {
+        icon: 'university',
+        banco: 'BANPRO',
+        cuenta: '1001-020-502133-2',
+        titular: 'COMPUNIC S.A.',
+        tipo: 'Cuenta Corriente en Córdobas',
+        nota: 'Presenta tu número de pedido como referencia en el depósito.'
+    },
+    'Transferencia Bancaria': {
+        icon: 'exchange-alt',
+        banco: 'BANPRO',
+        cuenta: '1001-020-502133-2',
+        titular: 'COMPUNIC S.A.',
+        tipo: 'Cuenta Corriente en Córdobas',
+        nota: 'En el campo "concepto / referencia" escribe tu número de pedido.'
+    },
+    'SINPE / Transferencia': {
+        icon: 'mobile-alt',
+        banco: 'BAC Nicaragua',
+        cuenta: '357-001234-5',
+        titular: 'COMPUNIC S.A.',
+        tipo: 'Cuenta de Ahorros en Córdobas',
+        nota: 'Usa la app de tu banco para hacer la transferencia inmediata.'
+    },
+    'Pago contra entrega': {
+        icon: 'hand-holding-usd',
+        nota: 'Nos contactaremos contigo para coordinar el horario de entrega o retiro en tienda. Paga en efectivo o tarjeta al momento de recibir tu pedido.',
+        isCod: true
+    }
+};
 
 // ============================================
-// FUNCIONES DE UTILIDAD
+// SELECCIÓN DE MÉTODO DE PAGO
+// ============================================
+
+function selectPayment(element) {
+    // Quitar selección previa
+    document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+    element.querySelector('input[type="radio"]').checked = true;
+
+    selectedMethod = element.dataset.method;
+    renderPaymentInstructions(selectedMethod);
+}
+
+function renderPaymentInstructions(method) {
+    const container = document.getElementById('paymentInstructions');
+    const data = PAYMENT_DATA[method];
+    if (!data) { container.classList.remove('visible'); return; }
+
+    if (data.isCod) {
+        container.innerHTML = `
+            <div class="pi-header">
+                <i class="fas fa-info-circle" style="color:#f97316; font-size:1.2rem;"></i>
+                <h4>Información de entrega</h4>
+            </div>
+            <div class="pi-note">
+                <i class="fas fa-truck"></i>
+                <span>${data.nota}</span>
+            </div>`;
+    } else {
+        container.innerHTML = `
+            <div class="pi-header">
+                <span class="badge">Datos de pago</span>
+                <h4>${method}</h4>
+            </div>
+            <div class="pi-rows">
+                <div class="pi-row">
+                    <span class="pi-label">🏦 Banco</span>
+                    <span class="pi-value">${data.banco}</span>
+                </div>
+                <div class="pi-row">
+                    <span class="pi-label">📁 Tipo</span>
+                    <span class="pi-value">${data.tipo}</span>
+                </div>
+                <div class="pi-row">
+                    <span class="pi-label">👤 Titular</span>
+                    <span class="pi-value">${data.titular}</span>
+                </div>
+                <div class="pi-row">
+                    <span class="pi-label">💳 Número de cuenta</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="pi-value account" id="accountNumber">${data.cuenta}</span>
+                        <button class="copy-btn" onclick="copyAccount()" title="Copiar número">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="pi-note">
+                <i class="fas fa-info-circle" style="color:#92400e; margin-top:2px;"></i>
+                <span>${data.nota}</span>
+            </div>`;
+    }
+    container.classList.add('visible');
+}
+
+function copyAccount() {
+    const el = document.getElementById('accountNumber');
+    if (!el) return;
+    navigator.clipboard.writeText(el.textContent).then(() => {
+        showNotification('¡Número de cuenta copiado! 📋', 'success');
+    });
+}
+
+// Hacer la función global para que el HTML pueda accederla
+window.selectPayment = selectPayment;
+window.copyAccount   = copyAccount;
+
+// ============================================
+// CARGA DE DATOS
 // ============================================
 
 function formatPrice(price) {
-    return `$${parseFloat(price).toFixed(2)}`;
+    return `C$${parseFloat(price).toFixed(2)}`;
 }
 
 function updateCartCount() {
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    document.getElementById('cartCount').textContent = totalItems;
+    const el = document.getElementById('cartCount');
+    if (el) el.textContent = totalItems;
 }
 
-// ============================================
-// CARGAR DATOS
-// ============================================
-
 function loadCart() {
-    const savedCart = localStorage.getItem('compunic_cart');
+    const savedCart = safeGetItem('compunic_cart');
     cart = savedCart ? JSON.parse(savedCart) : [];
 
     if (cart.length === 0) {
@@ -41,7 +182,6 @@ function loadCart() {
 
 function renderSummary() {
     const summaryItems = document.getElementById('summaryItems');
-
     summaryItems.innerHTML = cart.map(item => `
         <div class="summary-item">
             <div class="summary-item-info">
@@ -52,14 +192,12 @@ function renderSummary() {
         </div>
     `).join('');
 
-    // Calcular totales
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const total = Math.max(0, subtotal - pointsUsed); // Sin envío por ahora, restar puntos
+    const total    = Math.max(0, subtotal - pointsUsed);
 
     document.getElementById('subtotal').textContent = formatPrice(subtotal);
-    document.getElementById('total').textContent = formatPrice(total);
-    
-    // Si se usan puntos
+    document.getElementById('total').textContent    = formatPrice(total);
+
     if (pointsUsed > 0) {
         document.getElementById('discountRow').style.display = 'flex';
         document.getElementById('discountAmount').textContent = `-${formatPrice(pointsUsed)}`;
@@ -68,29 +206,27 @@ function renderSummary() {
     }
 }
 
-// Cargar usuario si está logueado
 async function loadUserData() {
     if (typeof StoreAuth !== 'undefined' && StoreAuth.isLoggedIn()) {
         try {
-            const res = await StoreAuth.fetchProtected('http://localhost:3001/api/store/auth/me');
+            const res  = await StoreAuth.fetchProtected(`${CHECKOUT_API_ROOT}/api/store/auth/me`);
             const data = await res.json();
-            
+
             if (data.success && data.cliente) {
-                document.getElementById('nombre').value = `${data.cliente.NOMBRE} ${data.cliente.APELLIDO || ''}`.trim();
-                document.getElementById('email').value = data.cliente.EMAIL;
+                document.getElementById('nombre').value   = `${data.cliente.NOMBRE} ${data.cliente.APELLIDO || ''}`.trim();
+                document.getElementById('email').value    = data.cliente.EMAIL;
                 document.getElementById('telefono').value = data.cliente.TELEFONO;
-                
-                // Mostrar puntos si tiene
+
                 maxPoints = parseInt(data.cliente.PUNTOS) || 0;
                 if (maxPoints > 0) {
                     document.getElementById('pointsSection').style.display = 'block';
-                    document.getElementById('availablePoints').textContent = maxPoints;
-                    document.getElementById('availablePointsMoney').textContent = maxPoints;
-                    
-                    document.getElementById('usePoints').addEventListener('change', (e) => {
+                    document.getElementById('availablePoints').textContent      = maxPoints;
+                    document.getElementById('availablePointsMoney').textContent  = maxPoints;
+
+                    document.getElementById('usePoints').addEventListener('change', e => {
                         if (e.target.checked) {
                             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                            pointsUsed = Math.min(maxPoints, subtotal); // No usar más puntos que el total
+                            pointsUsed = Math.min(maxPoints, subtotal);
                         } else {
                             pointsUsed = 0;
                         }
@@ -98,35 +234,32 @@ async function loadUserData() {
                     });
                 }
             }
-        } catch(e) {
-            console.error("Error loading user data:", e);
+        } catch (e) {
+            console.error('Error cargando datos de usuario:', e);
         }
     }
 }
 
 // ============================================
-// VALIDACIÓN DEL FORMULARIO
+// VALIDACIÓN
 // ============================================
 
 function validateForm(formData) {
     const errors = [];
 
-    // Validar nombre
-    if (!formData.nombre || formData.nombre.trim().length < 3) {
+    if (!formData.nombre || formData.nombre.trim().length < 3)
         errors.push('El nombre debe tener al menos 3 caracteres');
-    }
 
-    // Validar email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email || !emailRegex.test(formData.email)) {
+    if (!formData.email || !emailRegex.test(formData.email))
         errors.push('Email inválido');
-    }
 
-    // Validar teléfono (8 dígitos)
-    const telefonoRegex = /^[0-9]{8}$/;
-    if (!formData.telefono || !telefonoRegex.test(formData.telefono)) {
+    const telRegex = /^[0-9]{8}$/;
+    if (!formData.telefono || !telRegex.test(formData.telefono))
         errors.push('El teléfono debe tener 8 dígitos');
-    }
+
+    if (!selectedMethod)
+        errors.push('Selecciona un método de pago');
 
     return errors;
 }
@@ -136,47 +269,35 @@ function validateForm(formData) {
 // ============================================
 
 async function procesarPedido(datosCliente) {
-    try {
-        // Preparar datos de productos para el backend
-        const productos = cart.map(item => ({
-            id_producto: item.id,
-            cantidad: item.quantity,
-            precio_unitario: item.price
-        }));
+    const productos = cart.map(item => ({
+        id_producto: item.id,
+        cantidad:    item.quantity,
+        precio_unitario: item.price
+    }));
 
-        // Calcular total
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const total = Math.max(0, subtotal - pointsUsed);
-        
-        // Agregar puntos usados a los datos que enviaremos a nuestra API central de crearPedido
-        // Usaremos fetch normal para incluir autorización si es necesario
-        
-        const headers = { 'Content-Type': 'application/json' };
-        if (typeof StoreAuth !== 'undefined' && StoreAuth.isLoggedIn()) {
-            headers['Authorization'] = `Bearer ${StoreAuth.getToken()}`;
-        }
-        
-        const payload = {
-            cliente: datosCliente,
-            productos: productos,
-            total: total,
-            puntos_usados: pointsUsed
-        };
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total    = Math.max(0, subtotal - pointsUsed);
 
-        const response = await fetch('http://localhost:3001/api/store/pedidos', {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(payload)
-        });
-        
-        const resultado = await response.json();
-
-        return resultado;
-
-    } catch (error) {
-        console.error('Error al procesar pedido:', error);
-        throw error;
+    const headers = { 'Content-Type': 'application/json' };
+    if (typeof StoreAuth !== 'undefined' && StoreAuth.isLoggedIn()) {
+        headers['Authorization'] = `Bearer ${StoreAuth.getToken()}`;
     }
+
+    const payload = {
+        cliente:      datosCliente,
+        productos,
+        total,
+        puntos_usados: pointsUsed,
+        metodo_pago:   selectedMethod
+    };
+
+    const response = await fetch(`${CHECKOUT_API_ROOT}/api/store/pedidos`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+    });
+
+    return await response.json();
 }
 
 // ============================================
@@ -184,44 +305,32 @@ async function procesarPedido(datosCliente) {
 // ============================================
 
 function showNotification(message, type = 'info') {
+    const colors = {
+        success: '#22c55e', error: '#ef4444',
+        warning: '#f97316', info: '#6366f1'
+    };
+    const icons = {
+        success: 'check-circle', error: 'exclamation-circle',
+        warning: 'exclamation-triangle', info: 'info-circle'
+    };
+
     const notification = document.createElement('div');
-    const bgColor = type === 'success' ? 'var(--success)' :
-        type === 'error' ? 'var(--error)' :
-            type === 'warning' ? 'var(--warning)' :
-                'var(--info)';
-
-    const icon = type === 'success' ? 'check-circle' :
-        type === 'error' ? 'exclamation-circle' :
-            type === 'warning' ? 'exclamation-triangle' :
-                'info-circle';
-
     notification.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: ${bgColor};
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: var(--border-radius-md);
-        box-shadow: var(--shadow-lg);
-        z-index: 10001;
-        animation: slideInRight 0.3s ease-out;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        font-weight: 600;
-        max-width: 400px;
+        position:fixed; top:90px; right:20px;
+        background:${colors[type] || colors.info};
+        color:white; padding:1rem 1.5rem;
+        border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.15);
+        z-index:10001; animation:slideInRight 0.3s ease-out;
+        display:flex; align-items:center; gap:0.75rem;
+        font-weight:600; max-width:400px; font-size:0.9rem;
     `;
-
-    notification.innerHTML = `
-        <i class="fas fa-${icon}"></i>
-        ${message}
-    `;
-
+    notification.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}"></i>${message}`;
     document.body.appendChild(notification);
 
     setTimeout(() => {
-        notification.style.animation = 'fadeOut 0.3s ease-out';
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(20px)';
+        notification.style.transition = 'all 0.3s';
         setTimeout(() => notification.remove(), 300);
     }, 5000);
 }
@@ -234,75 +343,61 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCart();
     loadUserData();
 
-    const form = document.getElementById('checkoutForm');
-    const submitBtn = document.getElementById('submitBtn');
+    // Seleccionar primer método por defecto
+    const firstMethod = document.querySelector('.payment-method');
+    if (firstMethod) selectPayment(firstMethod);
+
+    const form          = document.getElementById('checkoutForm');
+    const submitBtn     = document.getElementById('submitBtn');
     const loadingOverlay = document.getElementById('loadingOverlay');
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async e => {
         e.preventDefault();
 
-        // Obtener datos del formulario
         const datosCliente = {
-            nombre: document.getElementById('nombre').value.trim(),
-            email: document.getElementById('email').value.trim(),
-            telefono: document.getElementById('telefono').value.trim(),
+            nombre:    document.getElementById('nombre').value.trim(),
+            email:     document.getElementById('email').value.trim(),
+            telefono:  document.getElementById('telefono').value.trim(),
             direccion: document.getElementById('direccion').value.trim()
         };
 
-        // Validar formulario
         const errors = validateForm(datosCliente);
         if (errors.length > 0) {
             showNotification(errors.join('. '), 'error');
             return;
         }
 
-        // Deshabilitar botón y mostrar loading
         submitBtn.disabled = true;
         loadingOverlay.style.display = 'flex';
 
         try {
-            // Procesar pedido
             const resultado = await procesarPedido(datosCliente);
 
             if (resultado.success) {
-                // Guardar ID de venta para la página de confirmación
-                localStorage.setItem('last_order_id', resultado.id_venta);
-                localStorage.setItem('last_order_number', resultado.numero_pedido);
+                // Guardar datos para página de confirmación
+                safeSetItem('last_order_id',     resultado.id_venta);
+                safeSetItem('last_order_number', resultado.numero_pedido);
+                safeSetItem('last_order_method', selectedMethod);
+                safeSetItem('last_order_total',  resultado.total);
 
                 // Limpiar carrito
-                localStorage.removeItem('compunic_cart');
+                safeRemoveItem('compunic_cart');
 
-                // Redirigir a confirmación
+                // Ir a confirmación
                 window.location.href = `order-confirmation.html?order=${resultado.id_venta}`;
             } else {
                 throw new Error(resultado.error || 'Error al procesar el pedido');
             }
-
         } catch (error) {
-            console.error('Error:', error);
             loadingOverlay.style.display = 'none';
             submitBtn.disabled = false;
 
-            let errorMessage = 'Error al procesar el pedido. ';
-            if (error.message.includes('Stock insuficiente')) {
-                errorMessage += error.message;
-            } else if (error.message.includes('Email')) {
-                errorMessage += 'Verifica tu email.';
-            } else {
-                errorMessage += 'Por favor, intenta nuevamente.';
-            }
+            let msg = 'Error al procesar el pedido. ';
+            if (error.message.includes('Stock insuficiente')) msg += error.message;
+            else if (error.message.includes('Email'))        msg += 'Verifica tu email.';
+            else msg += 'Por favor, intenta nuevamente.';
 
-            showNotification(errorMessage, 'error');
+            showNotification(msg, 'error');
         }
     });
 });
-
-// Animación adicional
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes fadeOut {
-        from { opacity: 1; transform: translateX(0); }
-        to { opacity: 0; transform: translateX(20px); }
-    }
-`;
-document.head.appendChild(style);
