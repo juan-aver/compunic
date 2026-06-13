@@ -2,7 +2,7 @@
  * @file aurum-tutorial.js
  * @description Motor interactivo del tutorial paso a paso guiado por AURUM para Compunic.
  * Soporta dos roles: Administrador y Vendedor.
- * Versión corregida: posicionamiento fixed relativo al viewport y botón de saltar global.
+ * Versión final: Resalta y abre los menús desplegables del navbar (dropdowns) para señalar los sub-botones exactos.
  */
 
 (function () {
@@ -22,7 +22,7 @@
         {
             title: "¡Bienvenido Administrador! 👑",
             subtitle: "Introducción al Reino Comercial",
-            body: "<p>Hola, soy <strong>AURUM</strong>, tu asistente de Inteligencia Artificial. Te daré un recorrido rápido para que aprendas a gestionar el sistema de Compunic de manera eficiente.</p><p>¿Empezamos el recorrido?</p>",
+            body: "<p>Hola, soy <strong>AURUM</strong>, tu asistente de Inteligencia Artificial. Te daré un recorrido rápido para que aprendas a gestionar el sistema de Compunic de manera de eficiente.</p><p>¿Empezamos el recorrido?</p>",
             target: null,
             placement: "center"
         },
@@ -41,7 +41,21 @@
             placement: "top"
         },
         {
-            title: "Inventario de Productos 📦",
+            title: "Paso 1: Abrir Inventario 🧭",
+            subtitle: "Menú de Navegación",
+            body: "<p>Para gestionar tu catálogo de artículos, debes ir al menú superior y abrir el menú desplegable **Inventario**.</p>",
+            target: "#nav-inventario",
+            placement: "bottom"
+        },
+        {
+            title: "Registrar Productos 📦",
+            subtitle: "Submenú del Inventario",
+            body: "<p>Dentro de este menú, debes hacer clic en el sub-botón **Producto** para registrar nuevos productos o el de **Listado** para ver las existencias actuales.</p>",
+            target: '#nav-inventario a[onclick="cargarVista(\'gestion-productos\', false)"]',
+            placement: "bottom"
+        },
+        {
+            title: "Catálogo e Inventario 📦",
             subtitle: "Catálogo de Artículos",
             body: "<p>¡He cambiado tu vista a <strong>Productos</strong>! En esta pantalla puedes gestionar tu inventario: registrar nuevos productos, editar precios, subir fotos y controlar las existencias actuales.</p>",
             target: "#content",
@@ -49,6 +63,20 @@
             action: () => {
                 window.cargarVista('gestion-productos', true);
             }
+        },
+        {
+            title: "Paso 2: Menú de Compras 🧭",
+            subtitle: "Menú de Navegación",
+            body: "<p>Cuando necesites abastecer tu stock o registrar nuevos distribuidores, dirígete al menú superior y abre el desplegable **Compras**.</p>",
+            target: "#nav-compras",
+            placement: "bottom"
+        },
+        {
+            title: "Generar Nueva Compra 🛒",
+            subtitle: "Submenú de Compras",
+            body: "<p>Haz clic en el sub-botón **Nueva compra** para iniciar el registro de abastecimiento y sumarlo al inventario.</p>",
+            target: '#nav-compras a[onclick="cargarVista(\'gestion-compra\')"]',
+            placement: "bottom"
         },
         {
             title: "Registro de Compras 🛒",
@@ -59,6 +87,20 @@
             action: () => {
                 window.cargarVista('gestion-compra');
             }
+        },
+        {
+            title: "Paso 3: Menú Administración 🧭",
+            subtitle: "Menú de Navegación",
+            body: "<p>Para dar de alta nuevos empleados, asignar permisos, registrar clientes o revisar los pagos web, abre la pestaña **Administración**.</p>",
+            target: "#nav-administracion",
+            placement: "bottom"
+        },
+        {
+            title: "Gestionar Personal 👥",
+            subtitle: "Submenú de Administración",
+            body: "<p>Haz clic en el sub-botón **Personal / Empleados** para dar de alta trabajadores y asignar sus credenciales.</p>",
+            target: '#nav-administracion a[onclick="cargarVista(\'gestion-empleados\')"]',
+            placement: "bottom"
         },
         {
             title: "Administración de Personal 👥",
@@ -103,6 +145,20 @@
             placement: "bottom"
         },
         {
+            title: "Paso 1: Módulo de Servicios 🧭",
+            subtitle: "Menú de Navegación",
+            body: "<p>Como vendedor, la mayoría de tus herramientas diarias (Ventas, Reparaciones y Garantías) están agrupadas dentro del menú desplegable **Servicios** en la barra superior.</p>",
+            target: "#nav-servicios",
+            placement: "bottom"
+        },
+        {
+            title: "Generar una Venta 💰",
+            subtitle: "Submenú de Servicios",
+            body: "<p>Haz clic en el sub-botón **Generar Venta** para entrar al panel de facturación de artículos.</p>",
+            target: '#nav-servicios a[onclick="cargarVista(\'gestion-ventas\')"]',
+            placement: "bottom"
+        },
+        {
             title: "Generar Ventas (Punto de Venta POS) 💰",
             subtitle: "Facturación al Cliente",
             body: "<p>Te he redirigido al módulo <strong>Generar Venta</strong>. Aquí harás la facturación. El número de factura se autogenera y el sistema te asigna como el vendedor activo de forma automática.</p>",
@@ -133,6 +189,13 @@
             }
         },
         {
+            title: "Abrir Servicios Técnicos 🔧",
+            subtitle: "Submenú de Servicios",
+            body: "<p>Para registrar el ingreso de un dispositivo a mantenimiento o reparación técnica, abre el menú de **Servicios** y haz clic en el sub-botón **Servicios**.</p>",
+            target: '#nav-servicios a[onclick="cargarVista(\'gestion-servicios\')"]',
+            placement: "bottom"
+        },
+        {
             title: "Registro de Servicios Técnicos 🔧",
             subtitle: "Atención y Soporte",
             body: "<p>Cuando un cliente traiga un equipo para reparación, ve al módulo de **Servicios** y presiona **+ Nuevo Servicio**. Registra el cliente, tipo de reparación y pon el estado en <em>En Diagnóstico</em>.</p>",
@@ -141,6 +204,13 @@
             action: () => {
                 window.cargarVista('gestion-servicios');
             }
+        },
+        {
+            title: "Abrir Garantías 🛡️",
+            subtitle: "Submenú de Servicios",
+            body: "<p>Para procesar el cambio o revisión de artículos defectuosos bajo cobertura de fábrica, abre el menú de **Servicios** y haz clic en **Garantías**.</p>",
+            target: '#nav-servicios a[onclick="cargarVista(\'gestion-garantias\')"]',
+            placement: "bottom"
         },
         {
             title: "Garantías de Clientes 🛡️",
@@ -250,6 +320,9 @@
     function clearFocus() {
         document.querySelectorAll('.aurum-tutorial-focus').forEach(el => {
             el.classList.remove('aurum-tutorial-focus');
+        });
+        document.querySelectorAll('.aurum-force-dropdown-open').forEach(el => {
+            el.classList.remove('aurum-force-dropdown-open');
         });
     }
 
@@ -362,6 +435,12 @@
             // Esperar que cargue el elemento y posicionar
             waitForElement(step.target, (targetEl) => {
                 targetEl.classList.add('aurum-tutorial-focus');
+                
+                // Si el elemento está dentro de un dropdown del menú, forzar su visibilidad
+                const dropdownParent = targetEl.closest('.nav-item-dropdown');
+                if (dropdownParent) {
+                    dropdownParent.classList.add('aurum-force-dropdown-open');
+                }
                 
                 // Mostrar y posicionar el Popover
                 popoverEl.classList.add('active');

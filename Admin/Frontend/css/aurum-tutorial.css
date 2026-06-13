@@ -53,6 +53,15 @@
     transition: box-shadow 0.3s ease, transform 0.3s ease !important;
 }
 
+/* Forzar apertura de menús desplegables durante el tutorial */
+.nav-item-dropdown.aurum-force-dropdown-open .dropdown-menu {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: translateY(0) scale(1) !important;
+}
+
 /* Popover / Burbuja de diálogo de AURUM */
 .aurum-tutorial-popover {
     position: fixed;
