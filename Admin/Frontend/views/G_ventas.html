@@ -29,9 +29,15 @@
       <div class="ventas-pos-header">
         <div class="pos-header-field">
           <label class="form-label-small">Cliente</label>
-          <select id="cliente-select" class="form-select" required>
+          <select id="cliente-select" class="form-select" onchange="toggleClienteOcasional(this.value)">
             <option value="" disabled selected>Seleccione un Cliente</option>
+            <option value="__ocasional__">👤 Cliente Ocasional / Sin Registro</option>
           </select>
+        </div>
+        <!-- Campo de nombre para cliente ocasional (oculto por defecto) -->
+        <div class="pos-header-field" id="cliente-ocasional-wrapper" style="display:none;">
+          <label class="form-label-small">Nombre para Factura</label>
+          <input type="text" id="cliente-ocasional-nombre" class="form-input" placeholder="Nombre del cliente...">
         </div>
         <div class="pos-header-field">
           <label class="form-label-small">Vendedor</label>

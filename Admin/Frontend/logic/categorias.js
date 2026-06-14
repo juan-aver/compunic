@@ -94,17 +94,55 @@ function cargarCategorias() {
 
             arr.forEach(c => {
                 const tr = document.createElement('tr');
-                tr.style.cursor = "pointer";
-                tr.onclick = () => seleccionarCategoria(c);
 
                 tr.innerHTML = `
                     <td>${c.ID_CATEGORIA}</td>
                     <td>${c.NOMBRE_CATEGORIA}</td>
+                    <td style="text-align: center;">
+                        <button onclick="iniciarEdicionCategoria(event, ${c.ID_CATEGORIA}, '${c.NOMBRE_CATEGORIA.replace(/'/g, "\\'")}')"
+                            style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-size: 0.82rem; margin-right: 5px;">
+                            <i class="fas fa-edit"></i> Modificar
+                        </button>
+                        <button onclick="eliminarCategoriaPorId(event, ${c.ID_CATEGORIA}, '${c.NOMBRE_CATEGORIA.replace(/'/g, "\\'")}')"
+                            style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-size: 0.82rem;">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         })
         .catch(error => console.error('Error cargando lista:', error));
+}
+
+// Carga el nombre en el formulario para editar y marca el id
+function iniciarEdicionCategoria(e, id, nombre) {
+    e.stopPropagation();
+    const input = document.getElementById('NOMBRE_CATEGORIA');
+    if (input) input.value = nombre;
+    const form = document.getElementById('formulario-categorias');
+    if (form) form.dataset.idCategoria = id;
+    // Cambiar el botón de agregar a modificar temporalmente
+    const btnAgregar = document.getElementById('btn-agregar-categoria');
+    if (btnAgregar) {
+        btnAgregar.textContent = 'Guardar Cambios';
+        btnAgregar.onclick = function() {
+            modificarCategoria();
+            btnAgregar.textContent = 'Agregar';
+            btnAgregar.onclick = agregarCategoria;
+        };
+    }
+    // Scroll al formulario
+    document.getElementById('gestioncategorias')?.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Eliminar directamente desde la fila
+function eliminarCategoriaPorId(e, id, nombre) {
+    e.stopPropagation();
+    const form = document.getElementById('formulario-categorias');
+    if (form) form.dataset.idCategoria = id;
+    if (!confirm(`¿Seguro que deseas eliminar la categoría "${nombre}"?`)) return;
+    eliminarCategoria();
 }
 
 function limpiarFormularioCategoria() {

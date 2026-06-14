@@ -62,7 +62,7 @@ function filtrarAuditorias() {
                 const userName = a.USUARIO || (a.NOMBRE ? `${a.NOMBRE} ${a.APELLIDO}` : 'Sistema');
                 
                 // Formatear badge
-                const accionClase = a.ACCION.toLowerCase();
+                const accionClase = a.ACCION.toLowerCase().replace(/ /g, '_');
                 const accionBadge = `<span class="badge-audit badge-${accionClase}">${a.ACCION.replace(/_/g, ' ')}</span>`;
                 
                 // Formatear tabla

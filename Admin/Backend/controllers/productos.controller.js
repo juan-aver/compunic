@@ -82,6 +82,12 @@ const eliminarImagen = (imagenUrl) => {
   }
 };
 
+const parseFK = (val) => {
+  if (val === undefined || val === null || val === '') return null;
+  const parsed = parseInt(val, 10);
+  return isNaN(parsed) ? null : parsed;
+};
+
 const productosController = {
   listar: async (req, res) => {
     try {
@@ -94,6 +100,7 @@ const productosController = {
           modelo: r.MODELO ?? r.modelo ?? '',
           descripcion: r.DESCRIPCION ?? r.descripcion ?? '',
           imagen_url: r.IMAGEN_URL ?? r.imagen_url ?? null,
+          activo: r.ACTIVO !== undefined ? Number(r.ACTIVO) : 1,
           precio_compra: r.PRECIO_COMPRA ?? r.precio_compra ?? 0,
           precio_venta: r.PRECIO_VENTA ?? r.precio_venta ?? 0,
           nombre_marca: r.nombre_marca ?? r.NOMBRE_MARCA ?? '',
@@ -137,7 +144,12 @@ const productosController = {
 
       const explicitId = req.body.id_producto ?? req.body.id;
       let productoId;
-      const datosBase = [nombre, modelo, descripcion, imagenUrl, 0, 0, id_marca, adminId, id_garantias, id_proveedor];
+      const cleanMarca = parseFK(id_marca);
+      const cleanGarantias = parseFK(id_garantias);
+      const cleanProveedor = parseFK(id_proveedor);
+      const cleanCategoria = parseFK(id_categoria);
+
+      const datosBase = [nombre, modelo, descripcion, imagenUrl, 0, 0, cleanMarca, adminId, cleanGarantias, cleanProveedor];
 
       if (explicitId) {
         await Producto.agregar([explicitId, ...datosBase]);
@@ -147,8 +159,8 @@ const productosController = {
         productoId = result.insertId;
       }
 
-      if (id_categoria) {
-        await db.query('INSERT INTO PRODUCTO_CATEGORIA (ID_PRODUCTO, ID_CATEGORIA) VALUES (?, ?)', [productoId, id_categoria]);
+      if (cleanCategoria) {
+        await db.query('INSERT INTO PRODUCTO_CATEGORIA (ID_PRODUCTO, ID_CATEGORIA) VALUES (?, ?)', [productoId, cleanCategoria]);
       }
 
       res.json({ mensaje: 'Producto creado', id: productoId });
@@ -168,9 +180,31 @@ const productosController = {
 
   actualizar: async (req, res) => {
     const { id } = req.params;
-    const { nombre, modelo, descripcion, precio_compra, precio_venta, id_marca, id_empleado, id_garantias, id_proveedor, id_categoria, stock } = req.body;
+    const { nombre, modelo, descripcion, precio_compra, precio_venta, id_marca, id_empleado, id_garantias, id_proveedor, id_categoria, stock, activo } = req.body;
 
     try {
+      // ⭐ Caso especial: solo se pide dar de baja (activo: 0)
+      if (activo !== undefined && Object.keys(req.body).length === 1) {
+        try {
+          await db.query('UPDATE PRODUCTOS SET ACTIVO = ? WHERE ID_PRODUCTO = ?', [activo, id]);
+        } catch (colErr) {
+          // Si la columna ACTIVO no existe, la agregamos
+          if (colErr.code === 'ER_BAD_FIELD_ERROR') {
+            await db.query('ALTER TABLE PRODUCTOS ADD COLUMN ACTIVO TINYINT(1) DEFAULT 1');
+            await db.query('UPDATE PRODUCTOS SET ACTIVO = ? WHERE ID_PRODUCTO = ?', [activo, id]);
+          } else throw colErr;
+        }
+        const accion = activo === 0 ? 'DAR DE BAJA' : 'REACTIVAR';
+        AuditoriaModel.registrar({
+          id_empleado: req.userId || null,
+          username: req.username || 'Sistema',
+          accion: accion,
+          tabla: 'PRODUCTOS',
+          descripcion: `Se dio de baja el producto ID: ${id}`
+        }).catch(e => console.error('Audit log error:', e));
+        return res.json({ mensaje: activo === 0 ? 'Producto dado de baja' : 'Producto reactivado' });
+      }
+
       const [productoActual] = await db.query('SELECT IMAGEN_URL FROM PRODUCTOS WHERE ID_PRODUCTO = ?', [id]);
       let imagenUrl = productoActual[0]?.IMAGEN_URL;
 
@@ -193,11 +227,19 @@ const productosController = {
         adminId = rows[0]?.ID_EMPLEADO;
       }
 
-      await Producto.actualizar([nombre, modelo, descripcion, imagenUrl, precio_compra, precio_venta, id_marca, adminId, id_garantias, id_proveedor, id]);
+      const cleanMarca = parseFK(id_marca);
+      const cleanGarantias = parseFK(id_garantias);
+      const cleanProveedor = parseFK(id_proveedor);
+      const cleanCategoria = parseFK(id_categoria);
+      
+      const cleanPrecioCompra = (precio_compra !== undefined && precio_compra !== '') ? parseFloat(precio_compra) : 0;
+      const cleanPrecioVenta = (precio_venta !== undefined && precio_venta !== '') ? parseFloat(precio_venta) : 0;
+
+      await Producto.actualizar([nombre, modelo, descripcion, imagenUrl, cleanPrecioCompra, cleanPrecioVenta, cleanMarca, adminId, cleanGarantias, cleanProveedor, id]);
 
       await db.query('DELETE FROM PRODUCTO_CATEGORIA WHERE ID_PRODUCTO = ?', [id]);
-      if (id_categoria) {
-        await db.query('INSERT INTO PRODUCTO_CATEGORIA (ID_PRODUCTO, ID_CATEGORIA) VALUES (?, ?)', [id, id_categoria]);
+      if (cleanCategoria) {
+        await db.query('INSERT INTO PRODUCTO_CATEGORIA (ID_PRODUCTO, ID_CATEGORIA) VALUES (?, ?)', [id, cleanCategoria]);
       }
 
       if (stock !== undefined && parseInt(stock) !== stockAnterior) {

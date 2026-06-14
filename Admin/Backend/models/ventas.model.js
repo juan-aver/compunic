@@ -12,10 +12,10 @@ const Ventas = {
                 v.FACTURA,
                 v.FECHA, 
                 v.TOTAL,
-                CONCAT(c.NOMBRE, ' ', c.APELLIDO) AS NOMBRE_CLIENTE,
+                COALESCE(CONCAT(c.NOMBRE, ' ', c.APELLIDO), v.NOMBRE_CLIENTE_OCASIONAL, 'Cliente Ocasional') AS NOMBRE_CLIENTE,
                 CONCAT(e.NOMBRE, ' ', e.APELLIDO) AS NOMBRE_VENDEDOR
             FROM VENTAS v
-            INNER JOIN CLIENTES c ON v.ID_CLIENTE = c.ID_CLIENTE
+            LEFT JOIN CLIENTES c ON v.ID_CLIENTE = c.ID_CLIENTE
             LEFT JOIN EMPLEADOS e ON v.ID_EMPLEADO = e.ID_EMPLEADO
             ORDER BY v.ID_VENTA DESC
         `;
@@ -33,10 +33,20 @@ const Ventas = {
       // 1. Insertar en VENTAS con FACTURA temporal
       const tempFactura = `TEMP-${Date.now()}`;
 
-      const [resultVenta] = await connection.query(
-        'INSERT INTO VENTAS (FECHA, ID_CLIENTE, ID_EMPLEADO, FACTURA) VALUES (?, ?, ?, ?)',
-        [venta.fecha, venta.id_cliente, venta.id_empleado, tempFactura]
-      );
+      // Intentar insertar con NOMBRE_CLIENTE_OCASIONAL si existe la columna
+      let resultVenta;
+      try {
+        [resultVenta] = await connection.query(
+          'INSERT INTO VENTAS (FECHA, ID_CLIENTE, NOMBRE_CLIENTE_OCASIONAL, ID_EMPLEADO, FACTURA) VALUES (?, ?, ?, ?, ?)',
+          [venta.fecha, venta.id_cliente || null, venta.nombre_cliente_ocasional || null, venta.id_empleado, tempFactura]
+        );
+      } catch (colErr) {
+        // Si la columna no existe, insertar sin ella
+        [resultVenta] = await connection.query(
+          'INSERT INTO VENTAS (FECHA, ID_CLIENTE, ID_EMPLEADO, FACTURA) VALUES (?, ?, ?, ?)',
+          [venta.fecha, venta.id_cliente || null, venta.id_empleado, tempFactura]
+        );
+      }
       const idVenta = resultVenta.insertId;
 
       // 2. Calcular Total con IVA y Actualizar FACTURA y TOTAL
@@ -84,12 +94,12 @@ const Ventas = {
         v.FACTURA,
         v.FECHA,
         v.TOTAL,
-        c.NOMBRE AS NOMBRE_CLIENTE,
+        COALESCE(c.NOMBRE, v.NOMBRE_CLIENTE_OCASIONAL, 'Cliente Ocasional') AS NOMBRE_CLIENTE,
         c.APELLIDO AS APELLIDO_CLIENTE,
         c.TELEFONO AS TELEFONO_CLIENTE,
         CONCAT(e.NOMBRE, ' ', e.APELLIDO) AS NOMBRE_VENDEDOR
       FROM VENTAS v
-      INNER JOIN CLIENTES c ON v.ID_CLIENTE = c.ID_CLIENTE
+      LEFT JOIN CLIENTES c ON v.ID_CLIENTE = c.ID_CLIENTE
       LEFT JOIN EMPLEADOS e ON v.ID_EMPLEADO = e.ID_EMPLEADO
       WHERE v.ID_VENTA = ?
       ORDER BY v.ID_VENTA DESC

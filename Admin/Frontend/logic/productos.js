@@ -201,11 +201,17 @@ function renderProductCards(data) {
         const precioVenta = parseFloat(producto.precio_venta ?? producto.PRECIO_VENTA ?? 0);
         const stock = Number(producto.stock ?? producto.stock_actual_calculado ?? producto.STOCK ?? 0) || 0;
         const imagenUrl = producto.imagen_url || producto.IMAGEN_URL || '';
+        const activo = producto.activo !== undefined ? Number(producto.activo) : 1;
 
         // Badges
         let badges = '';
-        if (stock === 0) badges += '<span class="badge badge-agotado"><i class="fas fa-exclamation-circle"></i> Agotado</span>';
-        else if (stock < 5) badges += '<span class="badge badge-stock-bajo"><i class="fas fa-exclamation-triangle"></i> Stock Bajo</span>';
+        if (activo === 0) {
+            badges += '<span class="badge badge-baja"><i class="fas fa-ban"></i> Dado de Baja</span>';
+        } else if (stock === 0) {
+            badges += '<span class="badge badge-agotado"><i class="fas fa-exclamation-circle"></i> Agotado</span>';
+        } else if (stock < 5) {
+            badges += '<span class="badge badge-stock-bajo"><i class="fas fa-exclamation-triangle"></i> Stock Bajo</span>';
+        }
 
         // Image
         const imgPath = imagenUrl && imagenUrl.startsWith('http') ? imagenUrl : `${SERVER_URL}/${imagenUrl}`;
@@ -215,25 +221,26 @@ function renderProductCards(data) {
 
         // Stock class
         let stockClass = 'card-stock';
-        if (stock === 0) stockClass += ' stock-zero';
+        if (activo === 0) stockClass += ' stock-zero';
+        else if (stock === 0) stockClass += ' stock-zero';
         else if (stock < 5) stockClass += ' stock-low';
 
         // Subtitle
         const subtitle = [categoria, marca].filter(Boolean).join(' · ') || 'General';
 
         const card = document.createElement('div');
-        card.className = 'product-card';
+        card.className = 'product-card' + (activo === 0 ? ' product-card-baja' : '');
         card.style.animationDelay = `${Math.min(index * 0.03, 0.3)}s`;
         card.dataset.searchText = `${nombre} ${modelo} ${categoria} ${marca}`.toLowerCase();
 
         card.innerHTML = `
             <div class="card-badges">${badges}</div>
-            <div class="card-image">${imgHtml}</div>
+            <div class="card-image">${imgHtml}${activo === 0 ? '<div class="card-baja-overlay"><i class="fas fa-ban"></i></div>' : ''}</div>
             <div class="card-body">
                 <h4 title="${nombre}">${nombre}</h4>
                 <div class="card-subtitle">${subtitle}</div>
                 <div class="card-info">
-                    <span class="card-price">C$${precioVenta.toFixed(2)}</span>
+                    <span class="card-price">${activo === 0 ? '<s>C$' + precioVenta.toFixed(2) + '</s>' : 'C$' + precioVenta.toFixed(2)}</span>
                     <span class="${stockClass}"><i class="fas fa-cube"></i> ${stock}</span>
                 </div>
                 <div class="card-actions">
@@ -387,8 +394,24 @@ function abrirModalProducto(producto) {
         // Edit mode
         if (title) title.innerHTML = '<i class="fas fa-edit"></i> Editar Producto';
         if (btnAgregar) btnAgregar.style.display = 'none';
-        if (btnModificar) btnModificar.style.display = 'flex';
-        if (btnEliminar) btnEliminar.style.display = 'flex';
+        if (btnModificar) {
+            btnModificar.style.display = 'flex';
+            btnModificar.onclick = modificarProducto;
+        }
+        if (btnEliminar) {
+            // Si el producto está dado de baja, mostrar botón de reactivar; si no, de dar de baja
+            const activo = producto.activo !== undefined ? Number(producto.activo) : 1;
+            btnEliminar.style.display = 'flex';
+            if (activo === 0) {
+                btnEliminar.innerHTML = '<i class="fas fa-check-circle"></i> Reactivar';
+                btnEliminar.style.background = 'linear-gradient(135deg, #27ae60, #1e8449)';
+                btnEliminar.onclick = reactivarProducto;
+            } else {
+                btnEliminar.innerHTML = '<i class="fas fa-ban"></i> Dar de Baja';
+                btnEliminar.style.background = 'linear-gradient(135deg, #e67e22, #d35400)';
+                btnEliminar.onclick = darDeBajaProducto;
+            }
+        }
     } else {
         // Create mode
         if (title) title.innerHTML = '<i class="fas fa-plus-circle"></i> Nuevo Producto';
@@ -400,7 +423,10 @@ function abrirModalProducto(producto) {
         document.getElementById('id_producto').value = '';
         const previewContainer = document.getElementById('preview_imagen_container');
         if (previewContainer) previewContainer.style.display = 'none';
-        if (btnAgregar) btnAgregar.style.display = 'flex';
+        if (btnAgregar) {
+            btnAgregar.style.display = 'flex';
+            btnAgregar.onclick = agregarProducto;
+        }
         if (btnModificar) btnModificar.style.display = 'none';
         if (btnEliminar) btnEliminar.style.display = 'none';
     }
@@ -535,33 +561,70 @@ function modificarProducto() {
         });
 }
 
-// ⚠️ PELIGRO: Elimina un producto. Siempre pide confirmación primero
-function eliminarProducto() {
+// 🔴 Da de baja un producto (lo desactiva sin eliminar de la BD)
+function darDeBajaProducto() {
     const form = document.getElementById('formularioProducto');
     const id = form?.dataset.idSelected || document.getElementById('id_producto').value;
-    if (!id) return alert('Seleccione un producto de la tabla para eliminar');
-    if (!confirm(`¿Eliminar producto ID ${id}?`)) return;
-    fetch(`${API_BASE}/productos/${id}`, { method: 'DELETE' })
+    if (!id) return alert('Seleccione un producto de la tabla para dar de baja');
+    const nombre = document.getElementById('nombre_producto')?.value || `ID ${id}`;
+    if (!confirm(`¿Dar de baja el producto "${nombre}"?\n\nEl producto no aparecerá disponible para vender, pero se conserva en el sistema.`)) return;
+
+    fetch(`${API_BASE}/productos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activo: 0 })
+    })
         .then(async res => {
             const json = await res.json().catch(() => null);
             if (!res.ok) {
                 const errMsg = json && (json.error || json.mensaje) ? (json.error || json.mensaje) : `HTTP ${res.status}`;
-                alert('Error al eliminar producto: ' + errMsg);
+                alert('Error al dar de baja: ' + errMsg);
                 throw new Error(errMsg);
             }
             return json;
         })
         .then(() => {
             cerrarModalProducto();
-            alert('Producto eliminado exitosamente');
+            alert(`🚫 Producto "${nombre}" dado de baja exitosamente.\nAparecerá marcado visualmente y no estará disponible para vender.`);
             document.getElementById('formularioProducto')?.reset();
             if (typeof cargarProductos === 'function') cargarProductos();
         })
         .catch(err => {
-            console.error('Error eliminando producto:', err);
-            alert('Error al eliminar producto: ' + err.message);
+            console.error('Error dando de baja producto:', err);
         });
 }
+window.darDeBajaProducto = darDeBajaProducto;
+
+// ✅ Reactiva un producto dado de baja
+function reactivarProducto() {
+    const form = document.getElementById('formularioProducto');
+    const id = form?.dataset.idSelected || document.getElementById('id_producto').value;
+    if (!id) return alert('Seleccione un producto para reactivar');
+    const nombre = document.getElementById('nombre_producto')?.value || `ID ${id}`;
+    if (!confirm(`¿Reactivar el producto "${nombre}"?\n\nVolverá a estar disponible para vender.`)) return;
+
+    fetch(`${API_BASE}/productos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activo: 1 })
+    })
+        .then(async res => {
+            const json = await res.json().catch(() => null);
+            if (!res.ok) {
+                alert('Error al reactivar: ' + (json?.error || json?.mensaje || `HTTP ${res.status}`));
+                throw new Error(json?.error || 'error');
+            }
+            return json;
+        })
+        .then(() => {
+            cerrarModalProducto();
+            alert(`✅ Producto "${nombre}" reactivado exitosamente.`);
+            document.getElementById('formularioProducto')?.reset();
+            if (typeof cargarProductos === 'function') cargarProductos();
+        })
+        .catch(err => console.error('Error reactivando producto:', err));
+}
+window.reactivarProducto = reactivarProducto;
 
 
 // 📦 Registra un nuevo ítem en la BD, incluye parseo de FormData para la imagen

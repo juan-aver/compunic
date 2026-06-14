@@ -9,6 +9,12 @@
 
 const API_BASE_DASHBOARD = `${API_BASE}/dashboard`;
 
+// Helper function to safely set textContent if element exists
+function safeSetText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+}
+
 // Función principal para cargar todas las estadísticas
 async function cargarEstadisticasDashboard() {
     // TODO: Refactorizar esto después... o tal vez nunca jajaja
@@ -23,10 +29,6 @@ async function cargarEstadisticasDashboard() {
             cargarProductoMasVendido(),
             cargarProductoMenosVendido()
         ]);
-
-        // Cargar gráficos (opcional, puedes implementarlos después)
-        // await cargarGraficoVentasCostos();
-        // await cargarGraficoStockCategoria();
     } catch (error) {
         console.error('Error al cargar estadísticas del dashboard:', error);
     }
@@ -39,16 +41,13 @@ async function cargarIngresosMes() {
         const data = await response.json();
 
         // Actualizar elementos del DOM
-        document.getElementById('ingresos-total').textContent =
-            `${data.total.toFixed(2)} C$`;
-        document.getElementById('ingresos-porcentaje').textContent =
-            `+${data.cambio_porcentaje}%`;
-        document.getElementById('ingresos-ventas').textContent =
-            `${data.num_ventas} ventas este mes`;
+        safeSetText('ingresos-total', `${data.total.toFixed(2)} C$`);
+        safeSetText('ingresos-porcentaje', `+${data.cambio_porcentaje}%`);
+        safeSetText('ingresos-ventas', `${data.num_ventas} ventas este mes`);
 
     } catch (error) {
         console.error('Error al cargar ingresos:', error);
-        document.getElementById('ingresos-total').textContent = 'Error al cargar';
+        safeSetText('ingresos-total', 'Error al cargar');
     }
 }
 
@@ -58,14 +57,12 @@ async function cargarServiciosPendientes() {
         const response = await fetch(`${API_BASE_DASHBOARD}/servicios-pendientes`);
         const data = await response.json();
 
-        document.getElementById('servicios-total').textContent =
-            `${data.total_pendientes} Tickets`;
-        document.getElementById('servicios-diagnostico').textContent =
-            `${data.en_diagnostico} en Diagnóstico`;
+        safeSetText('servicios-total', `${data.total_pendientes} Tickets`);
+        safeSetText('servicios-diagnostico', `${data.en_diagnostico} en Diagnóstico`);
 
     } catch (error) {
         console.error('Error al cargar servicios:', error);
-        document.getElementById('servicios-total').textContent = 'Error al cargar';
+        safeSetText('servicios-total', 'Error al cargar');
     }
 }
 
@@ -75,23 +72,25 @@ async function cargarStockCritico() {
         const response = await fetch(`${API_BASE_DASHBOARD}/stock-critico`);
         const data = await response.json();
 
-        document.getElementById('stock-total').textContent =
-            `${data.total} Productos`;
+        safeSetText('stock-total', `${data.total} Productos`);
 
         // Mostrar primeros 3 productos
-        if (data.productos && data.productos.length > 0) {
-            const nombresProductos = data.productos
-                .slice(0, 3)
-                .map(p => `${p.nombre} (${p.stock})`)
-                .join(', ');
-            document.getElementById('stock-lista').textContent = nombresProductos;
-        } else {
-            document.getElementById('stock-lista').textContent = 'Todo bien ✓';
+        const stockListaEl = document.getElementById('stock-lista');
+        if (stockListaEl) {
+            if (data.productos && data.productos.length > 0) {
+                const nombresProductos = data.productos
+                    .slice(0, 3)
+                    .map(p => `${p.nombre} (${p.stock})`)
+                    .join(', ');
+                stockListaEl.textContent = nombresProductos;
+            } else {
+                stockListaEl.textContent = 'Todo bien ✓';
+            }
         }
 
     } catch (error) {
         console.error('Error al cargar stock crítico:', error);
-        document.getElementById('stock-total').textContent = 'Error al cargar';
+        safeSetText('stock-total', 'Error al cargar');
     }
 }
 
@@ -101,12 +100,11 @@ async function cargarClientesNuevos() {
         const response = await fetch(`${API_BASE_DASHBOARD}/clientes-nuevos`);
         const data = await response.json();
 
-        document.getElementById('clientes-total').textContent =
-            `${data.total_nuevos} Clientes`;
+        safeSetText('clientes-total', `${data.total_nuevos} Clientes`);
 
     } catch (error) {
         console.error('Error al cargar clientes nuevos:', error);
-        document.getElementById('clientes-total').textContent = 'Error al cargar';
+        safeSetText('clientes-total', 'Error al cargar');
     }
 }
 
@@ -117,15 +115,15 @@ async function cargarTopCliente() {
         const data = await response.json();
         
         if(data.encontrado && data.cliente) {
-            document.getElementById('top-cliente-nombre').textContent = data.cliente.nombre;
-            document.getElementById('top-cliente-compras').textContent = data.cliente.total_compras;
-            document.getElementById('top-cliente-monto').textContent = `${data.cliente.monto_total.toLocaleString('es-NI', {minimumFractionDigits: 2})} C$`;
+            safeSetText('top-cliente-nombre', data.cliente.nombre);
+            safeSetText('top-cliente-compras', data.cliente.total_compras);
+            safeSetText('top-cliente-monto', `${data.cliente.monto_total.toLocaleString('es-NI', {minimumFractionDigits: 2})} C$`);
         } else {
-            document.getElementById('top-cliente-nombre').textContent = 'No hay datos';
+            safeSetText('top-cliente-nombre', 'No hay datos');
         }
     } catch (error) {
         console.error('Error al cargar top cliente:', error);
-        document.getElementById('top-cliente-nombre').textContent = 'Error';
+        safeSetText('top-cliente-nombre', 'Error');
     }
 }
 
@@ -136,15 +134,15 @@ async function cargarProductoMasVendido() {
         const data = await response.json();
         
         if(data.encontrado && data.producto) {
-            document.getElementById('best-product-nombre').textContent = data.producto.nombre;
-            document.getElementById('best-product-unidades').textContent = data.producto.total_vendido;
-            document.getElementById('best-product-monto').textContent = `${data.producto.ingresos.toLocaleString('es-NI', {minimumFractionDigits: 2})} C$ generados`;
+            safeSetText('best-product-nombre', data.producto.nombre);
+            safeSetText('best-product-unidades', data.producto.total_vendido);
+            safeSetText('best-product-monto', `${data.producto.ingresos.toLocaleString('es-NI', {minimumFractionDigits: 2})} C$ generados`);
         } else {
-            document.getElementById('best-product-nombre').textContent = 'No hay datos';
+            safeSetText('best-product-nombre', 'No hay datos');
         }
     } catch (error) {
         console.error('Error al cargar producto más vendido:', error);
-        document.getElementById('best-product-nombre').textContent = 'Error';
+        safeSetText('best-product-nombre', 'Error');
     }
 }
 
@@ -155,15 +153,15 @@ async function cargarProductoMenosVendido() {
         const data = await response.json();
         
         if(data.encontrado && data.producto) {
-            document.getElementById('worst-product-nombre').textContent = data.producto.nombre;
-            document.getElementById('worst-product-unidades').textContent = data.producto.total_vendido;
-            document.getElementById('worst-product-monto').textContent = `${data.producto.ingresos.toLocaleString('es-NI', {minimumFractionDigits: 2})} C$ generados`;
+            safeSetText('worst-product-nombre', data.producto.nombre);
+            safeSetText('worst-product-unidades', data.producto.total_vendido);
+            safeSetText('worst-product-monto', `${data.producto.ingresos.toLocaleString('es-NI', {minimumFractionDigits: 2})} C$ generados`);
         } else {
-            document.getElementById('worst-product-nombre').textContent = 'No hay datos';
+            safeSetText('worst-product-nombre', 'No hay datos');
         }
     } catch (error) {
         console.error('Error al cargar producto menos vendido:', error);
-        document.getElementById('worst-product-nombre').textContent = 'Error';
+        safeSetText('worst-product-nombre', 'Error');
     }
 }
 
@@ -183,8 +181,8 @@ async function cargarGraficoVentasCostos() {
 
         // Aquí puedes usar Chart.js o cualquier librería de gráficos
         console.log('Datos de ventas vs costos:', data);
-        document.getElementById('chart-ventas-costos').innerHTML =
-            '<p>Gráfico disponible - Integrar con Chart.js</p>';
+        const chartEl = document.getElementById('chart-ventas-costos');
+        if (chartEl) chartEl.innerHTML = '<p>Gráfico disponible - Integrar con Chart.js</p>';
 
     } catch (error) {
         console.error('Error al cargar gráfico ventas/costos:', error);
@@ -198,8 +196,8 @@ async function cargarGraficoStockCategoria() {
 
         // Aquí puedes usar Chart.js o cualquier librería de gráficos
         console.log('Datos de stock por categoría:', data);
-        document.getElementById('chart-stock-categoria').innerHTML =
-            '<p>Gráfico disponible - Integrar con Chart.js</p>';
+        const chartEl = document.getElementById('chart-stock-categoria');
+        if (chartEl) chartEl.innerHTML = '<p>Gráfico disponible - Integrar con Chart.js</p>';
 
     } catch (error) {
         console.error('Error al cargar gráfico stock/categoría:', error);

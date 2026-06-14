@@ -252,6 +252,37 @@ const AuthController = {
             console.error('❌ Error en AuthController.notifyLockout:', error);
             res.status(500).json({ error: 'Error interno' });
         }
+    },
+
+    /**
+     * POST /api/auth/logout
+     * Cierra sesión y registra auditoría
+     */
+    async logout(req, res) {
+        try {
+            const { id_empleado, username } = req.body;
+
+            if (id_empleado && username) {
+                // Registrar auditoría de cierre de sesión
+                await AuditoriaModel.registrar({
+                    id_empleado: id_empleado,
+                    username: username,
+                    accion: 'CIERRE_SESION',
+                    tabla: 'EMPLEADOS',
+                    descripcion: `El usuario "${username}" cerró sesión en el sistema`
+                });
+            }
+
+            res.json({
+                success: true,
+                message: 'Sesión cerrada exitosamente en el servidor'
+            });
+        } catch (error) {
+            console.error('❌ Error en AuthController.logout:', error);
+            res.status(500).json({
+                error: 'Error al cerrar sesión'
+            });
+        }
     }
 };
 

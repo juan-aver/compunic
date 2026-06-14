@@ -1,18 +1,23 @@
 <div class="container">
 
+    <!-- Sección de formulario - se puede ocultar -->
     <section class="formulario" id="seccion-formulario">
-        <h2>Gestión de Garantías</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h2>Gestión de Garantías</h2>
+            <button type="button" id="btn-toggle-form-garantia"
+                style="background: #6c757d; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;"
+                onclick="toggleFormularioGarantia()">
+                <i class="fas fa-eye-slash"></i> Ocultar Formulario
+            </button>
+        </div>
         <form id="formulario-garantias">
 
-            <div class="input-with-icon">
-                <span class="input-icon">🔢</span>
-                <input type="number" id="ID_GARANTIA" placeholder="ID Garantía (Único)" />
-            </div>
-            <input type="date" id="FECHA" placeholder="Fecha" />
-            <input type="time" id="HORA" placeholder="Hora" />
+            <!-- ID Auto-generado (oculto) -->
+            <input type="hidden" id="ID_GARANTIA" />
+
             <div class="input-with-icon">
                 <span class="input-icon">📅</span>
-                <input type="number" id="DURACION_MESES" placeholder="Duración (Meses)" />
+                <input type="number" id="DURACION_MESES" placeholder="Duración (Meses)" required />
             </div>
 
             <select id="ID_GARANTIA_TIPO">
@@ -32,13 +37,13 @@
                 <input id="EXCLUSIONES" type="text" placeholder="Exclusiones" />
             </div>
 
+            <!-- Botones: Agregar siempre visible, Modificar/Eliminar solo admin -->
             <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
                 <button id="btn_agregar_garantia" type="button"
-                    style="flex: 1; max-width: 120px;">Agregar</button>
+                    style="flex: 1; max-width: 140px;">Agregar</button>
+                <!-- Modificar solo para admins - visible/oculto por JS -->
                 <button id="btn_modificar_garantia" type="button"
-                    style="flex: 1; max-width: 120px;">Modificar</button>
-                <button id="btn_eliminar_garantia" type="button"
-                    style="flex: 1; max-width: 120px;">Eliminar</button>
+                    style="flex: 1; max-width: 140px; display: none;">Modificar</button>
                 <button id="btn_limpiar_garantia" type="button"
                     style="flex: 1; max-width: 120px; background-color: #7f8c8d;">Limpiar</button>
             </div>
@@ -68,11 +73,13 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Fecha</th>
+                    <th>Fecha Registro</th>
+                    <th>Vence</th>
                     <th>Tipo</th>
                     <th>Estado</th>
                     <th>Duración</th>
                     <th>Condición</th>
+                    <th id="th-acciones-garantia" style="text-align:center;">Acciones</th>
                 </tr>
             </thead>
             <tbody id="tablaGarantias">

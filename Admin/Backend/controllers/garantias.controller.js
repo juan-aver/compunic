@@ -52,10 +52,22 @@ const garantiasController = {
     },
 
     agregar: async (req, res) => {
-        const { id_garantia, fecha, hora, duracion_meses, id_garantia_tipo, id_garantia_estado, condicion, exclusiones } = req.body;
+        let { id_garantia, fecha, hora, duracion_meses, id_garantia_tipo, id_garantia_estado, condicion, exclusiones } = req.body;
 
-        if (!id_garantia || !fecha || !id_garantia_tipo || !id_garantia_estado) {
-            return res.status(400).json({ error: 'ID, Fecha, Tipo y Estado son obligatorios' });
+        // Auto-generar ID si no se proporciona
+        if (!id_garantia) {
+            id_garantia = Date.now() % 1000000 + Math.floor(Math.random() * 100);
+        }
+        // Auto-generar fecha si no se proporciona
+        if (!fecha) {
+            fecha = new Date().toISOString().split('T')[0];
+        }
+        if (!hora) {
+            hora = new Date().toTimeString().split(' ')[0];
+        }
+
+        if (!id_garantia_tipo || !id_garantia_estado) {
+            return res.status(400).json({ error: 'Tipo y Estado son obligatorios' });
         }
 
         try {

@@ -115,13 +115,16 @@
       <button type="button" class="btn-modal-cancel" onclick="cerrarModalProducto()">
         <i class="fas fa-times"></i> Cancelar
       </button>
-      <button type="button" id="btn_eliminar" class="btn-modal-delete" style="display: none;">
-        <i class="fas fa-trash"></i> Eliminar
+      <!-- Botón "Dar de Baja" reemplaza al antiguo "Eliminar" -->
+      <button type="button" id="btn_eliminar" class="btn-modal-delete" style="display: none; background: linear-gradient(135deg, #e67e22, #d35400);">
+        <i class="fas fa-ban"></i> Dar de Baja
       </button>
-      <button type="button" id="btn_agregar" class="btn-modal-save">
+      <!-- Botón Guardar para nuevos productos -->
+      <button type="button" id="btn_agregar" class="btn-modal-save" onclick="agregarProducto()">
         <i class="fas fa-save"></i> Guardar
       </button>
-      <button type="button" id="btn_modificar" class="btn-modal-update" style="display: none;">
+      <!-- Botón Modificar para editar -->
+      <button type="button" id="btn_modificar" class="btn-modal-update" style="display: none;" onclick="modificarProducto()">
         <i class="fas fa-edit"></i> Modificar
       </button>
     </div>

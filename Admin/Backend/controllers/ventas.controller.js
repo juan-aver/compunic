@@ -10,6 +10,7 @@ const Ventas = require('../models/ventas.model.js');
 const movimientosStockController = require('./movimientos_stock.controller');
 const Producto = require('../models/productos.model.js'); // Necesario para consultar stock
 const AuditoriaModel = require('../models/auditoria.model');
+const db = require('../config/db');
 
 exports.findAll = async (req, res) => {
   try {
@@ -21,21 +22,32 @@ exports.findAll = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  if (!req.body.id_cliente || !req.body.id_empleado || !req.body.items || req.body.items.length === 0) {
+  const { id_cliente, nombre_cliente_ocasional, id_empleado, items } = req.body;
+
+  // Se requiere o id_cliente (registrado) o nombre_cliente_ocasional (ocasional)
+  if (!id_empleado || !items || items.length === 0) {
     return res.status(400).send({ message: "Contenido vacío." });
+  }
+  if (!id_cliente && !nombre_cliente_ocasional) {
+    return res.status(400).send({ message: "Se requiere un cliente registrado o un nombre para cliente ocasional." });
   }
 
   const venta = {
     fecha: req.body.fecha || new Date(),
-    id_cliente: req.body.id_cliente,
-    id_empleado: req.body.id_empleado,
-    items: req.body.items
+    id_cliente: id_cliente || null,
+    nombre_cliente_ocasional: nombre_cliente_ocasional || null,
+    id_empleado: id_empleado,
+    items: items
   };
 
   try {
-    // ✅ NUEVO: Obtener stock ANTES de insertar la venta para cálculo correcto
+    // ✅ NUEVO: Verificar que los productos estén activos y obtener stock ANTES de insertar la venta
     const stocksAnteriores = {};
     for (const item of venta.items) {
+      const [pRows] = await db.query('SELECT NOMBRE_PRODUCTO, COALESCE(ACTIVO, 1) AS activo FROM PRODUCTOS WHERE ID_PRODUCTO = ?', [item.idProducto]);
+      if (pRows[0] && Number(pRows[0].activo) === 0) {
+        return res.status(400).send({ error: `El producto "${pRows[0].NOMBRE_PRODUCTO}" está dado de baja y no se puede vender.` });
+      }
       const [prodInfo] = await Producto.obtenerNombreYStock(item.idProducto);
       stocksAnteriores[item.idProducto] = {
         nombre: prodInfo ? prodInfo.nombre : 'Producto Vendido',
@@ -75,12 +87,13 @@ exports.create = async (req, res) => {
 
     // Auditoría
     const totalItems = venta.items.reduce((sum, i) => sum + parseInt(i.cantidad), 0);
+    const clienteDesc = id_cliente ? `cliente ID: ${id_cliente}` : `cliente ocasional: "${nombre_cliente_ocasional}"`;
     AuditoriaModel.registrar({
       id_empleado: req.userId || venta.id_empleado || null,
       username: req.username || 'Sistema',
       accion: 'VENTA',
       tabla: 'VENTAS',
-      descripcion: `Se registró la venta ${facturaGenerada} con ${totalItems} artículo(s) para el cliente ID: ${venta.id_cliente}`
+      descripcion: `Se registró la venta ${facturaGenerada} con ${totalItems} artículo(s) para el ${clienteDesc}`
     }).catch(e => console.error('Audit log error:', e));
   } catch (err) {
     res.status(500).send({ message: err.message });

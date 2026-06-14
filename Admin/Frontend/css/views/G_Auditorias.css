@@ -62,29 +62,166 @@ h3 {
   text-transform: uppercase;
 }
 
+/* Coloration for specific action types in Light Mode */
+.badge-inicio_sesion,
 .badge-login_exitoso {
   background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  color: white;
+}
+
+.badge-cierre_sesion {
+  background: linear-gradient(135deg, #7f8c8d 0%, #5f6c6d 100%);
+  color: white;
 }
 
 .badge-login_fallido {
-  background: linear-gradient(135deg, #c0392b 0%, #962d22 100%);
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
   animation: shake 0.5s;
 }
 
 .badge-crear {
   background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
 }
 
 .badge-modificar {
-  background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+  background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
+  color: white;
 }
 
 .badge-eliminar {
   background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
 }
 
-.badge-restablecer_contrasena {
+.badge-dar_de_baja {
+  background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+  color: white;
+}
+
+.badge-reactivar {
+  background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+  color: white;
+}
+
+.badge-venta {
   background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+  color: white;
+}
+
+.badge-compra {
+  background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+  color: white;
+}
+
+.badge-devolucion {
+  background: linear-gradient(135deg, #f1c40f 0%, #d8a300 100%);
+  color: white;
+}
+
+.badge-reset_contrasena,
+.badge-restablecer_contrasena {
+  background: linear-gradient(135deg, #8e44ad 0%, #6c3483 100%);
+  color: white;
+}
+
+.badge-cambiar_estado {
+  background: linear-gradient(135deg, #7f8c8d 0%, #34495e 100%);
+  color: white;
+}
+
+/* =========================================
+   DARK MODE OVERRIDES (GLASS COMPATIBLE)
+   ========================================= */
+
+[data-theme="dark"] .badge-inicio_sesion,
+[data-theme="dark"] .badge-login_exitoso {
+  background: rgba(46, 204, 113, 0.2) !important;
+  color: #2ecc71 !important;
+  border: 1px solid rgba(46, 204, 113, 0.4) !important;
+  box-shadow: 0 0 10px rgba(46, 204, 113, 0.1) !important;
+}
+
+[data-theme="dark"] .badge-cierre_sesion {
+  background: rgba(149, 165, 166, 0.2) !important;
+  color: #bdc3c7 !important;
+  border: 1px solid rgba(149, 165, 166, 0.4) !important;
+}
+
+[data-theme="dark"] .badge-login_fallido {
+  background: rgba(231, 76, 60, 0.2) !important;
+  color: #fc5c65 !important;
+  border: 1px solid rgba(231, 76, 60, 0.4) !important;
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.1) !important;
+}
+
+[data-theme="dark"] .badge-crear {
+  background: rgba(52, 152, 219, 0.2) !important;
+  color: #3498db !important;
+  border: 1px solid rgba(52, 152, 219, 0.4) !important;
+}
+
+[data-theme="dark"] .badge-modificar {
+  background: rgba(243, 156, 18, 0.2) !important;
+  color: #f39c12 !important;
+  border: 1px solid rgba(243, 156, 18, 0.4) !important;
+}
+
+[data-theme="dark"] .badge-eliminar {
+  background: rgba(192, 41, 43, 0.2) !important;
+  color: #fc5c65 !important;
+  border: 1px solid rgba(192, 41, 43, 0.4) !important;
+}
+
+[data-theme="dark"] .badge-dar_de_baja {
+  background: rgba(230, 126, 34, 0.2) !important;
+  color: #e67e22 !important;
+  border: 1px solid rgba(230, 126, 34, 0.4) !important;
+}
+
+[data-theme="dark"] .badge-reactivar {
+  background: rgba(26, 188, 156, 0.2) !important;
+  color: #1abc9c !important;
+  border: 1px solid rgba(26, 188, 156, 0.4) !important;
+}
+
+[data-theme="dark"] .badge-venta {
+  background: rgba(155, 89, 182, 0.2) !important;
+  color: #a55eea !important;
+  border: 1px solid rgba(155, 89, 182, 0.4) !important;
+  box-shadow: 0 0 10px rgba(155, 89, 182, 0.1) !important;
+}
+
+[data-theme="dark"] .badge-compra {
+  background: rgba(52, 73, 94, 0.2) !important;
+  color: #a5b1c2 !important;
+  border: 1px solid rgba(52, 73, 94, 0.4) !important;
+}
+
+[data-theme="dark"] .badge-devolucion {
+  background: rgba(241, 196, 15, 0.2) !important;
+  color: #f1c40f !important;
+  border: 1px solid rgba(241, 196, 15, 0.4) !important;
+}
+
+[data-theme="dark"] .badge-reset_contrasena,
+[data-theme="dark"] .badge-restablecer_contrasena {
+  background: rgba(155, 89, 182, 0.2) !important;
+  color: #a55eea !important;
+  border: 1px solid rgba(155, 89, 182, 0.4) !important;
+}
+
+[data-theme="dark"] .badge-cambiar_estado {
+  background: rgba(52, 73, 94, 0.2) !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(52, 73, 94, 0.4) !important;
+}
+
+[data-theme="dark"] .text-detail-code {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #e2e8f0 !important;
+  border-left-color: #56A5DD !important;
 }
 
 /* Detalle text styling */

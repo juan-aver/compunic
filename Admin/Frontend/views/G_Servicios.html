@@ -6,30 +6,15 @@
     <header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h1>Gestión de Servicios</h1>
-            <button class="btn-nuevo-producto" onclick="abrirModalServicio()">
-                <i class="fas fa-plus"></i> Nuevo Servicio
-            </button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn-nuevo-producto" onclick="abrirModalServicio()">
+                    <i class="fas fa-plus"></i> Nuevo Servicio
+                </button>
+            </div>
         </div>
     </header>
 
     <div class="content-wrapper">
-
-        <section class="table-container catalogo-section">
-            <h3><i class="fas fa-book-open"></i> Catálogo de Servicios Disponibles</h3>
-            <p>Lista de referencia de los servicios que ofrece la empresa.</p>
-
-            <table id="tabla-catalogo">
-                <thead>
-                    <tr>
-                        <th style="width: 10%;">ID</th>
-                        <th style="width: 70%;">Servicio</th>
-                        <th style="width: 20%; text-align: center;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </section>
 
         <!-- ⚠️ Cuidado con los z-index de este Modal de Agregar/Editar Servicio -->
         <div id="modalServicioForm" class="producto-form-modal" style="display: none;">
@@ -79,16 +64,15 @@
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
                             <div>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Descripción:</label>
+                                <input type="text" id="descripcion" name="descripcion" class="form-control"
+                                    placeholder="Descripción del trabajo..." style="width: 100%;">
+                            </div>
+                            <div>
                                 <label style="font-weight: 600; display: block; margin-bottom: 4px;">Costo Final
                                     ($):</label>
                                 <input type="number" id="costo" name="costo" step="0.01" class="form-control" required
                                     placeholder="0.00" style="width: 100%;">
-                            </div>
-                            <div>
-                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">ID Temporal
-                                    (Opcional):</label>
-                                <input type="number" id="id_temporal" name="id_temporal" class="form-control"
-                                    style="width: 100%;">
                             </div>
                         </div>
 
@@ -106,19 +90,22 @@
                                     style="width: 100%;">
                             </div>
                         </div>
+                        <!-- ID temporal oculto para edición -->
+                        <input type="hidden" id="id_servicio" name="id_servicio">
+                        <input type="hidden" id="id_temporal" name="id_temporal">
                     </form>
                 </div>
                 <div class="producto-form-modal-footer">
                     <button type="button" class="btn-modal-cancel" onclick="cerrarModalServicio()">
                         <i class="fas fa-times"></i> Cancelar
                     </button>
-                    <button type="button" id="btn-eliminar" class="btn-modal-delete" style="display: none;">
+                    <button type="button" id="btn-eliminar-servicio" class="btn-modal-delete" style="display: none;">
                         <i class="fas fa-trash"></i> Eliminar
                     </button>
-                    <button type="submit" id="btn-agregar" class="btn-modal-save">
+                    <button type="button" id="btn-guardar-servicio" class="btn-modal-save">
                         <i class="fas fa-save"></i> Guardar Trabajo
                     </button>
-                    <button type="button" id="btn-modificar" class="btn-modal-update" style="display: none;">
+                    <button type="button" id="btn-modificar-servicio" class="btn-modal-update" style="display: none;">
                         <i class="fas fa-edit"></i> Modificar
                     </button>
                 </div>
@@ -147,7 +134,7 @@
                         <th>F. Ejecución</th>
                         <th>Estado</th>
                         <th>Costo</th>
-                        <th>Acciones</th>
+                        <th style="text-align: center;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>

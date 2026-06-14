@@ -125,7 +125,6 @@
           <a href="#" class="nav-link">Inventario</a>
           <ul class="dropdown-menu glass">
             <li><a href="#" onclick="cargarVista('gestion-productos', false)"> Producto</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-productos', true)">Listado de productos</a></li>
             <li><a href="#" onclick="cargarVista('gestion-categorias')"> Categorias</a></li>
             <li><a href="#" onclick="cargarVista('historial-stock')">Historial de stock</a></li>
           </ul>
@@ -134,9 +133,7 @@
           <a href="#" class="nav-link">Servicios</a>
           <ul class="dropdown-menu glass">
             <li><a href="#" onclick="cargarVista('gestion-garantias')">Garantías</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-garantias', true)">Listado de Garantías</a></li>
             <li><a href="#" onclick="cargarVista('gestion-servicios')">Servicios</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-servicios', true)">Listado de servicios</a></li>
             <li><a href="#" onclick="cargarVista('gestion-ventas')">Generar Venta</a></li>
             <li><a href="#" onclick="cargarVista('gestion-lista-ventas')">Listado de Ventas</a></li>
             <li><a href="#" onclick="cargarVista('gestion-devoluciones')">Devoluciones</a></li>
@@ -148,7 +145,6 @@
             <li><a href="#" onclick="cargarVista('gestion-compra')">Nueva compra</a></li>
             <li><a href="#" onclick="cargarVista('gestion-lista-compras')">Listado de compras</a></li>
             <li><a href="#" onclick="cargarVista('gestion-proveedores')">Proveedores</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-proveedores', true)">Lista de proveedores</a></li>
           </ul>
         </li>
         <li class="nav-item-dropdown" id="nav-administracion">
@@ -290,7 +286,7 @@
           </div>
 
           <!-- Tarjeta 2: Servicios -->
-          <div class="stat-card stat-card-red stagger-item" onclick="cargarVista('gestion-servicios', true)" style="cursor: pointer;">
+          <div class="stat-card stat-card-red stagger-item" onclick="cargarVista('gestion-servicios', false)" style="cursor: pointer;">
             <div class="stat-icon">
               <i class="fas fa-clipboard-list" style="font-size: 40px;"></i>
             </div>
@@ -305,7 +301,7 @@
           </div>
 
           <!-- Tarjeta 3: Stock Crítico (Solo Admin) -->
-          <div class="stat-card stat-card-yellow stagger-item admin-only" onclick="cargarVista('gestion-productos', true)" style="cursor: pointer;">
+          <div class="stat-card stat-card-yellow stagger-item admin-only" onclick="cargarVista('gestion-productos', false)" style="cursor: pointer;">
             <div class="stat-icon">
               <i class="fas fa-box" style="font-size: 40px;"></i>
             </div>

@@ -8,7 +8,14 @@
 -->
 <!-- SECCIÓN 1: FORMULARIO CRUD PROVEEDORES -->
 <section class="formulario" id="seccion-formulario">
-  <h2>Gestión de Proveedores</h2>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <h2>Gestión de Proveedores</h2>
+    <button type="button" id="btn-toggle-form-proveedores"
+      style="background: #6c757d; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;"
+      onclick="toggleFormularioProveedores()">
+      <i class="fas fa-eye-slash"></i> Ocultar Formulario
+    </button>
+  </div>
   <form id="formularioProveedor">
 
     <!-- Fila 1: ID y Empresa -->

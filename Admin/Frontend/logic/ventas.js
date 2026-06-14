@@ -142,6 +142,8 @@ function renderVentasPOSGrid() {
             window._ventasPOSProductos = productos;
 
             productos.forEach(p => {
+                const activo = p.activo !== undefined ? Number(p.activo) : (p.ACTIVO !== undefined ? Number(p.ACTIVO) : 1);
+                if (activo === 0) return; // Skip deactivated products
                 const nombre = p.NOMBRE_PRODUCTO ?? p.nombre ?? 'Sin nombre';
                 const precioVenta = parseFloat(p.PRECIO_VENTA ?? p.precio_venta ?? 0);
                 const stock = Number(p.stock ?? p.STOCK ?? 0) || 0;
@@ -311,7 +313,14 @@ window.inicializarFechaVenta = function () {
 };
 
 function guardarVenta() {
-    const idCliente = document.getElementById('cliente-select').value;
+    const clienteSelectVal = document.getElementById('cliente-select').value;
+    const esOcasional = clienteSelectVal === '__ocasional__';
+    const idCliente = esOcasional ? null : clienteSelectVal;
+    const nombreClienteOcasional = esOcasional
+        ? (document.getElementById('cliente-ocasional-nombre')?.value?.trim() || 'Cliente Ocasional')
+        : null;
+
+    if (!esOcasional && !idCliente) return alert('Seleccione un cliente o elija Cliente Ocasional.');
 
     let idVendedor = document.getElementById('vendedor-id')?.value;
     if (!idVendedor) {
@@ -322,7 +331,7 @@ function guardarVenta() {
     const fecha = document.getElementById('fecha-venta').value;
     const factura = document.getElementById('factura-input').value;
 
-    if (!idCliente || !idVendedor || !fecha) return alert('Complete los datos de la venta.');
+    if (!idVendedor || !fecha) return alert('Complete los datos de la venta.');
     if (itemsVenta.length === 0) return alert('Agregue al menos un producto.');
 
     const fechaActual = new Date();
@@ -334,6 +343,7 @@ function guardarVenta() {
 
     const payload = {
         id_cliente: idCliente,
+        nombre_cliente_ocasional: nombreClienteOcasional,
         id_empleado: idVendedor,
         fecha: fecha,
         factura: factura,
@@ -365,6 +375,9 @@ function guardarVenta() {
             if (typeof window.inicializarFechaVenta === 'function') {
                 window.inicializarFechaVenta();
             }
+            // Reset cliente ocasional
+            const wrapper = document.getElementById('cliente-ocasional-wrapper');
+            if (wrapper) wrapper.style.display = 'none';
             renderizarItemsVentaNew();
             cargarVentas();
         })
@@ -444,13 +457,23 @@ function cargarVentas() {
 // POBLAR SELECTS VENTAS
 // ========================================================================================================
 
+// Mostrar/ocultar campo de nombre para cliente ocasional
+function toggleClienteOcasional(valor) {
+    const wrapper = document.getElementById('cliente-ocasional-wrapper');
+    if (wrapper) {
+        wrapper.style.display = valor === '__ocasional__' ? '' : 'none';
+    }
+}
+window.toggleClienteOcasional = toggleClienteOcasional;
+
 function poblarSelectClientes() {
     fetch(`${API_BASE}/clientes`)
         .then(res => res.json())
         .then(clientes => {
             const select = document.getElementById('cliente-select');
             if (!select) return;
-            select.innerHTML = '<option value="" disabled selected>Seleccione un Cliente</option>';
+            // Mantener opción inicial y opción ocasional
+            select.innerHTML = '<option value="" disabled selected>Seleccione un Cliente</option><option value="__ocasional__">👤 Cliente Ocasional / Sin Registro</option>';
             clientes.forEach(cliente => {
                 const option = document.createElement('option');
                 option.value = cliente.ID_CLIENTE;
@@ -486,6 +509,8 @@ function poblarSelectProductos() {
             if (!select) return;
             select.innerHTML = '<option value="" selected>Seleccione</option>';
             productos.forEach(p => {
+                const activo = p.activo !== undefined ? Number(p.activo) : (p.ACTIVO !== undefined ? Number(p.ACTIVO) : 1);
+                if (activo === 0) return; // Skip deactivated products
                 const option = document.createElement('option');
                 option.value = p.ID_PRODUCTO || p.id_producto;
                 option.textContent = `${p.nombre} - ${p.modelo}`;

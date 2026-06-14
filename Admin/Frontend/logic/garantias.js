@@ -3,6 +3,33 @@
 // LÓGICA DE GARANTÍAS
 // ========================================================================================================
 
+// Genera un ID único para la garantía (timestamp + random)
+function generarIdGarantia() {
+    return Date.now() % 1000000 + Math.floor(Math.random() * 100);
+}
+
+// Calcula fecha de vencimiento = fecha actual + duración en meses
+function calcularFechaVencimiento(duracionMeses) {
+    const hoy = new Date();
+    hoy.setMonth(hoy.getMonth() + parseInt(duracionMeses || 0));
+    return hoy.toISOString().split('T')[0];
+}
+
+// Función para ocultar/mostrar el formulario
+function toggleFormularioGarantia() {
+    const form = document.getElementById('seccion-formulario');
+    const btn = document.getElementById('btn-toggle-form-garantia');
+    if (!form) return;
+    const visible = form.querySelector('form').style.display !== 'none';
+    form.querySelector('form').style.display = visible ? 'none' : '';
+    if (btn) {
+        btn.innerHTML = visible
+            ? '<i class="fas fa-eye"></i> Mostrar Formulario'
+            : '<i class="fas fa-eye-slash"></i> Ocultar Formulario';
+    }
+}
+window.toggleFormularioGarantia = toggleFormularioGarantia;
+
 function cargarGarantias() {
     fetch(`${API_BASE}/garantias`)
         .then(res => res.json())
@@ -11,24 +38,93 @@ function cargarGarantias() {
             if (!tbody) return;
             tbody.innerHTML = '';
 
+            // Verificar si el usuario es admin
+            const session = (typeof Auth !== 'undefined') ? Auth.getSession() : null;
+            const esAdmin = session && session.rol && session.rol.toLowerCase() === 'admin';
+
             garantias.forEach(g => {
                 const tr = document.createElement('tr');
-                tr.onclick = () => seleccionarGarantia(g);
                 tr.style.cursor = 'pointer';
+
+                const fechaRegistro = g.FECHA ? new Date(g.FECHA).toLocaleDateString('es-NI') : '-';
+                const duracion = g.DURACION_MESES || 0;
+
+                // Calcular fecha de vencimiento desde FECHA + DURACION_MESES
+                let fechaVence = '-';
+                if (g.FECHA && duracion) {
+                    const base = new Date(g.FECHA);
+                    base.setMonth(base.getMonth() + parseInt(duracion));
+                    fechaVence = base.toLocaleDateString('es-NI');
+                }
+
+                // Botones según rol
+                const botonesAccion = esAdmin
+                    ? `<button onclick="seleccionarGarantiaEditar(event, ${JSON.stringify(g).replace(/"/g, '&quot;')})"
+                            style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; margin-right: 4px;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="eliminarGarantiaPorId(event, ${g.ID_GARANTIA})"
+                            style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">
+                            <i class="fas fa-trash"></i>
+                        </button>`
+                    : `<span style="color: #999; font-size: 0.8rem;">Solo admin</span>`;
 
                 tr.innerHTML = `
                   <td>${g.ID_GARANTIA}</td>
-                  <td>${g.FECHA ? new Date(g.FECHA).toLocaleDateString('es-NI') : ''}</td>
+                  <td>${fechaRegistro}</td>
+                  <td>${fechaVence}</td>
                   <td>${g.NOMBRE_TIPO || ''}</td>
                   <td>${g.NOMBRE_ESTADO || ''}</td>
-                  <td>${g.DURACION_MESES || 0} meses</td>
+                  <td>${duracion} meses</td>
                   <td>${g.CONDICION || ''}</td>
+                  <td style="text-align:center;">${botonesAccion}</td>
                 `;
                 tbody.appendChild(tr);
             });
         })
         .catch(err => console.error('Error cargando garantías:', err));
 }
+
+// Carga la garantía en el formulario para edición (solo admin)
+function seleccionarGarantiaEditar(e, g) {
+    e.stopPropagation();
+    document.getElementById('ID_GARANTIA').value = g.ID_GARANTIA || '';
+    document.getElementById('DURACION_MESES').value = g.DURACION_MESES || '';
+    document.getElementById('CONDICION').value = g.CONDICION || '';
+    document.getElementById('EXCLUSIONES').value = g.EXCLUSIONES || '';
+
+    const selectTipo = document.getElementById('ID_GARANTIA_TIPO');
+    if (selectTipo) selectTipo.value = g.ID_GARANTIA_TIPO || '';
+    const selectEstado = document.getElementById('ID_GARANTIA_ESTADO');
+    if (selectEstado) selectEstado.value = g.ID_GARANTIA_ESTADO || '';
+
+    // Mostrar formulario si está oculto
+    const form = document.getElementById('seccion-formulario');
+    if (form) form.querySelector('form').style.display = '';
+    const toggleBtn = document.getElementById('btn-toggle-form-garantia');
+    if (toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar Formulario';
+
+    // Mostrar botón de modificar
+    const btnMod = document.getElementById('btn_modificar_garantia');
+    if (btnMod) btnMod.style.display = '';
+
+    document.getElementById('seccion-formulario')?.scrollIntoView({ behavior: 'smooth' });
+}
+window.seleccionarGarantiaEditar = seleccionarGarantiaEditar;
+
+// Eliminar garantía directo desde la fila
+function eliminarGarantiaPorId(e, id) {
+    e.stopPropagation();
+    if (!confirm(`¿Estás seguro de eliminar la garantía ID ${id}?`)) return;
+    fetch(`${API_BASE}/garantias/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(() => {
+            alert('Garantía eliminada correctamente');
+            cargarGarantias();
+        })
+        .catch(err => console.error('Error eliminando garantía:', err));
+}
+window.eliminarGarantiaPorId = eliminarGarantiaPorId;
 
 function cargarTiposGarantia() {
     fetch(`${API_BASE}/garantias/tipos`)
@@ -37,13 +133,11 @@ function cargarTiposGarantia() {
             // Poblar select del formulario
             const select = document.getElementById('ID_GARANTIA_TIPO');
             if (select) {
-                // Mantener primera opción
                 select.innerHTML = '<option value="">Seleccione Tipo...</option>';
                 tipos.forEach(t => {
                     select.innerHTML += `<option value="${t.ID_GARANTIA_TIPO}">${t.TIPO}</option>`;
                 });
             }
-
             // Poblar select de búsqueda
             const selectBuscar = document.getElementById('buscar_tipo');
             if (selectBuscar) {
@@ -60,7 +154,6 @@ function cargarEstadosGarantia() {
     fetch(`${API_BASE}/garantias/estados`)
         .then(res => res.json())
         .then(estados => {
-            // Poblar select del formulario
             const select = document.getElementById('ID_GARANTIA_ESTADO');
             if (select) {
                 select.innerHTML = '<option value="">Seleccione Estado...</option>';
@@ -68,8 +161,6 @@ function cargarEstadosGarantia() {
                     select.innerHTML += `<option value="${e.ID_GARANTIA_ESTADO}">${e.ESTADO}</option>`;
                 });
             }
-
-            // Poblar select de búsqueda
             const selectBuscar = document.getElementById('buscar_estado');
             if (selectBuscar) {
                 selectBuscar.innerHTML = '<option value="">Todos los Estados</option>';
@@ -81,36 +172,38 @@ function cargarEstadosGarantia() {
         .catch(err => console.error('Error cargando estados de garantía:', err));
 }
 
+// Función seleccionarGarantia legacy (usada por selects de otros módulos)
 function seleccionarGarantia(g) {
-    document.getElementById('ID_GARANTIA').value = g.ID_GARANTIA || '';
-    document.getElementById('FECHA').value = g.FECHA ? g.FECHA.split('T')[0] : '';
-    document.getElementById('HORA').value = g.HORA || '';
-    document.getElementById('DURACION_MESES').value = g.DURACION_MESES || '';
-    document.getElementById('CONDICION').value = g.CONDICION || '';
-    document.getElementById('EXCLUSIONES').value = g.EXCLUSIONES || '';
-
+    if (document.getElementById('ID_GARANTIA'))
+        document.getElementById('ID_GARANTIA').value = g.ID_GARANTIA || '';
+    if (document.getElementById('DURACION_MESES'))
+        document.getElementById('DURACION_MESES').value = g.DURACION_MESES || '';
+    if (document.getElementById('CONDICION'))
+        document.getElementById('CONDICION').value = g.CONDICION || '';
+    if (document.getElementById('EXCLUSIONES'))
+        document.getElementById('EXCLUSIONES').value = g.EXCLUSIONES || '';
     const selectTipo = document.getElementById('ID_GARANTIA_TIPO');
     if (selectTipo) selectTipo.value = g.ID_GARANTIA_TIPO || '';
-
     const selectEstado = document.getElementById('ID_GARANTIA_ESTADO');
     if (selectEstado) selectEstado.value = g.ID_GARANTIA_ESTADO || '';
-
     console.log("Garantía seleccionada:", g.ID_GARANTIA);
 }
 
 function agregarGarantia() {
-    const id_garantia = document.getElementById('ID_GARANTIA').value;
-    const fecha = document.getElementById('FECHA').value;
-    const hora = document.getElementById('HORA').value;
     const duracion_meses = document.getElementById('DURACION_MESES').value;
     const id_garantia_tipo = document.getElementById('ID_GARANTIA_TIPO').value;
     const id_garantia_estado = document.getElementById('ID_GARANTIA_ESTADO').value;
     const condicion = document.getElementById('CONDICION').value;
     const exclusiones = document.getElementById('EXCLUSIONES').value;
 
-    if (!id_garantia || !fecha || !id_garantia_tipo || !id_garantia_estado) {
-        return alert("ID, Fecha, Tipo y Estado son obligatorios");
+    if (!duracion_meses || !id_garantia_tipo || !id_garantia_estado) {
+        return alert("Duración, Tipo y Estado son obligatorios");
     }
+
+    // Generar ID y fecha automáticamente
+    const id_garantia = generarIdGarantia();
+    const fecha = new Date().toISOString().split('T')[0];
+    const hora = new Date().toTimeString().split(' ')[0];
 
     fetch(`${API_BASE}/garantias`, {
         method: 'POST',
@@ -131,13 +224,15 @@ function modificarGarantia() {
     const id = document.getElementById('ID_GARANTIA').value;
     if (!id) return alert("Selecciona una garantía de la tabla");
 
-    const fecha = document.getElementById('FECHA').value;
-    const hora = document.getElementById('HORA').value;
     const duracion_meses = document.getElementById('DURACION_MESES').value;
     const id_garantia_tipo = document.getElementById('ID_GARANTIA_TIPO').value;
     const id_garantia_estado = document.getElementById('ID_GARANTIA_ESTADO').value;
     const condicion = document.getElementById('CONDICION').value;
     const exclusiones = document.getElementById('EXCLUSIONES').value;
+
+    // Calcular fecha desde hoy con la nueva duración
+    const fecha = new Date().toISOString().split('T')[0];
+    const hora = new Date().toTimeString().split(' ')[0];
 
     fetch(`${API_BASE}/garantias/${id}`, {
         method: 'PUT',
@@ -156,12 +251,8 @@ function modificarGarantia() {
 function eliminarGarantia() {
     const id = document.getElementById('ID_GARANTIA').value;
     if (!id) return alert("Selecciona una garantía de la tabla");
-
     if (!confirm('¿Estás seguro de eliminar esta garantía?')) return;
-
-    fetch(`${API_BASE}/garantias/${id}`, {
-        method: 'DELETE'
-    })
+    fetch(`${API_BASE}/garantias/${id}`, { method: 'DELETE' })
         .then(res => res.json())
         .then(() => {
             alert('Garantía eliminada correctamente');
@@ -189,22 +280,41 @@ function buscarGarantia() {
             tbody.innerHTML = '';
 
             if (garantias.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6">No se encontraron garantías</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8">No se encontraron garantías</td></tr>';
                 return;
             }
+            const session = (typeof Auth !== 'undefined') ? Auth.getSession() : null;
+            const esAdmin = session && session.rol && session.rol.toLowerCase() === 'admin';
 
             garantias.forEach(g => {
                 const tr = document.createElement('tr');
-                tr.onclick = () => seleccionarGarantia(g);
-                tr.style.cursor = 'pointer';
-
+                const fechaRegistro = g.FECHA ? new Date(g.FECHA).toLocaleDateString('es-NI') : '-';
+                const duracionG = g.DURACION_MESES || 0;
+                let fechaVence = '-';
+                if (g.FECHA && duracionG) {
+                    const base = new Date(g.FECHA);
+                    base.setMonth(base.getMonth() + parseInt(duracionG));
+                    fechaVence = base.toLocaleDateString('es-NI');
+                }
+                const botonesAccion = esAdmin
+                    ? `<button onclick="seleccionarGarantiaEditar(event, ${JSON.stringify(g).replace(/"/g, '&quot;')})"
+                            style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; margin-right: 4px;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="eliminarGarantiaPorId(event, ${g.ID_GARANTIA})"
+                            style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">
+                            <i class="fas fa-trash"></i>
+                        </button>`
+                    : `<span style="color: #999; font-size: 0.8rem;">Solo admin</span>`;
                 tr.innerHTML = `
                   <td>${g.ID_GARANTIA}</td>
-                  <td>${g.FECHA ? new Date(g.FECHA).toLocaleDateString('es-NI') : ''}</td>
+                  <td>${fechaRegistro}</td>
+                  <td>${fechaVence}</td>
                   <td>${g.NOMBRE_TIPO || ''}</td>
                   <td>${g.NOMBRE_ESTADO || ''}</td>
-                  <td>${g.DURACION_MESES || 0} meses</td>
+                  <td>${duracionG} meses</td>
                   <td>${g.CONDICION || ''}</td>
+                  <td style="text-align:center;">${botonesAccion}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -215,4 +325,18 @@ function buscarGarantia() {
 function limpiarFormularioGarantia() {
     const form = document.getElementById('formulario-garantias');
     if (form) form.reset();
+    // Ocultar botón modificar
+    const btnMod = document.getElementById('btn_modificar_garantia');
+    if (btnMod) btnMod.style.display = 'none';
+}
+
+// Inicializar visibilidad del botón Modificar según rol
+function initGarantiasRol() {
+    const session = (typeof Auth !== 'undefined') ? Auth.getSession() : null;
+    const esAdmin = session && session.rol && session.rol.toLowerCase() === 'admin';
+    const btnMod = document.getElementById('btn_modificar_garantia');
+    if (btnMod) btnMod.style.display = 'none'; // siempre oculto al inicio, se muestra al editar
+    // La columna de acciones se oculta si no es admin
+    const thAcciones = document.getElementById('th-acciones-garantia');
+    if (thAcciones && !esAdmin) thAcciones.style.display = 'none';
 }

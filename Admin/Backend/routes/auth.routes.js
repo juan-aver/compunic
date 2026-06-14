@@ -26,5 +26,8 @@ router.get('/validate-token/:token', AuthController.validateToken);
 // POST /api/auth/notify-lockout
 router.post('/notify-lockout', AuthController.notifyLockout);
 
+// POST /api/auth/logout
+router.post('/logout', AuthController.logout);
+
 module.exports = router;
 

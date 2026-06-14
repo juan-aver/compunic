@@ -40,7 +40,7 @@ const Auth = {
                     apellido: data.user.apellido,
                     rol: data.user.rol.toLowerCase(), // 'ADMIN' -> 'admin', 'VENDEDOR' -> 'vendedor'
                     id_empleado: data.user.id_empleado,
-                    id_empleado: data.user.id_empleado, // ⭐ IMPORTANTE: Para auto-asignar en ventas
+                    id_vendedor: data.user.id_empleado, // ⭐ IMPORTANTE: Para auto-asignar en ventas
                     area: data.user.area,
                     email: data.user.email,
                     timestamp: new Date().getTime()
@@ -58,7 +58,24 @@ const Auth = {
         }
     },
 
-    logout: function () {
+    logout: async function () {
+        const session = Auth.getSession();
+        if (session && session.id_empleado && session.user) {
+            try {
+                await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id_empleado: session.id_empleado,
+                        username: session.user
+                    })
+                });
+            } catch (err) {
+                console.error('❌ Error al notificar cierre de sesión al servidor:', err);
+            }
+        }
         sessionStorage.removeItem(AUTH_KEY);
         window.location.href = 'index.html';
     },

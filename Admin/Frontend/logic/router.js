@@ -110,10 +110,7 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         // Inicializar preview de imagen y modal
                         initProductosImagen();
 
-                        if (Lista_de_productos) {
-                            const formulario = document.getElementById('seccion-formulario');
-                            if (formulario) formulario.style.display = 'none';
-                        }
+                        // Restore saved view preference
                         // Restore saved view preference
                         const savedView = localStorage.getItem('compunic_product_view') || 'cards';
                         if (typeof switchProductView === 'function') switchProductView(savedView, true);
@@ -133,20 +130,11 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         if (typeof initCardSearch === 'function') initCardSearch();
                     }
                     else if (nombreVista === 'gestion-proveedores') {
-                        // Logic to hide form and search if in list mode
-                        // Note: Lista_de_productos is the 2nd arg, used as generic 'list mode' flag by dashboard
-                        if (Lista_de_productos || Lista_de_proveedores) {
-                            const formSection = document.getElementById('seccion-formulario');
-                            const searchSection = document.getElementById('seccion-busqueda');
-                            if (formSection) formSection.style.display = 'none';
-                            if (searchSection) searchSection.style.display = 'none';
-                        } else {
-                            // Ensure they are visible if not in list mode (optional but safe)
-                            const formSection = document.getElementById('seccion-formulario');
-                            const searchSection = document.getElementById('seccion-busqueda');
-                            if (formSection) formSection.style.display = 'block';
-                            if (searchSection) searchSection.style.display = 'block';
-                        }
+                        // Ensure they are visible
+                        const formSection = document.getElementById('seccion-formulario');
+                        const searchSection = document.getElementById('seccion-busqueda');
+                        if (formSection) formSection.style.display = '';
+                        if (searchSection) searchSection.style.display = '';
 
                         if (typeof cargarProveedores === 'function') {
                             cargarProveedores();
@@ -157,12 +145,12 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         if (typeof cargarCategorias === 'function') cargarCategorias();
 
                         const btnAgregar = document.getElementById('btn-agregar-categoria');
-                        const btnModificar = document.getElementById('btn-modificar-categoria');
-                        const btnEliminar = document.getElementById('btn-eliminar-categoria');
-
-                        if (btnAgregar) btnAgregar.onclick = agregarCategoria;
-                        if (btnModificar) btnModificar.onclick = modificarCategoria;
-                        if (btnEliminar) btnEliminar.onclick = eliminarCategoria;
+                        if (btnAgregar) {
+                            btnAgregar.onclick = agregarCategoria;
+                        }
+                        // Exponer funciones inline de la tabla globalmente
+                        window.iniciarEdicionCategoria = iniciarEdicionCategoria;
+                        window.eliminarCategoriaPorId = eliminarCategoriaPorId;
 
                     } else if (nombreVista === 'gestion-clientes') {
                         if (typeof cargarClientes === 'function') cargarClientes();
@@ -178,26 +166,27 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         if (btnSearch) btnSearch.onclick = buscarCliente;
 
                     } else if (nombreVista === 'gestion-garantias') {
-                        // Logic to hide form and search if in list mode
-                        if (Lista_de_productos) {
-                            const formSection = document.getElementById('seccion-formulario');
-                            const searchSection = document.getElementById('seccion-busqueda');
-                            if (formSection) formSection.style.display = 'none';
-                            if (searchSection) searchSection.style.display = 'none';
-                        }
+                        // Ensure they are visible
+                        const formSection = document.getElementById('seccion-formulario');
+                        const searchSection = document.getElementById('seccion-busqueda');
+                        if (formSection) formSection.style.display = '';
+                        if (searchSection) searchSection.style.display = '';
                         if (typeof cargarGarantias === 'function') cargarGarantias();
                         if (typeof cargarTiposGarantia === 'function') cargarTiposGarantia();
                         if (typeof cargarEstadosGarantia === 'function') cargarEstadosGarantia();
+                        if (typeof initGarantiasRol === 'function') initGarantiasRol();
+
+                        // Exponer funciones inline globalmente
+                        window.seleccionarGarantiaEditar = seleccionarGarantiaEditar;
+                        window.eliminarGarantiaPorId = eliminarGarantiaPorId;
 
                         const btnAdd = document.getElementById('btn_agregar_garantia');
                         const btnMod = document.getElementById('btn_modificar_garantia');
-                        const btnDel = document.getElementById('btn_eliminar_garantia');
                         const btnClean = document.getElementById('btn_limpiar_garantia');
                         const btnSearch = document.getElementById('btn_buscar_garantia');
 
                         if (btnAdd) btnAdd.onclick = agregarGarantia;
                         if (btnMod) btnMod.onclick = modificarGarantia;
-                        if (btnDel) btnDel.onclick = eliminarGarantia;
                         if (btnClean) btnClean.onclick = limpiarFormularioGarantia;
                         if (btnSearch) btnSearch.onclick = buscarGarantia;
 
@@ -215,46 +204,23 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         if (btnSearch) btnSearch.onclick = buscarEmpleado;
 
                     }/*cargar vista servicios*/else if (nombreVista === 'gestion-servicios') {
-                        // Logic to hide catalog, form and search if in list mode
-                        if (Lista_de_productos) {
-                            const catalogSection = document.querySelector('.catalogo-section');
-                            const formSection = document.querySelector('.formulario');
-                            const searchSection = document.getElementById('seccion-busqueda');
+                        // Ensure they are visible
+                        const searchSection = document.getElementById('seccion-busqueda');
+                        if (searchSection) searchSection.style.display = '';
 
-                            if (catalogSection) catalogSection.style.display = 'none';
-                            if (formSection) formSection.style.display = 'none';
-                            if (searchSection) searchSection.style.display = 'none';
-                        }
-                        // --- AQUÍ ESTÁ EL CAMBIO IMPORTANTE ---
-
-                        // 1. Cargar el Catálogo (Tabla de arriba)
-                        if (typeof cargarCatalogo === 'function') cargarCatalogo();
-
-                        // 2. Cargar el Historial (Tabla de abajo)
+                        // 1. Cargar el Historial (Tabla principal)
                         if (typeof cargarServicios === 'function') cargarServicios();
 
-                        // 3. Llenar los selects del formulario
+                        // 2. Llenar los selects del formulario modal
                         if (typeof poblarSelectsServicios === 'function') poblarSelectsServicios();
 
                         // SEARCH LOGIC FOR SERVICES
-                        // Columns: 1 (Descripción), 2 (Cliente), 3 (Tipo)
-                        // Table structure in G_Servicios.html:
-                        // 0: ID, 1: Descripción, 2: Cliente, 3: Tipo, ...
                         if (typeof filtrarTabla === 'function') {
                             filtrarTabla('buscar_servicio', 'tabla-servicios', [1, 2, 3]);
                         }
 
-                        // 4. Asignar eventos a los botones del formulario
-                        const btnAdd = document.getElementById('btn-agregar');
-                        const btnMod = document.getElementById('btn-modificar');
-                        const btnDel = document.getElementById('btn-eliminar');
-                        const btnClean = document.getElementById('btn-limpiar');
-
-                        if (btnAdd) btnAdd.onclick = (e) => { e.preventDefault(); agregarServicio(); };
-                        if (btnMod) btnMod.onclick = (e) => { e.preventDefault(); modificarServicio(); };
-                        if (btnDel) btnDel.onclick = (e) => { e.preventDefault(); eliminarServicio(); };
-                        if (btnClean) btnClean.onclick = (e) => { e.preventDefault(); limpiarFormularioServicio(); };
-                        if (btnClean) btnClean.onclick = (e) => { e.preventDefault(); limpiarFormularioServicio(); };
+                        // 3. Exponer funciones inline globalmente
+                        window.editarServicioPorFila = editarServicioPorFila;
                     } /*ventas pos*/else if (nombreVista === 'gestion-ventas') {
                         console.log('📋 Cargando vista de Ventas (POS)...');
 

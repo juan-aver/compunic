@@ -5,6 +5,21 @@
  * Última actualización: 8 de abril de 2026 a las 3:00 AM (probablemente).
  * Nota: Si vas a tocar aquí, ten cuidado con las dependencias circulares.
  */
+
+function toggleFormularioProveedores() {
+    const form = document.getElementById('formularioProveedor');
+    const btn = document.getElementById('btn-toggle-form-proveedores');
+    if (!form) return;
+    const visible = form.style.display !== 'none';
+    form.style.display = visible ? 'none' : '';
+    if (btn) {
+        btn.innerHTML = visible
+            ? '<i class="fas fa-eye"></i> Mostrar Formulario'
+            : '<i class="fas fa-eye-slash"></i> Ocultar Formulario';
+    }
+}
+window.toggleFormularioProveedores = toggleFormularioProveedores;
+
 function asignarEventosProveedores() {
     // Validamos primero, no queremos que nos tumben el server 😅
 
