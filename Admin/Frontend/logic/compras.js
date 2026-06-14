@@ -19,6 +19,7 @@ function cargarCompras() {
             compras.forEach(c => {
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
+                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); color: black; font-weight: bold;">${c.ID_COMPRA}</td>
                     <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
                         <span style="color: black; font-weight: bold;">${c.NUMERO_FACTURA_PROVEEDOR}</span>
                     </td>
@@ -58,6 +59,8 @@ function poblarSelectProveedoresCompra() {
             if (!sel) return;
             sel.querySelectorAll('option:not([disabled])').forEach(o => o.remove());
             arr.forEach(p => {
+                const isBaja = (p.ACTIVO === 0 || p.activo === 0 || p.ACTIVO === '0' || p.activo === '0');
+                if (isBaja) return;
                 const opt = document.createElement('option');
                 opt.value = p.ID_PROVEEDOR;
                 opt.textContent = p.NOMBRE_EMPRESA;

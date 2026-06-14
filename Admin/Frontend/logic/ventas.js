@@ -475,6 +475,8 @@ function poblarSelectClientes() {
             // Mantener opción inicial y opción ocasional
             select.innerHTML = '<option value="" disabled selected>Seleccione un Cliente</option><option value="__ocasional__">👤 Cliente Ocasional / Sin Registro</option>';
             clientes.forEach(cliente => {
+                const isBaja = (cliente.ACTIVO === 0 || cliente.activo === 0 || cliente.ACTIVO === '0' || cliente.activo === '0');
+                if (isBaja) return;
                 const option = document.createElement('option');
                 option.value = cliente.ID_CLIENTE;
                 option.textContent = `${cliente.NOMBRE} ${cliente.APELLIDO} - ${cliente.NOMBRE_EMPRESA || ''}`.trim().replace(/ - $/, '');

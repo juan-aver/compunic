@@ -172,6 +172,8 @@ function poblarSelectsServicios() {
             }
 
             clientes.forEach(c => {
+                const isBaja = (c.ACTIVO === 0 || c.activo === 0 || c.ACTIVO === '0' || c.activo === '0');
+                if (isBaja) return;
                 const opt = document.createElement('option');
                 opt.value = c.id_cliente ?? c.ID_CLIENTE ?? c.id;
                 opt.textContent = `${c.nombre ?? c.NOMBRE ?? c.nombre_cliente ?? ''} ${c.apellido ?? c.APELLIDO ?? ''}`.trim();

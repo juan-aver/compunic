@@ -38,25 +38,26 @@ const proveedoresController = {
   // Crear un proveedor nuevo
   crear: async (req, res) => {
     // Desestructuramos los datos nuevos que vienen del HTML
-    const { id_proveedor, nombre_empresa, persona_contacto, telefono, direccion, pagina_web, email } = req.body;
+    const { nombre_empresa, persona_contacto, telefono, direccion, pagina_web, email } = req.body;
 
     // Validación básica
-    if (!id_proveedor || !nombre_empresa) {
-      return res.status(400).json({ error: 'El ID y el Nombre de la Empresa son obligatorios.' });
+    if (!nombre_empresa) {
+      return res.status(400).json({ error: 'El Nombre de la Empresa es obligatorio.' });
     }
 
     try {
+      const id_empleado = req.userId || 11;
       const resultado = await Proveedor.agregar({
-        id_proveedor, nombre_empresa, persona_contacto, telefono, direccion, pagina_web, email
+        nombre_empresa, persona_contacto, telefono, direccion, pagina_web, email, id_empleado
       });
-      res.status(201).json({ mensaje: 'Proveedor creado exitosamente', id: id_proveedor });
+      res.status(201).json({ mensaje: 'Proveedor creado exitosamente', id: resultado.insertId });
 
       AuditoriaModel.registrar({
         id_empleado: req.userId || null,
         username: req.username || 'Sistema',
         accion: 'CREAR',
         tabla: 'PROVEEDORES',
-        descripcion: `Se agregó el proveedor "${nombre_empresa}" (ID: ${id_proveedor})`
+        descripcion: `Se agregó el proveedor "${nombre_empresa}" (ID: ${resultado.insertId})`
       }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
       console.error('Error al crear proveedor:', err);
@@ -89,23 +90,43 @@ const proveedoresController = {
     }
   },
 
-  // Eliminar proveedor
+  // Dar de baja proveedor
   eliminar: async (req, res) => {
     const { id } = req.params;
     try {
       await Proveedor.eliminar(id);
-      res.json({ mensaje: 'Proveedor eliminado exitosamente' });
+      res.json({ mensaje: 'Proveedor dado de baja exitosamente' });
 
       AuditoriaModel.registrar({
         id_empleado: req.userId || null,
         username: req.username || 'Sistema',
-        accion: 'ELIMINAR',
+        accion: 'DAR_DE_BAJA',
         tabla: 'PROVEEDORES',
-        descripcion: `Se eliminó el proveedor con ID: ${id}`
+        descripcion: `Se dio de baja al proveedor con ID: ${id}`
       }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
-      console.error('Error al eliminar proveedor:', err);
-      res.status(500).json({ error: 'Error al eliminar el proveedor' });
+      console.error('Error al dar de baja proveedor:', err);
+      res.status(500).json({ error: 'Error al dar de baja el proveedor' });
+    }
+  },
+
+  // Dar de alta proveedor
+  activar: async (req, res) => {
+    const { id } = req.params;
+    try {
+      await Proveedor.activar(id);
+      res.json({ mensaje: 'Proveedor dado de alta exitosamente' });
+
+      AuditoriaModel.registrar({
+        id_empleado: req.userId || null,
+        username: req.username || 'Sistema',
+        accion: 'DAR_DE_ALTA',
+        tabla: 'PROVEEDORES',
+        descripcion: `Se dio de alta al proveedor con ID: ${id}`
+      }).catch(e => console.error('Audit log error:', e));
+    } catch (err) {
+      console.error('Error al dar de alta proveedor:', err);
+      res.status(500).json({ error: 'Error al dar de alta el proveedor' });
     }
   }
 };

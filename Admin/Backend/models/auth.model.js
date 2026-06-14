@@ -28,6 +28,7 @@ const AuthModel = {
             FROM EMPLEADOS e
             WHERE e.USERNAME = ? 
               AND e.ESTADO = 1
+              AND e.ROL IN ('ADMIN', 'VENDEDOR')
         `;
 
         try {

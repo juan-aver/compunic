@@ -52,6 +52,12 @@
       }
 
       // Lógica de Roles
+      if (role === 'temporal') {
+        alert('Acceso no autorizado para empleados temporales.');
+        Auth.logout();
+        return;
+      }
+
       if (role === 'vendedor') {
         // Ocultar módulos no permitidos
         const modulosProhibidos = ['nav-inventario', 'nav-compras', 'nav-administracion'];

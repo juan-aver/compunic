@@ -5,7 +5,7 @@ const Proveedor = {
   // Obtener todos los proveedores
   obtenerTodos: async () => {
     try {
-      const [resultados] = await db.query('SELECT * FROM PROVEEDORES order by ID_PROVEEDOR desc');
+      const [resultados] = await db.query('SELECT *, COALESCE(ACTIVO, 1) AS ACTIVO FROM PROVEEDORES order by ID_PROVEEDOR desc');
       return resultados;
     } catch (err) {
       throw new Error('Error al obtener los proveedores: ' + err.message);
@@ -14,7 +14,7 @@ const Proveedor = {
 
   buscar: async (termino) => {
     const sql = `
-      SELECT * FROM PROVEEDORES 
+      SELECT *, COALESCE(ACTIVO, 1) AS ACTIVO FROM PROVEEDORES 
       WHERE NOMBRE_EMPRESA LIKE ? OR PERSONA_CONTACTO LIKE ? OR TELEFONO LIKE ? OR EMAIL LIKE ?
     `;
     const likeTerm = `%${termino}%`;
@@ -27,23 +27,22 @@ const Proveedor = {
   },
 
   // Agregar un proveedor nuevo
-  // Agregar un proveedor nuevo
-  // Nota: Se usa ID_EMPLEADO = 401 por defecto (Miguel Jimenez)
-  agregar: async ({ id_proveedor, nombre_empresa, persona_contacto, telefono, direccion, pagina_web, email }) => {
+  // Nota: Se usa el id_empleado del administrador logueado o 11 (Axel Ruiz) por defecto
+  agregar: async ({ nombre_empresa, persona_contacto, telefono, direccion, pagina_web, email, id_empleado }) => {
     const sql = `
       INSERT INTO PROVEEDORES 
-      (ID_PROVEEDOR, NOMBRE_EMPRESA, PERSONA_CONTACTO, TELEFONO, DIRECCION, PAGINA_WEB, EMAIL, ID_EMPLEADO)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 401)
+      (NOMBRE_EMPRESA, PERSONA_CONTACTO, TELEFONO, DIRECCION, PAGINA_WEB, EMAIL, ID_EMPLEADO)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
     try {
       const [result] = await db.query(sql, [
-        id_proveedor,
         nombre_empresa,
         persona_contacto,
         telefono,
         direccion,
         pagina_web,
-        email
+        email,
+        id_empleado || 11
       ]);
       return result;
     } catch (err) {
@@ -73,13 +72,23 @@ const Proveedor = {
     }
   },
 
-  // Eliminar proveedor por ID
+  // Dar de baja proveedor por ID (soft delete)
   eliminar: async (id) => {
-    const sql = 'DELETE FROM PROVEEDORES WHERE ID_PROVEEDOR = ?';
+    const sql = 'UPDATE PROVEEDORES SET ACTIVO = 0 WHERE ID_PROVEEDOR = ?';
     try {
       await db.query(sql, [id]);
     } catch (err) {
-      throw new Error('Error al eliminar el proveedor: ' + err.message);
+      throw new Error('Error al dar de baja el proveedor: ' + err.message);
+    }
+  },
+
+  // Dar de alta proveedor por ID (reactivar)
+  activar: async (id) => {
+    const sql = 'UPDATE PROVEEDORES SET ACTIVO = 1 WHERE ID_PROVEEDOR = ?';
+    try {
+      await db.query(sql, [id]);
+    } catch (err) {
+      throw new Error('Error al dar de alta el proveedor: ' + err.message);
     }
   }
 };

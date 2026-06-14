@@ -61,14 +61,42 @@ function cargarProveedores() {
                     webContent = `<a href="${hrefUrl}" target="_blank" style="color: #3498db; text-decoration: underline;" onclick="event.stopPropagation()">${rawUrl}</a>`;
                 }
 
+                const isBaja = (p.ACTIVO === 0 || p.activo === 0 || p.ACTIVO === '0' || p.activo === '0');
+                const nombreEmpresa = p.NOMBRE_EMPRESA || p.nombre_empresa;
+                const displayNombre = isBaja 
+                    ? `${nombreEmpresa} <span style="color: #dc3545; font-weight: bold; font-size: 0.82em; margin-left: 5px; background-color: #f8d7da; padding: 2px 6px; border-radius: 4px; border: 1px solid #f5c6cb;">Baja</span>` 
+                    : nombreEmpresa;
+
+                if (isBaja) {
+                    tr.style.opacity = '0.7';
+                    tr.style.backgroundColor = '#fdf2f2';
+                    tr.style.color = '#721c24';
+                }
+
+                const idReal = p.ID_PROVEEDOR || p.id_proveedor;
+                const btnAltaDisabled = !isBaja ? 'disabled style="background-color: #c3e6cb; color: #155724; cursor: not-allowed; opacity: 0.5; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: bold;"' : 'style="background-color: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: bold;"';
+                const btnBajaDisabled = isBaja ? 'disabled style="background-color: #f5c6cb; color: #721c24; cursor: not-allowed; opacity: 0.5; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: bold;"' : 'style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: bold;"';
+
+                const actionButtons = `
+                    <div style="display: flex; gap: 6px;" onclick="event.stopPropagation()">
+                        <button onclick="activarProveedorDesdeTabla(event, ${idReal})" ${btnAltaDisabled}>
+                            <i class="fas fa-check"></i> Alta
+                        </button>
+                        <button onclick="darDeBajaDesdeTabla(event, ${idReal})" ${btnBajaDisabled}>
+                            <i class="fas fa-ban"></i> Baja
+                        </button>
+                    </div>
+                `;
+
                 tr.innerHTML = `
-          <td>${p.ID_PROVEEDOR || p.id_proveedor}</td>
-          <td>${p.NOMBRE_EMPRESA || p.nombre_empresa}</td>
+          <td>${idReal}</td>
+          <td>${displayNombre}</td>
           <td>${p.PERSONA_CONTACTO || p.persona_contacto || '-'}</td>
           <td>${p.TELEFONO || p.telefono || '-'}</td>
           <td>${p.EMAIL || p.email || '-'}</td>
           <td>${webContent}</td>
           <td>${p.DIRECCION || p.direccion || '-'}</td>
+          <td>${actionButtons}</td>
         `;
                 tr.style.cursor = 'pointer';
                 tr.onclick = () => cargarFormularioProveedor(p);
@@ -93,7 +121,7 @@ function buscarProveedor() {
             tbody.innerHTML = '';
 
             if (proveedores.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7">No se encontraron proveedores</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8">No se encontraron proveedores</td></tr>';
                 return;
             }
 
@@ -107,14 +135,42 @@ function buscarProveedor() {
                     webContent = `<a href="${hrefUrl}" target="_blank" style="color: #3498db; text-decoration: underline;" onclick="event.stopPropagation()">${rawUrl}</a>`;
                 }
 
+                const isBaja = (p.ACTIVO === 0 || p.activo === 0 || p.ACTIVO === '0' || p.activo === '0');
+                const nombreEmpresa = p.NOMBRE_EMPRESA || p.nombre_empresa;
+                const displayNombre = isBaja 
+                    ? `${nombreEmpresa} <span style="color: #dc3545; font-weight: bold; font-size: 0.82em; margin-left: 5px; background-color: #f8d7da; padding: 2px 6px; border-radius: 4px; border: 1px solid #f5c6cb;">Baja</span>` 
+                    : nombreEmpresa;
+
+                if (isBaja) {
+                    tr.style.opacity = '0.7';
+                    tr.style.backgroundColor = '#fdf2f2';
+                    tr.style.color = '#721c24';
+                }
+
+                const idReal = p.ID_PROVEEDOR || p.id_proveedor;
+                const btnAltaDisabled = !isBaja ? 'disabled style="background-color: #c3e6cb; color: #155724; cursor: not-allowed; opacity: 0.5; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: bold;"' : 'style="background-color: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: bold;"';
+                const btnBajaDisabled = isBaja ? 'disabled style="background-color: #f5c6cb; color: #721c24; cursor: not-allowed; opacity: 0.5; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: bold;"' : 'style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: bold;"';
+
+                const actionButtons = `
+                    <div style="display: flex; gap: 6px;" onclick="event.stopPropagation()">
+                        <button onclick="activarProveedorDesdeTabla(event, ${idReal})" ${btnAltaDisabled}>
+                            <i class="fas fa-check"></i> Alta
+                        </button>
+                        <button onclick="darDeBajaDesdeTabla(event, ${idReal})" ${btnBajaDisabled}>
+                            <i class="fas fa-ban"></i> Baja
+                        </button>
+                    </div>
+                `;
+
                 tr.innerHTML = `
-          <td>${p.ID_PROVEEDOR || p.id_proveedor}</td>
-          <td>${p.NOMBRE_EMPRESA || p.nombre_empresa}</td>
+          <td>${idReal}</td>
+          <td>${displayNombre}</td>
           <td>${p.PERSONA_CONTACTO || p.persona_contacto || '-'}</td>
           <td>${p.TELEFONO || p.telefono || '-'}</td>
           <td>${p.EMAIL || p.email || '-'}</td>
           <td>${webContent}</td>
           <td>${p.DIRECCION || p.direccion || '-'}</td>
+          <td>${actionButtons}</td>
         `;
                 tr.style.cursor = 'pointer';
                 tr.onclick = () => cargarFormularioProveedor(p);
@@ -126,7 +182,8 @@ function buscarProveedor() {
 
 function agregarProveedor() {
     const proveedor = _recolectarFormularioProveedor();
-    if (!proveedor.id_proveedor || !proveedor.nombre_empresa) return alert("El ID y Nombre son obligatorios.");
+    if (!proveedor.nombre_empresa) return alert("El Nombre de la Empresa es obligatorio.");
+    delete proveedor.id_proveedor; // No es necesario enviar el ID ya que se autogenera en la BD
 
     fetch(`${API_BASE}/proveedores`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(proveedor)
@@ -171,15 +228,15 @@ function eliminarProveedor() {
     const form = document.getElementById("formularioProveedor");
     const idOriginal = form.dataset.idOriginal;
     if (!idOriginal) return alert("Selecciona un proveedor primero.");
-    if (!confirm(`¿Eliminar ID ${idOriginal}?`)) return;
+    if (!confirm(`¿Dar de baja al proveedor con ID ${idOriginal}?`)) return;
 
     fetch(`${API_BASE}/proveedores/${idOriginal}`, { method: 'DELETE' })
         .then(async res => {
-            if (!res.ok) throw new Error("Error al eliminar");
+            if (!res.ok) throw new Error("Error al dar de baja al proveedor");
             return res.json();
         })
         .then(() => {
-            alert('✅ Eliminado correctamente.');
+            alert('✅ Proveedor dado de baja.');
             limpiarFormulario();
             cargarProveedores();
         })
@@ -222,3 +279,39 @@ function limpiarFormulario() {
         delete form.dataset.idOriginal;
     }
 }
+
+function darDeBajaDesdeTabla(event, id) {
+    if (event) event.stopPropagation();
+    if (!confirm(`¿Dar de baja al proveedor con ID ${id}?`)) return;
+
+    fetch(`${API_BASE}/proveedores/${id}`, { method: 'DELETE' })
+        .then(async res => {
+            if (!res.ok) throw new Error("Error al dar de baja al proveedor");
+            return res.json();
+        })
+        .then(() => {
+            alert('✅ Proveedor dado de baja.');
+            limpiarFormulario();
+            cargarProveedores();
+        })
+        .catch(err => alert(err.message));
+}
+window.darDeBajaDesdeTabla = darDeBajaDesdeTabla;
+
+function activarProveedorDesdeTabla(event, id) {
+    if (event) event.stopPropagation();
+    if (!confirm(`¿Dar de alta al proveedor con ID ${id}?`)) return;
+
+    fetch(`${API_BASE}/proveedores/${id}/activar`, { method: 'PUT' })
+        .then(async res => {
+            if (!res.ok) throw new Error("Error al dar de alta al proveedor");
+            return res.json();
+        })
+        .then(() => {
+            alert('✅ Proveedor dado de alta.');
+            limpiarFormulario();
+            cargarProveedores();
+        })
+        .catch(err => alert(err.message));
+}
+window.activarProveedorDesdeTabla = activarProveedorDesdeTabla;

@@ -12,6 +12,8 @@ const Empleado = {
                 params.push(rol);
             }
             
+            sql += ' ORDER BY ID_EMPLEADO DESC';
+            
             const [resultados] = await db.query(sql, params);
             return resultados;
         } catch (err) {
@@ -32,6 +34,8 @@ const Empleado = {
                 sql += ' AND ROL = ?';
                 params.push(rol);
             }
+
+            sql += ' ORDER BY ID_EMPLEADO DESC';
 
             const [resultados] = await db.query(sql, params);
             return resultados;
@@ -64,6 +68,14 @@ const Empleado = {
                 WHERE ID_EMPLEADO=?
             `;
             await db.query(sql, datos);
+            
+            // Invalida la contraseña si pasa a ser TEMPORAL
+            const rol = datos[10];
+            const id_empleado = datos[11];
+            if (rol === 'TEMPORAL') {
+                const sqlInvalidate = 'UPDATE EMPLEADOS SET PASSWORD_HASH = NULL WHERE ID_EMPLEADO = ?';
+                await db.query(sqlInvalidate, [id_empleado]);
+            }
         } catch (err) {
             throw new Error('Error al actualizar empleado: ' + err.message);
         }

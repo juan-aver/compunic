@@ -17,5 +17,6 @@ router.post('/rapido', controlador.agregarRapido); // Registro rápido de client
 router.post('/', controlador.agregar);
 router.put('/:id', controlador.actualizar);
 router.delete('/:id', controlador.eliminar);
+router.put('/:id/activar', controlador.activar);
 
 module.exports = router;

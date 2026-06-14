@@ -48,7 +48,7 @@ exports.createCompra = async (req, res) => {
     const iva_monto = subtotal * (iva_porcentaje / 100);
     const total_compra = subtotal + iva_monto;
 
-    const id_empleado = 401; // ID temporal o fijo
+    const id_empleado = req.userId || 11; // ID de empleado logueado o administrador por defecto (Axel Ruiz)
 
     // 1. Crear la Compra en la BD (Esto actualiza el stock en DETALLE_COMPRA)
     const idCompra = await Compras.crearCompra({

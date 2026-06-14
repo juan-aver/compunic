@@ -15,5 +15,6 @@ router.get('/', controlador.listar);           // Obtener todos los proveedores
 router.post('/', controlador.crear);           // Crear un nuevo proveedor
 router.put('/:id', controlador.actualizar);    // Actualizar un proveedor
 router.delete('/:id', controlador.eliminar);   // Eliminar un proveedor
+router.put('/:id/activar', controlador.activar);  // Reactivar/Dar de alta un proveedor
 
 module.exports = router;

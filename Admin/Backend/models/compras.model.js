@@ -24,7 +24,7 @@ const Compras = {
         COALESCE((SELECT MAX(dc.MESES_GARANTIA) FROM DETALLE_COMPRA dc WHERE dc.ID_COMPRA = c.ID_COMPRA), 0) as meses_garantia
       FROM COMPRAS c
       LEFT JOIN PROVEEDORES p ON c.ID_PROVEEDOR = p.ID_PROVEEDOR
-      ORDER BY c.FECHA_COMPRA DESC
+      ORDER BY c.ID_COMPRA DESC
     `;
     try {
       const [resultados] = await db.query(query);

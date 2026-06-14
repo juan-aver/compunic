@@ -24,7 +24,7 @@
       <div style="display: flex; gap: 10px;">
         <div class="input-with-icon" style="flex: 1;">
           <span class="input-icon">🔢</span>
-          <input id="id_proveedor" type="number" placeholder="ID (Ej: 2001)" required />
+          <input id="id_proveedor" type="text" placeholder="Autogenerado" disabled />
         </div>
         <div class="input-with-icon" style="flex: 2;">
           <span class="input-icon">🏢</span>
@@ -75,8 +75,6 @@
         style="flex: 1; max-width: 120px; background-color: #28a745; color: white;">Agregar</button>
       <button id="btn_modificar_proveedor" type="button"
         style="flex: 1; max-width: 120px; background-color: #ffc107; color: #333;">Modificar</button>
-      <button id="btn_eliminar_proveedor" type="button"
-        style="flex: 1; max-width: 120px; background-color: #dc3545; color: white;">Eliminar</button>
       <button id="btn_limpiar" type="button"
         style="flex: 0.5; max-width: 80px; background-color: #6c757d; color: white;">Limpiar</button>
     </div>
@@ -113,6 +111,7 @@
         <th>Email</th>
         <th>Web</th>
         <th>Dirección</th>
+        <th>Acciones</th>
       </tr>
     </thead>
     <tbody id="tablaProveedores">

@@ -11,7 +11,7 @@ const db = require('../config/db.js');
 const Cliente = {
   obtenerTodos: async () => {
     try {
-      const [resultados] = await db.query('SELECT * FROM CLIENTES');
+      const [resultados] = await db.query('SELECT *, COALESCE(ACTIVO, 1) AS ACTIVO FROM CLIENTES ORDER BY ID_CLIENTE DESC');
       return resultados;
     } catch (err) {
       throw new Error('Error al obtener clientes: ' + err.message);
@@ -20,8 +20,9 @@ const Cliente = {
 
   buscar: async (termino) => {
     const sql = `
-      SELECT * FROM CLIENTES 
+      SELECT *, COALESCE(ACTIVO, 1) AS ACTIVO FROM CLIENTES 
       WHERE NOMBRE LIKE ? OR APELLIDO LIKE ? OR TELEFONO LIKE ? OR EMAIL LIKE ?
+      ORDER BY ID_CLIENTE DESC
     `;
     const likeTerm = `%${termino}%`;
     try {
@@ -54,11 +55,20 @@ const Cliente = {
   },
 
   eliminar: async (id) => {
-    const sql = 'DELETE FROM CLIENTES WHERE ID_CLIENTE=?';
+    const sql = 'UPDATE CLIENTES SET ACTIVO = 0 WHERE ID_CLIENTE=?';
     try {
       await db.query(sql, [id]);
     } catch (err) {
-      throw new Error('Error al eliminar cliente: ' + err.message);
+      throw new Error('Error al dar de baja el cliente: ' + err.message);
+    }
+  },
+
+  activar: async (id) => {
+    const sql = 'UPDATE CLIENTES SET ACTIVO = 1 WHERE ID_CLIENTE=?';
+    try {
+      await db.query(sql, [id]);
+    } catch (err) {
+      throw new Error('Error al dar de alta el cliente: ' + err.message);
     }
   },
 

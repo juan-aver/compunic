@@ -16,12 +16,39 @@ function cargarClientes() {
                 tr.onclick = () => seleccionarCliente(c);
                 tr.style.cursor = 'pointer';
 
+                const isBaja = (c.ACTIVO === 0 || c.activo === 0 || c.ACTIVO === '0' || c.activo === '0');
+                const displayNombre = isBaja 
+                    ? `${c.NOMBRE || ''} <span style="color: #dc3545; font-weight: bold; font-size: 0.82em; margin-left: 5px; background-color: #f8d7da; padding: 2px 6px; border-radius: 4px; border: 1px solid #f5c6cb;">Baja</span>` 
+                    : (c.NOMBRE || '');
+
+                if (isBaja) {
+                    tr.style.opacity = '0.7';
+                    tr.style.backgroundColor = '#fdf2f2';
+                    tr.style.color = '#721c24';
+                }
+
+                const idReal = c.ID_CLIENTE;
+                const btnAltaDisabled = !isBaja ? 'disabled style="background-color: #c3e6cb; color: #155724; cursor: not-allowed; opacity: 0.5; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: bold;"' : 'style="background-color: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: bold;"';
+                const btnBajaDisabled = isBaja ? 'disabled style="background-color: #f5c6cb; color: #721c24; cursor: not-allowed; opacity: 0.5; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: bold;"' : 'style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: bold;"';
+
+                const actionButtons = `
+                    <div style="display: flex; gap: 6px;" onclick="event.stopPropagation()">
+                        <button onclick="activarClienteDesdeTabla(event, ${idReal})" ${btnAltaDisabled}>
+                            <i class="fas fa-check"></i> Alta
+                        </button>
+                        <button onclick="darDeBajaClienteDesdeTabla(event, ${idReal})" ${btnBajaDisabled}>
+                            <i class="fas fa-ban"></i> Baja
+                        </button>
+                    </div>
+                `;
+
                 tr.innerHTML = `
-                  <td>${c.ID_CLIENTE}</td>
-                  <td>${c.NOMBRE || ''}</td>
+                  <td>${idReal}</td>
+                  <td>${displayNombre}</td>
                   <td>${c.APELLIDO || ''}</td>
                   <td>${c.TELEFONO || ''}</td>
                   <td>${c.EMAIL || ''}</td>
+                  <td>${actionButtons}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -120,7 +147,7 @@ function buscarCliente() {
             tbody.innerHTML = '';
 
             if (clientes.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5">No se encontraron clientes</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6">No se encontraron clientes</td></tr>';
                 return;
             }
 
@@ -129,12 +156,39 @@ function buscarCliente() {
                 tr.onclick = () => seleccionarCliente(c);
                 tr.style.cursor = 'pointer';
 
+                const isBaja = (c.ACTIVO === 0 || c.activo === 0 || c.ACTIVO === '0' || c.activo === '0');
+                const displayNombre = isBaja 
+                    ? `${c.NOMBRE || ''} <span style="color: #dc3545; font-weight: bold; font-size: 0.82em; margin-left: 5px; background-color: #f8d7da; padding: 2px 6px; border-radius: 4px; border: 1px solid #f5c6cb;">Baja</span>` 
+                    : (c.NOMBRE || '');
+
+                if (isBaja) {
+                    tr.style.opacity = '0.7';
+                    tr.style.backgroundColor = '#fdf2f2';
+                    tr.style.color = '#721c24';
+                }
+
+                const idReal = c.ID_CLIENTE;
+                const btnAltaDisabled = !isBaja ? 'disabled style="background-color: #c3e6cb; color: #155724; cursor: not-allowed; opacity: 0.5; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: bold;"' : 'style="background-color: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: bold;"';
+                const btnBajaDisabled = isBaja ? 'disabled style="background-color: #f5c6cb; color: #721c24; cursor: not-allowed; opacity: 0.5; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: bold;"' : 'style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: bold;"';
+
+                const actionButtons = `
+                    <div style="display: flex; gap: 6px;" onclick="event.stopPropagation()">
+                        <button onclick="activarClienteDesdeTabla(event, ${idReal})" ${btnAltaDisabled}>
+                            <i class="fas fa-check"></i> Alta
+                        </button>
+                        <button onclick="darDeBajaClienteDesdeTabla(event, ${idReal})" ${btnBajaDisabled}>
+                            <i class="fas fa-ban"></i> Baja
+                        </button>
+                    </div>
+                `;
+
                 tr.innerHTML = `
-                  <td>${c.ID_CLIENTE}</td>
-                  <td>${c.NOMBRE || ''}</td>
+                  <td>${idReal}</td>
+                  <td>${displayNombre}</td>
                   <td>${c.APELLIDO || ''}</td>
                   <td>${c.TELEFONO || ''}</td>
                   <td>${c.EMAIL || ''}</td>
+                  <td>${actionButtons}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -149,3 +203,39 @@ function limpiarFormularioCliente() {
         delete form.dataset.idCliente;
     }
 }
+
+function darDeBajaClienteDesdeTabla(event, id) {
+    if (event) event.stopPropagation();
+    if (!confirm(`¿Dar de baja al cliente con ID ${id}?`)) return;
+
+    fetch(`${API_BASE}/clientes/${id}`, { method: 'DELETE' })
+        .then(async res => {
+            if (!res.ok) throw new Error("Error al dar de baja al cliente");
+            return res.json();
+        })
+        .then(() => {
+            alert('✅ Cliente dado de baja.');
+            limpiarFormularioCliente();
+            cargarClientes();
+        })
+        .catch(err => alert(err.message));
+}
+window.darDeBajaClienteDesdeTabla = darDeBajaClienteDesdeTabla;
+
+function activarClienteDesdeTabla(event, id) {
+    if (event) event.stopPropagation();
+    if (!confirm(`¿Dar de alta al cliente con ID ${id}?`)) return;
+
+    fetch(`${API_BASE}/clientes/${id}/activar`, { method: 'PUT' })
+        .then(async res => {
+            if (!res.ok) throw new Error("Error al dar de alta al cliente");
+            return res.json();
+        })
+        .then(() => {
+            alert('✅ Cliente dado de alta.');
+            limpiarFormularioCliente();
+            cargarClientes();
+        })
+        .catch(err => alert(err.message));
+}
+window.activarClienteDesdeTabla = activarClienteDesdeTabla;

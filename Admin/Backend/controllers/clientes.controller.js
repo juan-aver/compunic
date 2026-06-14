@@ -74,18 +74,37 @@ const clientesController = {
     const { id } = req.params;
     try {
       await Cliente.eliminar(id);
-      res.json({ mensaje: 'Cliente eliminado' });
+      res.json({ mensaje: 'Cliente dado de baja exitosamente' });
 
       AuditoriaModel.registrar({
         id_empleado: req.userId || null,
         username: req.username || 'Sistema',
-        accion: 'ELIMINAR',
+        accion: 'DAR_DE_BAJA',
         tabla: 'CLIENTES',
-        descripcion: `Se eliminó el cliente con ID: ${id}`
+        descripcion: `Se dio de baja al cliente con ID: ${id}`
       }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: 'Error al eliminar cliente' });
+      res.status(500).json({ error: 'Error al dar de baja al cliente' });
+    }
+  },
+
+  activar: async (req, res) => {
+    const { id } = req.params;
+    try {
+      await Cliente.activar(id);
+      res.json({ mensaje: 'Cliente dado de alta exitosamente' });
+
+      AuditoriaModel.registrar({
+        id_empleado: req.userId || null,
+        username: req.username || 'Sistema',
+        accion: 'DAR_DE_ALTA',
+        tabla: 'CLIENTES',
+        descripcion: `Se dio de alta al cliente con ID: ${id}`
+      }).catch(e => console.error('Audit log error:', e));
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al dar de alta al cliente' });
     }
   },
 

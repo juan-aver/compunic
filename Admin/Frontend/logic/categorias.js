@@ -195,6 +195,9 @@ function poblarSelectProveedores() {
             if (!sel) return;
             sel.querySelectorAll('option:not([disabled])')?.forEach(o => o.remove());
             arr.forEach(p => {
+                const isBaja = (p.ACTIVO === 0 || p.activo === 0 || p.ACTIVO === '0' || p.activo === '0');
+                if (isBaja) return;
+
                 const id = p.ID_PROVEEDOR ?? p.id_proveedor ?? p.id ?? p.ID ?? null;
                 const nombre = p.NOMBRE_EMPRESA ?? p.nombre_empresa ?? p.nombre ?? p.NOMBRE ?? 'Sin Nombre';
 
