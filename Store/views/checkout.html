@@ -263,9 +263,16 @@
                                     <input type="tel" id="telefono" class="form-control" placeholder="88888888" pattern="[0-9]{8}" required>
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group" id="direccionGroup">
                                 <label for="direccion">Dirección (Opcional)</label>
                                 <textarea id="direccion" class="form-control" rows="2" placeholder="Ej: Managua, Barrio Martha Quezada"></textarea>
+                            </div>
+
+                            <div class="form-group" id="referenciaGroup" style="display: none; background: rgba(99, 102, 241, 0.08); padding: 14px; border-radius: 10px; border: 1px solid rgba(99, 102, 241, 0.3); margin-top: 15px;">
+                                <label for="referencia" style="font-weight: 600; color: #4f46e5; display: block; margin-bottom: 6px;">
+                                    Número de comprobante o referencia bancaria <span class="required">*</span>
+                                </label>
+                                <input type="text" id="referencia" class="form-control" placeholder="Ej: 12345678">
                             </div>
 
                             <!-- PUNTOS -->
@@ -288,42 +295,22 @@
 
                                 <div class="payment-methods" id="paymentMethods">
 
-                                    <label class="payment-method" data-method="Depósito Bancario" onclick="selectPayment(this)">
-                                        <input type="radio" name="metodo_pago" value="Depósito Bancario">
-                                        <div class="pm-icon bank"><i class="fas fa-university"></i></div>
-                                        <div class="pm-info">
-                                            <div class="pm-name">Depósito Bancario</div>
-                                            <div class="pm-desc">Ve al banco y deposita en nuestra cuenta</div>
-                                        </div>
-                                        <div class="pm-check"><i class="fas fa-check"></i></div>
-                                    </label>
-
                                     <label class="payment-method" data-method="Transferencia Bancaria" onclick="selectPayment(this)">
                                         <input type="radio" name="metodo_pago" value="Transferencia Bancaria">
                                         <div class="pm-icon transfer"><i class="fas fa-exchange-alt"></i></div>
                                         <div class="pm-info">
                                             <div class="pm-name">Transferencia Bancaria</div>
-                                            <div class="pm-desc">Desde la app de tu banco (BANPRO, BAC, etc.)</div>
+                                            <div class="pm-desc">Desde la app o web de tu banco (BANPRO, BAC, etc.)</div>
                                         </div>
                                         <div class="pm-check"><i class="fas fa-check"></i></div>
                                     </label>
 
-                                    <label class="payment-method" data-method="SINPE / Transferencia" onclick="selectPayment(this)">
-                                        <input type="radio" name="metodo_pago" value="SINPE / Transferencia">
-                                        <div class="pm-icon sinpe"><i class="fas fa-mobile-alt"></i></div>
+                                    <label class="payment-method" data-method="Pago en Efectivo" onclick="selectPayment(this)">
+                                        <input type="radio" name="metodo_pago" value="Pago en Efectivo">
+                                        <div class="pm-icon cod"><i class="fas fa-money-bill-wave"></i></div>
                                         <div class="pm-info">
-                                            <div class="pm-name">Transferencia Móvil</div>
-                                            <div class="pm-desc">Transferencia inmediata desde tu app bancaria</div>
-                                        </div>
-                                        <div class="pm-check"><i class="fas fa-check"></i></div>
-                                    </label>
-
-                                    <label class="payment-method" data-method="Pago contra entrega" onclick="selectPayment(this)">
-                                        <input type="radio" name="metodo_pago" value="Pago contra entrega">
-                                        <div class="pm-icon cod"><i class="fas fa-hand-holding-usd"></i></div>
-                                        <div class="pm-info">
-                                            <div class="pm-name">Pago al Retirar</div>
-                                            <div class="pm-desc">Paga en efectivo cuando recojas en tienda</div>
+                                            <div class="pm-name">Pago en Efectivo (al retirar)</div>
+                                            <div class="pm-desc">Paga en efectivo al retirar tu pedido en tienda</div>
                                         </div>
                                         <div class="pm-check"><i class="fas fa-check"></i></div>
                                     </label>

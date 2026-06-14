@@ -360,7 +360,7 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                             });
                         }
                     } else if (nombreVista === 'gestion-pagos-web') {
-                        // Pagos de la tienda web — la lógica está inline en el HTML del fragmento
+                        // Pagos de la tienda web — la lógica se carga desde logic/pagos_web.js
                         if (typeof window.initPagos === 'function') window.initPagos();
                     }
                 });

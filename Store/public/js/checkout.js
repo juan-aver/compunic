@@ -41,17 +41,8 @@ function safeRemoveItem(key) {
         console.warn('localStorage no está disponible para borrar:', e);
     }
 }
-
 // Datos bancarios por método de pago
 const PAYMENT_DATA = {
-    'Depósito Bancario': {
-        icon: 'university',
-        banco: 'BANPRO',
-        cuenta: '1001-020-502133-2',
-        titular: 'COMPUNIC S.A.',
-        tipo: 'Cuenta Corriente en Córdobas',
-        nota: 'Presenta tu número de pedido como referencia en el depósito.'
-    },
     'Transferencia Bancaria': {
         icon: 'exchange-alt',
         banco: 'BANPRO',
@@ -60,17 +51,9 @@ const PAYMENT_DATA = {
         tipo: 'Cuenta Corriente en Córdobas',
         nota: 'En el campo "concepto / referencia" escribe tu número de pedido.'
     },
-    'SINPE / Transferencia': {
-        icon: 'mobile-alt',
-        banco: 'BAC Nicaragua',
-        cuenta: '357-001234-5',
-        titular: 'COMPUNIC S.A.',
-        tipo: 'Cuenta de Ahorros en Córdobas',
-        nota: 'Usa la app de tu banco para hacer la transferencia inmediata.'
-    },
-    'Pago contra entrega': {
-        icon: 'hand-holding-usd',
-        nota: 'Nos contactaremos contigo para coordinar el horario de entrega o retiro en tienda. Paga en efectivo o tarjeta al momento de recibir tu pedido.',
+    'Pago en Efectivo': {
+        icon: 'money-bill-wave',
+        nota: 'Nos contactaremos contigo para coordinar el horario de entrega o retiro en tienda. Paga en efectivo al retirar tu pedido.',
         isCod: true
     }
 };
@@ -87,6 +70,28 @@ function selectPayment(element) {
 
     selectedMethod = element.dataset.method;
     renderPaymentInstructions(selectedMethod);
+
+    // Formulario interactivo según método
+    const dirGroup = document.getElementById('direccionGroup');
+    const dirInput = document.getElementById('direccion');
+    const refGroup = document.getElementById('referenciaGroup');
+    const refInput = document.getElementById('referencia');
+
+    if (selectedMethod === 'Pago en Efectivo') {
+        if (dirGroup) dirGroup.style.display = 'none';
+        if (dirInput) dirInput.value = '';
+        if (refGroup) refGroup.style.display = 'none';
+        if (refInput) {
+            refInput.value = '';
+            refInput.required = false;
+        }
+    } else {
+        if (dirGroup) dirGroup.style.display = 'block';
+        if (refGroup) refGroup.style.display = 'block';
+        if (refInput) {
+            refInput.required = true;
+        }
+    }
 }
 
 function renderPaymentInstructions(method) {
@@ -105,10 +110,18 @@ function renderPaymentInstructions(method) {
                 <span>${data.nota}</span>
             </div>`;
     } else {
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const total    = Math.max(0, subtotal - pointsUsed);
+        const deposito = total * 0.5;
+
         container.innerHTML = `
             <div class="pi-header">
                 <span class="badge">Datos de pago</span>
                 <h4>${method}</h4>
+            </div>
+            <div class="pay-deposit-info" style="background:#eff6ff; border:1px solid #bfdbfe; padding:12px; border-radius:8px; margin-bottom:12px; font-weight:700; color:#1e40af; display:flex; justify-content:space-between; align-items:center;">
+                <span>Monto del depósito (50%):</span>
+                <span style="font-size:1.2rem; color:#1d4ed8;">C$ ${deposito.toFixed(2)}</span>
             </div>
             <div class="pi-rows">
                 <div class="pi-row">
@@ -258,8 +271,14 @@ function validateForm(formData) {
     if (!formData.telefono || !telRegex.test(formData.telefono))
         errors.push('El teléfono debe tener 8 dígitos');
 
-    if (!selectedMethod)
+    if (!selectedMethod) {
         errors.push('Selecciona un método de pago');
+    } else if (selectedMethod === 'Transferencia Bancaria') {
+        const refInput = document.getElementById('referencia');
+        if (!refInput || !refInput.value.trim()) {
+            errors.push('El número de comprobante o referencia bancaria es obligatorio');
+        }
+    }
 
     return errors;
 }
@@ -268,7 +287,7 @@ function validateForm(formData) {
 // PROCESAR PEDIDO
 // ============================================
 
-async function procesarPedido(datosCliente) {
+async function procesarPedido(datosCliente, referencia) {
     const productos = cart.map(item => ({
         id_producto: item.id,
         cantidad:    item.quantity,
@@ -288,7 +307,8 @@ async function procesarPedido(datosCliente) {
         productos,
         total,
         puntos_usados: pointsUsed,
-        metodo_pago:   selectedMethod
+        metodo_pago:   selectedMethod,
+        referencia:    referencia
     };
 
     const response = await fetch(`${CHECKOUT_API_ROOT}/api/store/pedidos`, {
@@ -370,8 +390,10 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.disabled = true;
         loadingOverlay.style.display = 'flex';
 
+        const refVal = document.getElementById('referencia')?.value.trim() || null;
+
         try {
-            const resultado = await procesarPedido(datosCliente);
+            const resultado = await procesarPedido(datosCliente, refVal);
 
             if (resultado.success) {
                 // Guardar datos para página de confirmación

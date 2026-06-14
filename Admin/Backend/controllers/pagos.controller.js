@@ -17,12 +17,20 @@ const pagosController = {
         try {
             const { estado = 'PENDIENTE', limit = 50, offset = 0 } = req.query;
 
-            let whereClause = "WHERE v.ORIGEN = 'TIENDA_WEB'";
+            let whereClause = "WHERE (v.FACTURA IS NULL OR v.FACTURA LIKE 'WEB-%')";
             const params = [];
 
             if (estado !== 'TODOS') {
-                whereClause += " AND v.ESTADO_PAGO = ?";
-                params.push(estado);
+                whereClause += " AND v.ESTADO = ?";
+                if (estado === 'PENDIENTE') {
+                    params.push('Pendiente de Verificacion');
+                } else if (estado === 'CONFIRMADO') {
+                    params.push('Aprobado');
+                } else if (estado === 'RECHAZADO') {
+                    params.push('Rechazado');
+                } else {
+                    params.push(estado);
+                }
             }
 
             const [pedidos] = await db.query(`
@@ -31,19 +39,25 @@ const pagosController = {
                     v.FACTURA,
                     v.FECHA,
                     v.TOTAL,
-                    v.ESTADO_PAGO,
-                    v.METODO_PAGO,
-                    v.NOTAS_PAGO,
+                    CASE v.ESTADO
+                        WHEN 'Pendiente de Verificacion' THEN 'PENDIENTE'
+                        WHEN 'Aprobado' THEN 'CONFIRMADO'
+                        WHEN 'Rechazado' THEN 'RECHAZADO'
+                        ELSE 'PENDIENTE'
+                    END AS ESTADO_PAGO,
+                    IF(v.REFERENCIA_BANCARIA IS NOT NULL AND v.REFERENCIA_BANCARIA <> '', 'Transferencia Bancaria', 'Pago en Efectivo (al retirar)') AS METODO_PAGO,
+                    v.REFERENCIA_BANCARIA AS NOTAS_PAGO,
                     CONCAT(c.NOMBRE, ' ', COALESCE(c.APELLIDO,'')) AS nombre_cliente,
-                    c.EMAIL  AS email_cliente,
+                    c.EMAIL AS email_cliente,
                     c.TELEFONO AS telefono_cliente,
-                    cp.ID_COMPROBANTE,
-                    cp.RUTA_IMAGEN,
-                    cp.FECHA_SUBIDA,
-                    cp.NOTAS_CLIENTE
+                    NULL AS ID_COMPROBANTE,
+                    v.COMPROBANTE_URL AS RUTA_IMAGEN,
+                    v.FECHA AS FECHA_SUBIDA,
+                    NULL AS NOTAS_CLIENTE,
+                    v.MONTO_ADELANTO,
+                    v.REFERENCIA_BANCARIA
                 FROM VENTAS v
                 INNER JOIN CLIENTES c ON v.ID_CLIENTE = c.ID_CLIENTE
-                LEFT JOIN COMPROBANTES_PAGO cp ON cp.ID_VENTA = v.ID_VENTA
                 ${whereClause}
                 ORDER BY v.FECHA DESC
                 LIMIT ? OFFSET ?
@@ -68,14 +82,22 @@ const pagosController = {
     resumenEstados: async (req, res) => {
         try {
             const [rows] = await db.query(`
-                SELECT ESTADO_PAGO, COUNT(*) AS total
-                FROM VENTAS
-                WHERE ORIGEN = 'TIENDA_WEB'
-                GROUP BY ESTADO_PAGO
+                SELECT v.ESTADO, COUNT(*) AS total
+                FROM VENTAS v
+                WHERE (v.FACTURA IS NULL OR v.FACTURA LIKE 'WEB-%')
+                GROUP BY v.ESTADO
             `);
 
             const resumen = { PENDIENTE: 0, VERIFICANDO: 0, CONFIRMADO: 0, RECHAZADO: 0 };
-            rows.forEach(r => { resumen[r.ESTADO_PAGO] = r.total; });
+            rows.forEach(r => {
+                if (r.ESTADO === 'Pendiente de Verificacion') {
+                    resumen.PENDIENTE = r.total;
+                } else if (r.ESTADO === 'Aprobado') {
+                    resumen.CONFIRMADO = r.total;
+                } else if (r.ESTADO === 'Rechazado') {
+                    resumen.RECHAZADO = r.total;
+                }
+            });
 
             res.json({ success: true, resumen });
         } catch (error) {
@@ -96,21 +118,23 @@ const pagosController = {
             const [[pedido]] = await db.query(`
                 SELECT v.*, CONCAT(c.NOMBRE,' ',COALESCE(c.APELLIDO,'')) AS nombre_cliente, c.EMAIL
                 FROM VENTAS v INNER JOIN CLIENTES c ON v.ID_CLIENTE = c.ID_CLIENTE
-                WHERE v.ID_VENTA = ? AND v.ORIGEN = 'TIENDA_WEB'
+                WHERE v.ID_VENTA = ? AND (v.FACTURA IS NULL OR v.FACTURA LIKE 'WEB-%')
             `, [id]);
 
             if (!pedido) {
                 return res.status(404).json({ success: false, error: 'Pedido no encontrado' });
             }
 
-            if (pedido.ESTADO_PAGO === 'CONFIRMADO') {
+            if (pedido.ESTADO === 'Aprobado') {
                 return res.status(400).json({ success: false, error: 'El pedido ya está confirmado' });
             }
 
+            const nFactura = `WEB-${String(id).padStart(6, '0')}`;
+
             // Actualizar estado
             await db.query(
-                "UPDATE VENTAS SET ESTADO_PAGO = 'CONFIRMADO', NOTAS_PAGO = ? WHERE ID_VENTA = ?",
-                [notas || null, id]
+                "UPDATE VENTAS SET ESTADO = 'Aprobado', FACTURA = ? WHERE ID_VENTA = ?",
+                [nFactura, id]
             );
 
             // Notificar al cliente por email (sin bloquear)
@@ -118,9 +142,9 @@ const pagosController = {
                 await emailService.sendPagoConfirmadoEmail(
                     pedido.EMAIL,
                     pedido.nombre_cliente,
-                    pedido.FACTURA,
+                    nFactura,
                     parseFloat(pedido.TOTAL),
-                    pedido.METODO_PAGO || ''
+                    pedido.REFERENCIA_BANCARIA ? 'Transferencia Bancaria' : 'Pago en tienda'
                 );
             } catch (emailErr) {
                 console.warn('⚠️ No se pudo enviar email de confirmación:', emailErr.message);
@@ -149,7 +173,7 @@ const pagosController = {
             const [[pedido]] = await db.query(`
                 SELECT v.*, CONCAT(c.NOMBRE,' ',COALESCE(c.APELLIDO,'')) AS nombre_cliente, c.EMAIL
                 FROM VENTAS v INNER JOIN CLIENTES c ON v.ID_CLIENTE = c.ID_CLIENTE
-                WHERE v.ID_VENTA = ? AND v.ORIGEN = 'TIENDA_WEB'
+                WHERE v.ID_VENTA = ? AND (v.FACTURA IS NULL OR v.FACTURA LIKE 'WEB-%')
             `, [id]);
 
             if (!pedido) {
@@ -157,8 +181,8 @@ const pagosController = {
             }
 
             await db.query(
-                "UPDATE VENTAS SET ESTADO_PAGO = 'RECHAZADO', NOTAS_PAGO = ? WHERE ID_VENTA = ?",
-                [motivo, id]
+                "UPDATE VENTAS SET ESTADO = 'Rechazado' WHERE ID_VENTA = ?",
+                [id]
             );
 
             // Notificar al cliente
@@ -166,7 +190,7 @@ const pagosController = {
                 await emailService.sendPagoRechazadoEmail(
                     pedido.EMAIL,
                     pedido.nombre_cliente,
-                    pedido.FACTURA,
+                    pedido.FACTURA || `PED-${id}`,
                     motivo
                 );
             } catch (emailErr) {
@@ -181,14 +205,14 @@ const pagosController = {
     },
 
     /**
-     * Marcar como "Verificando" — estado intermedio
+     * Marcar como "Verificando" — obsoleto en el nuevo esquema, se mantiene para compatibilidad
      * POST /api/admin/pagos/:id/verificando
      */
     marcarVerificando: async (req, res) => {
         const { id } = req.params;
         try {
             await db.query(
-                "UPDATE VENTAS SET ESTADO_PAGO = 'VERIFICANDO' WHERE ID_VENTA = ? AND ORIGEN = 'TIENDA_WEB'",
+                "UPDATE VENTAS SET ESTADO = 'Pendiente de Verificacion' WHERE ID_VENTA = ? AND (FACTURA IS NULL OR FACTURA LIKE 'WEB-%')",
                 [id]
             );
             res.json({ success: true, mensaje: 'Pedido marcado como en verificación' });
@@ -198,7 +222,7 @@ const pagosController = {
     },
 
     /**
-     * Confirmar pago en físico (efectivo en tienda) sin comprobante
+     * Confirmar pago en físico — obsoleto en el nuevo esquema, se mantiene para compatibilidad
      * POST /api/admin/pagos/:id/confirmar-fisico
      */
     confirmarPagoFisico: async (req, res) => {
@@ -209,36 +233,34 @@ const pagosController = {
             const [[pedido]] = await db.query(`
                 SELECT v.*, CONCAT(c.NOMBRE,' ',COALESCE(c.APELLIDO,'')) AS nombre_cliente, c.EMAIL
                 FROM VENTAS v INNER JOIN CLIENTES c ON v.ID_CLIENTE = c.ID_CLIENTE
-                WHERE v.ID_VENTA = ? AND v.ORIGEN = 'TIENDA_WEB'
+                WHERE v.ID_VENTA = ? AND (v.FACTURA IS NULL OR v.FACTURA LIKE 'WEB-%')
             `, [id]);
 
             if (!pedido) {
                 return res.status(404).json({ success: false, error: 'Pedido no encontrado' });
             }
 
-            if (pedido.ESTADO_PAGO === 'CONFIRMADO') {
+            if (pedido.ESTADO === 'Aprobado') {
                 return res.status(400).json({ success: false, error: 'El pedido ya está confirmado' });
             }
 
-            const notaFinal = notas || 'Pago recibido en efectivo en tienda física.';
+            const nFactura = `WEB-${String(id).padStart(6, '0')}`;
 
-            // Marcar como CONFIRMADO con nota del admin
             await db.query(
-                "UPDATE VENTAS SET ESTADO_PAGO = 'CONFIRMADO', NOTAS_PAGO = ? WHERE ID_VENTA = ?",
-                [notaFinal, id]
+                "UPDATE VENTAS SET ESTADO = 'Aprobado', FACTURA = ? WHERE ID_VENTA = ?",
+                [nFactura, id]
             );
 
-            // Notificar al cliente indicando que es pago en físico
             try {
                 await emailService.sendPagoConfirmadoEmail(
                     pedido.EMAIL,
                     pedido.nombre_cliente,
-                    pedido.FACTURA,
+                    nFactura,
                     parseFloat(pedido.TOTAL),
                     pedido.METODO_PAGO || 'Pago en tienda'
                 );
             } catch (emailErr) {
-                console.warn('⚠️ No se pudo enviar email de confirmación física:', emailErr.message);
+                console.warn('⚠️ No se pudo enviar email de confirmación:', emailErr.message);
             }
 
             res.json({ success: true, mensaje: 'Pago físico confirmado y cliente notificado' });

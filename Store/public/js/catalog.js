@@ -498,7 +498,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('sortSelect').addEventListener('change', (e) => { currentFilter.sort = e.target.value; filterProducts(); });
-    document.getElementById('cartButton').addEventListener('click', () => { window.location.href = 'cart.html'; });
+    const cartBtn = document.getElementById('cartButton');
+    if (cartBtn) {
+        cartBtn.addEventListener('click', () => { window.location.href = 'cart.html'; });
+    }
 
     // Modal
     document.getElementById('modalClose').addEventListener('click', closeProductModal);

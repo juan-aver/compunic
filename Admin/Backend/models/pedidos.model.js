@@ -18,7 +18,7 @@ const Pedidos = {
      * @param {string} metodoPago    - Método de pago elegido por el cliente
      * @returns {Object} Datos del pedido creado
      */
-    crearPedido: async (datosCliente, productos, puntosUsados = 0, metodoPago = 'Depósito Bancario') => {
+    crearPedido: async (datosCliente, productos, puntosUsados = 0, metodoPago = 'Transferencia Bancaria', referencia = null) => {
         const connection = await db.getConnection();
 
         try {
@@ -122,19 +122,15 @@ const Pedidos = {
                 await connection.query('UPDATE CLIENTES SET PUNTOS = PUNTOS + ? WHERE ID_CLIENTE = ?', [puntosGanados, idCliente]);
             }
 
-            // 5. Generar número de factura automático
-            const timestamp = Date.now();
-            const facturaTemp = `WEB-${timestamp}`;
-
-            // 6. Crear venta con vendedor "Tienda Web" — estado PENDIENTE hasta verificar pago
+            // 5. Crear venta con vendedor "Tienda Web" — estado Pendiente de Verificacion
             const [resultVenta] = await connection.query(`
-                INSERT INTO VENTAS (FECHA, TOTAL, ID_EMPLEADO, ID_CLIENTE, FACTURA, ESTADO_PAGO, METODO_PAGO, ORIGEN)
-                VALUES (NOW(), ?, ?, ?, ?, 'PENDIENTE', ?, 'TIENDA_WEB')
-            `, [total, idEmpleadoVenta, idCliente, facturaTemp, metodoPago]);
+                INSERT INTO VENTAS (FECHA, TOTAL, ID_EMPLEADO, ID_CLIENTE, FACTURA, ESTADO, TIPO_ENTREGA, DIRECCION_ENVIO, MONTO_ADELANTO, REFERENCIA_BANCARIA)
+                VALUES (NOW(), ?, ?, ?, NULL, 'Pendiente de Verificacion', 'Retiro en Tienda', ?, ?, ?)
+            `, [total, idEmpleadoVenta, idCliente, datosCliente.direccion || null, total * 0.5, referencia || null]);
 
             const idVenta = resultVenta.insertId;
 
-            // 7. Insertar productos de la venta
+            // 6. Insertar productos de la venta
             for (const item of productos) {
                 const subtotal = item.precio_unitario * item.cantidad;
 
@@ -144,16 +140,13 @@ const Pedidos = {
                 `, [idVenta, item.id_producto, item.cantidad, item.precio_unitario, subtotal]);
             }
 
-            // 8. Actualizar FACTURA con el ID real de la venta
-            const facturaFinal = `WEB-${String(idVenta).padStart(6, '0')}`;
-            await connection.query(`
-                UPDATE VENTAS SET FACTURA = ? WHERE ID_VENTA = ?
-            `, [facturaFinal, idVenta]);
-
-            // 9. Commit de la transacción
+            // 7. Commit de la transacción
             await connection.commit();
 
-            // 10. Registrar movimientos de stock para cada producto vendido
+            // 8. Generar número de pedido
+            const numeroPedido = `PED-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(idVenta).padStart(4, '0')}`;
+
+            // 9. Registrar movimientos de stock para cada producto vendido
             for (const item of productos) {
                 // Calcular stock resultante después de la venta
                 const [stockResult] = await db.query(`
@@ -179,21 +172,18 @@ const Pedidos = {
                     item.id_producto,
                     nombreProducto,
                     'salida',
-                    `Venta Factura: ${facturaFinal}`,
+                    `Pedido: ${numeroPedido}`,
                     item.cantidad,
                     stockResultante
                 );
             }
 
-            // 11. Generar número de pedido
-            const numeroPedido = `PED-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(idVenta).padStart(4, '0')}`;
-
-            // 12. Enviar email de "Pedido recibido — pendiente de pago" (NO la factura todavía)
+            // 10. Enviar email de "Pedido recibido — pendiente de pago" (NO la factura todavía)
             try {
                 await emailService.sendPedidoPendienteEmail(
                     datosCliente.email,
                     datosCliente.nombre,
-                    facturaFinal,
+                    numeroPedido,
                     total,
                     metodoPago
                 );
@@ -205,7 +195,7 @@ const Pedidos = {
             return {
                 id_venta: idVenta,
                 numero_pedido: numeroPedido,
-                factura: facturaFinal,
+                factura: null,
                 total: total,
                 estado_pago: 'PENDIENTE',
                 metodo_pago: metodoPago,
@@ -308,36 +298,18 @@ const Pedidos = {
         try {
             // Verificar que la venta existe y es de la tienda web
             const [[venta]] = await db.query(
-                "SELECT ID_VENTA, ESTADO_PAGO FROM VENTAS WHERE ID_VENTA = ? AND ORIGEN = 'TIENDA_WEB'",
+                "SELECT ID_VENTA, ESTADO FROM VENTAS WHERE ID_VENTA = ? AND (FACTURA IS NULL OR FACTURA LIKE 'WEB-%')",
                 [idVenta]
             );
 
             if (!venta) throw new Error('Pedido no encontrado');
-            if (venta.ESTADO_PAGO === 'CONFIRMADO') throw new Error('El pedido ya fue confirmado');
-            if (venta.ESTADO_PAGO === 'RECHAZADO')  throw new Error('El pedido fue rechazado, contacta a soporte');
+            if (venta.ESTADO === 'Aprobado') throw new Error('El pedido ya fue confirmado');
+            if (venta.ESTADO === 'Rechazado')  throw new Error('El pedido fue rechazado, contacta a soporte');
 
-            // Si ya existe comprobante previo, actualizar
-            const [[existente]] = await db.query(
-                'SELECT ID_COMPROBANTE FROM COMPROBANTES_PAGO WHERE ID_VENTA = ?',
-                [idVenta]
-            );
-
-            if (existente) {
-                await db.query(
-                    'UPDATE COMPROBANTES_PAGO SET RUTA_IMAGEN=?, NOMBRE_ARCHIVO=?, NOTAS_CLIENTE=?, FECHA_SUBIDA=NOW() WHERE ID_VENTA=?',
-                    [rutaImagen, nombreArchivo, notasCliente, idVenta]
-                );
-            } else {
-                await db.query(
-                    'INSERT INTO COMPROBANTES_PAGO (ID_VENTA, RUTA_IMAGEN, NOMBRE_ARCHIVO, NOTAS_CLIENTE) VALUES (?,?,?,?)',
-                    [idVenta, rutaImagen, nombreArchivo, notasCliente]
-                );
-            }
-
-            // Pasar estado a VERIFICANDO
+            // Actualizar la columna COMPROBANTE_URL en la tabla VENTAS
             await db.query(
-                "UPDATE VENTAS SET ESTADO_PAGO = 'VERIFICANDO' WHERE ID_VENTA = ?",
-                [idVenta]
+                "UPDATE VENTAS SET COMPROBANTE_URL = ?, ESTADO = 'Pendiente de Verificacion' WHERE ID_VENTA = ?",
+                [rutaImagen, idVenta]
             );
 
             return { ok: true };
@@ -354,10 +326,19 @@ const Pedidos = {
     obtenerEstadoPedido: async (idVenta) => {
         try {
             const [[row]] = await db.query(
-                `SELECT v.ESTADO_PAGO, v.METODO_PAGO, v.FACTURA, v.TOTAL, v.NOTAS_PAGO,
-                        cp.RUTA_IMAGEN IS NOT NULL AS tiene_comprobante
+                `SELECT 
+                    CASE v.ESTADO
+                        WHEN 'Pendiente de Verificacion' THEN 'PENDIENTE'
+                        WHEN 'Aprobado' THEN 'CONFIRMADO'
+                        WHEN 'Rechazado' THEN 'RECHAZADO'
+                        ELSE 'PENDIENTE'
+                    END AS ESTADO_PAGO,
+                    IF(v.REFERENCIA_BANCARIA IS NOT NULL AND v.REFERENCIA_BANCARIA <> '', 'Transferencia Bancaria', 'Pago en Efectivo (al retirar)') AS METODO_PAGO,
+                    v.FACTURA, 
+                    v.TOTAL, 
+                    v.REFERENCIA_BANCARIA AS NOTAS_PAGO,
+                    v.COMPROBANTE_URL IS NOT NULL AS tiene_comprobante
                  FROM VENTAS v
-                 LEFT JOIN COMPROBANTES_PAGO cp ON cp.ID_VENTA = v.ID_VENTA
                  WHERE v.ID_VENTA = ?`,
                 [idVenta]
             );
