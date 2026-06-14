@@ -102,6 +102,7 @@
   <script src="logic/servicios.js"></script>
   <script src="logic/empleados_temporales.js"></script>
   <script src="logic/pagos_web.js"></script>
+  <script src="logic/auditorias.js"></script>
   <script src="js/dashboard_stats.js" defer></script>
   <!-- <script src="js/dashboard_charts.js" defer></script> -->
   <script src="js/vendedor_auto.js" defer></script>
@@ -156,6 +157,7 @@
             <li><a href="#" onclick="cargarVista('gestion-empleados')">Personal / Empleados</a></li>
             <li><a href="#" onclick="cargarVista('gestion-clientes')">Clientes</a></li>
             <li><a href="#" onclick="cargarVista('gestion-pagos-web')" style="color:#f97316; font-weight:700;">💳 Pagos Tienda Web</a></li>
+            <li><a href="#" onclick="cargarVista('gestion-auditoria')" style="color:#3498db; font-weight:700;"><i class="fas fa-history"></i> Auditoría del Sistema</a></li>
           </ul>
         </li>
       </ul>
@@ -245,6 +247,12 @@
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-pagos-web')">
             <span class="mobile-menu-icon">💳</span>
             Pagos Web
+          </a>
+        </li>
+        <li class="mobile-menu-item">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-auditoria')">
+            <span class="mobile-menu-icon">📜</span>
+            Auditoría
           </a>
         </li>
         <li class="mobile-menu-item">

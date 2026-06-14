@@ -1,6 +1,7 @@
 const Empleado = require('../models/empleados.model');
 const AuthModel = require('../models/auth.model');
 const EmailService = require('../services/email.service');
+const AuditoriaModel = require('../models/auditoria.model');
 
 // Controlador para todas las operaciones de empleados
 const EmpleadosController = {
@@ -142,6 +143,14 @@ const EmpleadosController = {
             }
 
             // Para temporales o sin email
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'CREAR',
+                tabla: 'EMPLEADOS',
+                descripcion: `Se agregó el nuevo empleado "${nombre} ${apellido}" con rol ${rol} (ID: ${nuevoId})`
+            }).catch(e => console.error('Audit log error:', e));
+
             res.status(201).json({ 
                 id: nuevoId, 
                 mensaje: 'Empleado agregado correctamente',
@@ -178,6 +187,15 @@ const EmpleadosController = {
             ];
 
             await Empleado.actualizar(datos);
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'MODIFICAR',
+                tabla: 'EMPLEADOS',
+                descripcion: `Se actualizó la información del empleado "${nombre} ${apellido}" (ID: ${id})`
+            }).catch(e => console.error('Audit log error:', e));
+
             res.send('Empleado actualizado correctamente');
         } catch (error) {
             res.status(500).send(error.message);
@@ -189,6 +207,15 @@ const EmpleadosController = {
         try {
             const id = req.params.id;
             await Empleado.eliminar(id);
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'ELIMINAR',
+                tabla: 'EMPLEADOS',
+                descripcion: `Se dio de baja al empleado con ID: ${id}`
+            }).catch(e => console.error('Audit log error:', e));
+
             res.send('Empleado eliminado (soft delete) correctamente');
         } catch (error) {
             res.status(500).send(error.message);
@@ -201,6 +228,15 @@ const EmpleadosController = {
             const id = req.params.id;
             const { estado } = req.body;
             await Empleado.cambiarEstado(id, estado);
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'CAMBIAR_ESTADO',
+                tabla: 'EMPLEADOS',
+                descripcion: `Se cambió el estado del empleado (ID: ${id}) a ${estado === 1 ? 'ACTIVO' : 'INACTIVO'}`
+            }).catch(e => console.error('Audit log error:', e));
+
             res.send('Estado actualizado correctamente');
         } catch (error) {
             res.status(500).send(error.message);

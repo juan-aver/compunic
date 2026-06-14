@@ -1,0 +1,127 @@
+<!-- views/G_Auditorias.html -->
+<div class="container-fluid fade-in">
+    <div class="page-header">
+        <h1><i class="fas fa-history primary-color"></i> Auditoría del Sistema</h1>
+        <p class="subtitle">Monitoreo de actividad de usuarios y seguridad del sistema</p>
+    </div>
+
+    <!-- Tarjetas de Estadísticas de Auditoría -->
+    <div class="dashboard-grid">
+        <div class="stat-card stat-card-blue">
+            <div class="stat-icon">
+                <i class="fas fa-users-cog" style="font-size: 36px;"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Acciones Registradas (Hoy)</p>
+                <h3 class="stat-value" id="kpi-acciones-hoy">0</h3>
+                <p class="stat-detail">Actividad general en la plataforma</p>
+            </div>
+        </div>
+
+        <div class="stat-card stat-card-red">
+            <div class="stat-icon">
+                <i class="fas fa-user-shield" style="font-size: 36px;"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Inicios Fallidos (Hoy)</p>
+                <h3 class="stat-value" id="kpi-logins-fallidos">0</h3>
+                <p class="stat-detail text-red-500">Intentos de acceso denegados</p>
+            </div>
+        </div>
+
+        <div class="stat-card stat-card-yellow">
+            <div class="stat-icon">
+                <i class="fas fa-edit" style="font-size: 36px;"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Modificaciones / Bajas (Hoy)</p>
+                <h3 class="stat-value" id="kpi-modificaciones">0</h3>
+                <p class="stat-detail">Cambios realizados en catálogos y datos</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Gráfico de Actividad -->
+    <div class="glass-table-section chart-card-large mt-4">
+        <h3><i class="fas fa-chart-line"></i> Historial de Actividad Reciente</h3>
+        <div id="chart-auditoria-actividad" style="min-height: 250px;">
+            <p style="text-align: center; padding: 20px;">Cargando gráfico de actividad...</p>
+        </div>
+    </div>
+
+    <!-- Sección de Búsqueda y Filtros -->
+    <div class="busqueda mt-4">
+        <h3><i class="fas fa-filter"></i> Filtros de Auditoría</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
+            <div>
+                <label for="buscar_auditoria"><i class="fas fa-search"></i> Buscar Usuario</label>
+                <input type="text" id="buscar_auditoria" placeholder="Buscar por username o nombre...">
+            </div>
+            <div>
+                <label for="filtro_accion"><i class="fas fa-bolt"></i> Acción</label>
+                <select id="filtro_accion">
+                    <option value="">Todas las acciones</option>
+                    <option value="LOGIN_EXITOSO">LOGIN EXITOSO</option>
+                    <option value="LOGIN_FALLIDO">LOGIN FALLIDO</option>
+                    <option value="CREAR">CREAR</option>
+                    <option value="MODIFICAR">MODIFICAR</option>
+                    <option value="ELIMINAR">ELIMINAR</option>
+                    <option value="RESTABLECER_CONTRASENA">RESTABLECER CONTRASEÑA</option>
+                </select>
+            </div>
+            <div>
+                <label for="filtro_tabla"><i class="fas fa-table"></i> Tabla Afectada</label>
+                <select id="filtro_tabla">
+                    <option value="">Todas las tablas</option>
+                    <option value="PRODUCTOS">PRODUCTOS</option>
+                    <option value="VENTAS">VENTAS</option>
+                    <option value="COMPRAS">COMPRAS</option>
+                    <option value="CLIENTES">CLIENTES</option>
+                    <option value="PROVEEDORES">PROVEEDORES</option>
+                    <option value="EMPLEADOS">EMPLEADOS</option>
+                    <option value="SERVICIOS">SERVICIOS</option>
+                    <option value="DEVOLUCIONES">DEVOLUCIONES</option>
+                    <option value="GARANTIAS">GARANTIAS</option>
+                </select>
+            </div>
+            <div>
+                <label for="filtro_fecha_desde"><i class="fas fa-calendar-alt"></i> Desde</label>
+                <input type="date" id="filtro_fecha_desde">
+            </div>
+            <div>
+                <label for="filtro_fecha_hasta"><i class="fas fa-calendar-alt"></i> Hasta</label>
+                <input type="date" id="filtro_fecha_hasta">
+            </div>
+        </div>
+        <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+            <button id="btn-limpiar" onclick="limpiarFiltrosAuditoria()"><i class="fas fa-broom"></i> Limpiar</button>
+            <button id="btn-buscar" onclick="filtrarAuditorias()"><i class="fas fa-search"></i> Filtrar</button>
+        </div>
+    </div>
+
+    <!-- Tabla de Historial de Auditoría -->
+    <div class="glass-table-section mt-4">
+        <h3><i class="fas fa-list-ul"></i> Historial de Movimientos</h3>
+        <div style="overflow-x: auto; width: 100%;">
+            <table id="tablaAuditorias">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">ID</th>
+                        <th style="width: 160px;">Fecha y Hora</th>
+                        <th style="width: 140px;">Usuario</th>
+                        <th style="width: 140px;">Acción</th>
+                        <th style="width: 140px;">Tabla</th>
+                        <th style="width: 100px;">Registro ID</th>
+                        <th>Detalle</th>
+                        <th style="width: 130px;">IP</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoAuditorias">
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 20px;">Cargando registros de auditoría...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

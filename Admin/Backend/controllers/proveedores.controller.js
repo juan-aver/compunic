@@ -8,6 +8,7 @@
  */
 // controllers/proveedores.controller.js
 const Proveedor = require('../models/proveedores.model.js');
+const AuditoriaModel = require('../models/auditoria.model');
 
 const proveedoresController = {
 
@@ -49,6 +50,14 @@ const proveedoresController = {
         id_proveedor, nombre_empresa, persona_contacto, telefono, direccion, pagina_web, email
       });
       res.status(201).json({ mensaje: 'Proveedor creado exitosamente', id: id_proveedor });
+
+      AuditoriaModel.registrar({
+        id_empleado: req.userId || null,
+        username: req.username || 'Sistema',
+        accion: 'CREAR',
+        tabla: 'PROVEEDORES',
+        descripcion: `Se agregó el proveedor "${nombre_empresa}" (ID: ${id_proveedor})`
+      }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
       console.error('Error al crear proveedor:', err);
       res.status(500).json({ error: 'Error al crear el proveedor: ' + err.message });
@@ -66,6 +75,14 @@ const proveedoresController = {
         id_proveedor: id, nombre_empresa, persona_contacto, telefono, direccion, pagina_web, email
       });
       res.json({ mensaje: 'Proveedor actualizado correctamente' });
+
+      AuditoriaModel.registrar({
+        id_empleado: req.userId || null,
+        username: req.username || 'Sistema',
+        accion: 'MODIFICAR',
+        tabla: 'PROVEEDORES',
+        descripcion: `Se actualizó el proveedor "${nombre_empresa}" (ID: ${id})`
+      }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
       console.error('Error al actualizar proveedor:', err);
       res.status(500).json({ error: 'Error al actualizar el proveedor' });
@@ -78,6 +95,14 @@ const proveedoresController = {
     try {
       await Proveedor.eliminar(id);
       res.json({ mensaje: 'Proveedor eliminado exitosamente' });
+
+      AuditoriaModel.registrar({
+        id_empleado: req.userId || null,
+        username: req.username || 'Sistema',
+        accion: 'ELIMINAR',
+        tabla: 'PROVEEDORES',
+        descripcion: `Se eliminó el proveedor con ID: ${id}`
+      }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
       console.error('Error al eliminar proveedor:', err);
       res.status(500).json({ error: 'Error al eliminar el proveedor' });

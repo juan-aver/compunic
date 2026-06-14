@@ -9,6 +9,7 @@
  */
 const AuthModel = require('../models/auth.model');
 const EmailService = require('../services/email.service');
+const AuditoriaModel = require('../models/auditoria.model');
 
 const AuthController = {
     /**
@@ -28,10 +29,27 @@ const AuthController = {
             const user = await AuthModel.login(username, password);
 
             if (!user) {
+                // Registrar auditoría de login fallido
+                AuditoriaModel.registrar({
+                    id_empleado: null,
+                    username: username,
+                    accion: 'LOGIN_FALLIDO',
+                    tabla: 'EMPLEADOS',
+                    descripcion: `Intento de inicio de sesión fallido para el usuario "${username}"`
+                }).catch(e => console.error('Audit log error:', e));
                 return res.status(401).json({
                     error: 'Credenciales inválidas'
                 });
             }
+
+            // Registrar auditoría de inicio de sesión exitoso
+            AuditoriaModel.registrar({
+                id_empleado: user.id_empleado,
+                username: user.username,
+                accion: 'INICIO_SESION',
+                tabla: 'EMPLEADOS',
+                descripcion: `${user.nombre} ${user.apellido} inició sesión en el sistema`
+            }).catch(e => console.error('Audit log error:', e));
 
             // Retornar información del usuario
             res.json({
@@ -135,7 +153,18 @@ const AuthController = {
             }
 
             // Restablecer contraseña
-            await AuthModel.resetPasswordWithToken(token, newPassword);
+            const resetResult = await AuthModel.resetPasswordWithToken(token, newPassword);
+
+            // Registrar auditoría del reset de contraseña
+            if (resetResult) {
+                AuditoriaModel.registrar({
+                    id_empleado: resetResult.id_empleado || null,
+                    username: resetResult.username || 'Desconocido',
+                    accion: 'RESET_CONTRASENA',
+                    tabla: 'EMPLEADOS',
+                    descripcion: `Se restableció la contraseña del usuario "${resetResult.username || 'Desconocido'}"`
+                }).catch(e => console.error('Audit log error:', e));
+            }
 
             res.json({
                 success: true,

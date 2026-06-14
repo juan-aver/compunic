@@ -216,3 +216,29 @@ const Auth = {
         }
     }
 };
+
+// Interceptor global de fetch para inyectar headers de auditoría
+(function() {
+    const originalFetch = window.fetch;
+    window.fetch = function (input, init) {
+        const session = Auth.getSession();
+        if (session) {
+            init = init || {};
+            init.headers = init.headers || {};
+            
+            if (init.headers instanceof Headers) {
+                if (session.id_empleado) init.headers.set('X-User-Id', String(session.id_empleado));
+                if (session.user) init.headers.set('X-User-Username', session.user);
+            } else if (Array.isArray(init.headers)) {
+                const hasUserId = init.headers.some(h => h[0].toLowerCase() === 'x-user-id');
+                const hasUsername = init.headers.some(h => h[0].toLowerCase() === 'x-user-username');
+                if (!hasUserId && session.id_empleado) init.headers.push(['X-User-Id', String(session.id_empleado)]);
+                if (!hasUsername && session.user) init.headers.push(['X-User-Username', session.user]);
+            } else {
+                if (!init.headers['X-User-Id'] && session.id_empleado) init.headers['X-User-Id'] = String(session.id_empleado);
+                if (!init.headers['X-User-Username'] && session.user) init.headers['X-User-Username'] = session.user;
+            }
+        }
+        return originalFetch(input, init);
+    };
+})();

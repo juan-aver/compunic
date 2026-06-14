@@ -9,6 +9,7 @@
 const Ventas = require('../models/ventas.model.js');
 const movimientosStockController = require('./movimientos_stock.controller');
 const Producto = require('../models/productos.model.js'); // Necesario para consultar stock
+const AuditoriaModel = require('../models/auditoria.model');
 
 exports.findAll = async (req, res) => {
   try {
@@ -71,6 +72,16 @@ exports.create = async (req, res) => {
       id_venta: idVenta,
       factura: facturaGenerada
     });
+
+    // Auditoría
+    const totalItems = venta.items.reduce((sum, i) => sum + parseInt(i.cantidad), 0);
+    AuditoriaModel.registrar({
+      id_empleado: req.userId || venta.id_empleado || null,
+      username: req.username || 'Sistema',
+      accion: 'VENTA',
+      tabla: 'VENTAS',
+      descripcion: `Se registró la venta ${facturaGenerada} con ${totalItems} artículo(s) para el cliente ID: ${venta.id_cliente}`
+    }).catch(e => console.error('Audit log error:', e));
   } catch (err) {
     res.status(500).send({ message: err.message });
   }

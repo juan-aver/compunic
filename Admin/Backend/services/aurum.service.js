@@ -99,6 +99,10 @@ const aurumTools = [
                 name: "obtener_servicios_pendientes",
                 description: "Obtiene la lista de servicios técnicos pendientes (en diagnóstico, en reparación, esperando repuestos, etc.).",
             },
+            {
+                name: "obtener_auditoria",
+                description: "Obtiene las acciones de auditoría o historial de actividad de usuarios más recientes del sistema (eliminaciones, modificaciones, logins, etc.).",
+            },
         ],
     },
 ];
@@ -357,6 +361,20 @@ const functionExecutors = {
             };
         } catch (err) {
             return { error: `Error al obtener servicios pendientes: ${err.message}` };
+        }
+    },
+
+    obtener_auditoria: async () => {
+        try {
+            const [audits] = await db.query(`
+                SELECT a.ID_AUDITORIA as id, a.FECHA_HORA as fecha, a.USUARIO as usuario, a.ACCION as accion, a.TABLA as tabla, a.ID_REGISTRO as id_registro, a.DETALLE as detalle 
+                FROM AUDITORIA a
+                ORDER BY a.FECHA_HORA DESC 
+                LIMIT 15
+            `);
+            return audits;
+        } catch (err) {
+            return { error: `Error al obtener auditoría: ${err.message}` };
         }
     }
 };

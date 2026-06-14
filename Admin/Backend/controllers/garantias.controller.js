@@ -7,6 +7,7 @@
  * Estructurado a mano con paciencia y un red bull.
  */
 const Garantia = require('../models/garantias.model.js');
+const AuditoriaModel = require('../models/auditoria.model');
 
 const garantiasController = {
     listar: async (req, res) => {
@@ -70,6 +71,14 @@ const garantiasController = {
                 id_garantia_estado
             ]);
             res.json({ mensaje: 'Garantía creada', id: id_garantia });
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'CREAR',
+                tabla: 'GARANTIAS',
+                descripcion: `Se registró la garantía ID: ${id_garantia} | Tipo ID: ${id_garantia_tipo} | Duración: ${duracion_meses} meses`
+            }).catch(e => console.error('Audit log error:', e));
         } catch (err) {
             console.error(err);
             res.status(500).json({ error: 'Error al crear garantía: ' + err.message });
@@ -93,6 +102,14 @@ const garantiasController = {
                 id
             ]);
             res.json({ mensaje: 'Garantía actualizada' });
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'MODIFICAR',
+                tabla: 'GARANTIAS',
+                descripcion: `Se actualizó la garantía ID: ${id}`
+            }).catch(e => console.error('Audit log error:', e));
         } catch (err) {
             console.error(err);
             res.status(500).json({ error: 'Error al actualizar garantía: ' + err.message });
@@ -104,6 +121,14 @@ const garantiasController = {
         try {
             await Garantia.eliminar(id);
             res.json({ mensaje: 'Garantía eliminada' });
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'ELIMINAR',
+                tabla: 'GARANTIAS',
+                descripcion: `Se eliminó la garantía ID: ${id}`
+            }).catch(e => console.error('Audit log error:', e));
         } catch (err) {
             console.error(err);
             res.status(500).json({ error: 'Error al eliminar garantía' });

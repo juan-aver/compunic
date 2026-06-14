@@ -8,6 +8,7 @@
  * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 const Devoluciones = require('../models/devoluciones.model');
+const AuditoriaModel = require('../models/auditoria.model');
 
 // Obtener todas las devoluciones
 exports.findAll = async (req, res) => {
@@ -105,6 +106,14 @@ exports.create = async (req, res) => {
             message: 'Devolución registrada exitosamente',
             id_devolucion: idDevolucion
         });
+
+        AuditoriaModel.registrar({
+            id_empleado: req.userId || null,
+            username: req.username || 'Sistema',
+            accion: 'DEVOLUCION',
+            tabla: 'DEVOLUCIONES',
+            descripcion: `Se registró devolución #${idDevolucion} | Venta ID: ${id_venta} | Producto ID: ${id_producto} | Cantidad: ${cantidad} | Acción: ${accion}`
+        }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
         console.error('Error al crear devolución:', err);
         res.status(500).send({

@@ -29,6 +29,7 @@ const movimientosStockModel = require('./models/movimientos_stock.model');
 const aurumRoutes = require('./routes/aurum.routes.js');
 const aurumService = require('./services/aurum.service');
 const pagosRoutes  = require('./routes/pagos.routes.js');
+const auditoriaRoutes = require('./routes/auditoria.routes.js');
 
 
 const app = express();
@@ -36,6 +37,13 @@ const app = express();
 // --- MIDDLEWARES ---
 app.use(cors());
 app.use(express.json());
+
+// --- MIDDLEWARE DE EXTRACCIÓN DE CONTEXTO DE USUARIO ---
+app.use((req, res, next) => {
+    req.userId = req.headers['x-user-id'] ? parseInt(req.headers['x-user-id']) : null;
+    req.username = req.headers['x-user-username'] || null;
+    next();
+});
 
 // --- SERVIR ARCHIVOS ESTÁTICOS (SOLO EN LOCAL) ---
 // En entorno netlify/serverless, esto interfiere o es inútil
@@ -69,6 +77,8 @@ app.use('/api/store/auth', storeAuthRoutes);
 app.use('/api/store', storeRoutes);
 app.use('/api/aurum', aurumRoutes);
 app.use('/api/admin/pagos', pagosRoutes);
+app.use('/api/auditorias', auditoriaRoutes);
+app.use('/api/reportes/auditoria', auditoriaRoutes);
 
 
 

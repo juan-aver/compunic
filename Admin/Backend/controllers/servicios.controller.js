@@ -6,6 +6,7 @@
  * Nota: Si vas a tocar aquí, ten cuidado con las dependencias circulares.
  */
 const Servicio = require('../models/servicios.model');
+const AuditoriaModel = require('../models/auditoria.model');
 
 const serviciosController = {
     getAll: async (req, res) => {
@@ -35,6 +36,14 @@ const serviciosController = {
             const datos = [descripcion, fecha_solicitud, fecha_ejecucion, costo, id_empleado, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado];
             const result = await Servicio.agregar(datos);
             res.status(201).json({ message: 'Servicio creado', id: result.insertId });
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'CREAR',
+                tabla: 'SERVICIOS',
+                descripcion: `Se creó el servicio #${result.insertId}: "${descripcion?.substring(0, 60) || 'Sin descripción'}"`
+            }).catch(e => console.error('Audit log error:', e));
         } catch (err) {
             res.status(500).json({ error: err.message });
         }
@@ -49,6 +58,14 @@ const serviciosController = {
                 return res.status(404).json({ message: 'Servicio no encontrado' });
             }
             res.json({ message: 'Servicio actualizado' });
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'MODIFICAR',
+                tabla: 'SERVICIOS',
+                descripcion: `Se actualizó el servicio ID: ${req.params.id}`
+            }).catch(e => console.error('Audit log error:', e));
         } catch (err) {
             res.status(500).json({ error: err.message });
         }
@@ -61,6 +78,14 @@ const serviciosController = {
                 return res.status(404).json({ message: 'Servicio no encontrado' });
             }
             res.json({ message: 'Servicio eliminado' });
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'ELIMINAR',
+                tabla: 'SERVICIOS',
+                descripcion: `Se eliminó el servicio ID: ${req.params.id}`
+            }).catch(e => console.error('Audit log error:', e));
         } catch (err) {
             res.status(500).json({ error: err.message });
         }

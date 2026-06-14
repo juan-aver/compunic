@@ -6,6 +6,7 @@
 
 const Producto = require('../models/productos.model.js');
 const movimientosStockController = require('./movimientos_stock.controller');
+const AuditoriaModel = require('../models/auditoria.model');
 const db = require('../config/db.js');
 const multer = require('multer');
 const path = require('path');
@@ -151,6 +152,15 @@ const productosController = {
       }
 
       res.json({ mensaje: 'Producto creado', id: productoId });
+
+      // Auditoría
+      AuditoriaModel.registrar({
+        id_empleado: req.userId || null,
+        username: req.username || 'Sistema',
+        accion: 'CREAR',
+        tabla: 'PRODUCTOS',
+        descripcion: `Se agregó el nuevo producto "${nombre}" (ID: ${productoId})`
+      }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
       res.status(500).json({ error: 'Error al crear el producto', detail: err.message });
     }
@@ -196,6 +206,15 @@ const productosController = {
       }
 
       res.json({ mensaje: 'Producto actualizado' });
+
+      // Auditoría
+      AuditoriaModel.registrar({
+        id_empleado: req.userId || null,
+        username: req.username || 'Sistema',
+        accion: 'MODIFICAR',
+        tabla: 'PRODUCTOS',
+        descripcion: `Se modificó el producto "${nombre}" (ID: ${id})` + (precio_venta ? ` | Nuevo precio de venta: L. ${precio_venta}` : '')
+      }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
       res.status(500).json({ error: 'Error al actualizar el producto', detail: err.message });
     }
@@ -232,6 +251,15 @@ const productosController = {
       }
 
       res.json({ mensaje: 'Producto eliminado' });
+
+      // Auditoría
+      AuditoriaModel.registrar({
+        id_empleado: req.userId || null,
+        username: req.username || 'Sistema',
+        accion: 'ELIMINAR',
+        tabla: 'PRODUCTOS',
+        descripcion: `Se eliminó el producto "${nombre}" (ID: ${id})`
+      }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
       res.status(500).json({ error: 'Error al eliminar el producto', detail: err.message });
     }

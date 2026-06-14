@@ -6,6 +6,7 @@
  * Nota: Si vas a tocar aquí, ten cuidado con las dependencias circulares.
  */
 const Cliente = require('../models/clientes.model.js');
+const AuditoriaModel = require('../models/auditoria.model');
 
 const clientesController = {
   listar: async (req, res) => {
@@ -35,6 +36,14 @@ const clientesController = {
     try {
       const result = await Cliente.agregar([nombre, apellido, telefono, email]);
       res.json({ mensaje: 'Cliente creado', id: result.insertId });
+
+      AuditoriaModel.registrar({
+        id_empleado: req.userId || null,
+        username: req.username || 'Sistema',
+        accion: 'CREAR',
+        tabla: 'CLIENTES',
+        descripcion: `Se agregó el cliente "${nombre} ${apellido}" (ID: ${result.insertId})`
+      }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Error al crear cliente' });
@@ -47,6 +56,14 @@ const clientesController = {
     try {
       await Cliente.actualizar([nombre, apellido, telefono, email, id]);
       res.json({ mensaje: 'Cliente actualizado' });
+
+      AuditoriaModel.registrar({
+        id_empleado: req.userId || null,
+        username: req.username || 'Sistema',
+        accion: 'MODIFICAR',
+        tabla: 'CLIENTES',
+        descripcion: `Se actualizó la información del cliente "${nombre} ${apellido}" (ID: ${id})`
+      }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Error al actualizar cliente' });
@@ -58,6 +75,14 @@ const clientesController = {
     try {
       await Cliente.eliminar(id);
       res.json({ mensaje: 'Cliente eliminado' });
+
+      AuditoriaModel.registrar({
+        id_empleado: req.userId || null,
+        username: req.username || 'Sistema',
+        accion: 'ELIMINAR',
+        tabla: 'CLIENTES',
+        descripcion: `Se eliminó el cliente con ID: ${id}`
+      }).catch(e => console.error('Audit log error:', e));
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Error al eliminar cliente' });

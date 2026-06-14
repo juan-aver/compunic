@@ -11,6 +11,7 @@
 const Compras = require('../models/compras.model');
 const movimientosStockController = require('./movimientos_stock.controller');
 const Producto = require('../models/productos.model.js');
+const AuditoriaModel = require('../models/auditoria.model');
 
 exports.getCompras = async (req, res) => {
   try {
@@ -95,6 +96,15 @@ exports.createCompra = async (req, res) => {
       iva: iva_monto,
       total: total_compra
     });
+
+    // Auditoría
+    AuditoriaModel.registrar({
+      id_empleado: req.userId || null,
+      username: req.username || 'Sistema',
+      accion: 'COMPRA',
+      tabla: 'COMPRAS',
+      descripcion: `Se registró la compra #${idCompra} (Factura: ${numero_factura}) al proveedor ID: ${id_proveedor} | Total: L. ${total_compra.toFixed(2)}`
+    }).catch(e => console.error('Audit log error:', e));
 
   } catch (err) {
     console.error('Error al crear compra:', err);

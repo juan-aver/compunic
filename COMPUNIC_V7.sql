@@ -107,6 +107,7 @@ CREATE TABLE CLIENTES (
     APELLIDO VARCHAR(100),
     TELEFONO VARCHAR(20),
     EMAIL VARCHAR(255),
+    PUNTOS INT DEFAULT 0, -- Nueva columna agregada con valor inicial de 0
     ID_EMPLEADO INT, -- Apunta al vendedor
     FOREIGN KEY (ID_EMPLEADO) REFERENCES EMPLEADOS(ID_EMPLEADO)
 );
@@ -187,9 +188,16 @@ CREATE TABLE VENTAS (
     ID_VENTA INT PRIMARY KEY AUTO_INCREMENT,
     FECHA DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 
     ID_CLIENTE INT NOT NULL,
-    ID_EMPLEADO INT NOT NULL, -- Apunta al vendedor     
-    FACTURA VARCHAR(50) NOT NULL UNIQUE, 
+    ID_EMPLEADO INT, 
+    ESTADO ENUM('Pendiente de Verificacion', 'Aprobado', 'Rechazado', 'Completado') DEFAULT 'Pendiente de Verificacion',
+    TIPO_ENTREGA ENUM('Retiro en Tienda', 'Envio a Domicilio') NOT NULL DEFAULT 'Retiro en Tienda',
+    DIRECCION_ENVIO VARCHAR(500) NULL, 
     TOTAL DECIMAL(12,2) NOT NULL DEFAULT 0.00, 
+    MONTO_ADELANTO DECIMAL(12,2) DEFAULT 0.00, 
+    REFERENCIA_BANCARIA VARCHAR(100) NULL,     -- El número de texto que digita el cliente
+    COMPROBANTE_URL VARCHAR(255) NULL,         -- La ruta de la foto que subió el cliente (Ej: 'uploads/comprobantes/ticket_6021.jpg')
+    FACTURA VARCHAR(50) NULL UNIQUE, 
+    
     FOREIGN KEY (ID_CLIENTE) REFERENCES CLIENTES(ID_CLIENTE),
     FOREIGN KEY (ID_EMPLEADO) REFERENCES EMPLEADOS(ID_EMPLEADO) 
 );
@@ -381,27 +389,27 @@ INSERT INTO GARANTIAS (ID_GARANTIA, FECHA, CONDICION, EXCLUSIONES, HORA, DURACIO
 (120, '2025-10-05', 'Solo partes', 'Mano de obra', '11:00:00', 6, 3, 1);
 
 -- 4. CLIENTES Y PROVEEDORES (IDs de Empleado actualizados)
-INSERT INTO CLIENTES (ID_CLIENTE, NOMBRE, APELLIDO, TELEFONO, EMAIL, ID_EMPLEADO) VALUES
-(1001, 'Empresa A', 'S.A.', '2278-0001', 'compras@empresa-a.com', 1),
-(1002, 'Fernanda', 'Montoya', '8765-4321', 'fmontoya@gmail.com', 2),
-(1003, 'Marcos', 'Castillo', '8901-2345', 'marcos.castillo@outlook.com', 3),
-(1004, 'Universidad UNI', 'R.U.L.', '2270-0002', 'ti@uni.edu.ni', 1),
-(1005, 'David', 'Ortega', '8642-1357', 'david.ortega@yahoo.com', 4),
-(1006, 'Bufete Legal', 'Asociados', '2266-5544', 'legal@bufete.com', 5),
-(1007, 'Lucia', 'Barrios', '8555-1234', 'lucia.barrios@gmail.com', 2),
-(1008, 'Restaurante', 'El Sabor', '2299-8877', 'admin@elsabor.com', 6),
-(1009, 'Carlos', 'Sandoval', '8333-4455', 'carlos.sandoval@hotmail.com', 11),
-(1010, 'Oficina Contable', 'Perez y Cia.', '2244-1122', 'contable@perez.com', 5),
-(1011, 'Ana', 'Guzman', '8111-2233', 'ana.guzman@gmail.com', 12),
-(1012, 'Roberto', 'Vargas', '8222-3344', 'roberto.vargas@yahoo.com', 13),
-(1013, 'Clínica Dental', 'Sonrisas', '2233-4455', 'info@sonrisas.com', 1),
-(1014, 'Sofia', 'Molina', '8444-5566', 'sofia.molina@gmail.com', 2),
-(1015, 'Miguel', 'Bermudez', '8666-7788', 'miguel.bermudez@outlook.com', 4),
-(1016, 'Transporte', 'Rápido S.A.', '2255-7788', 'gerencia@transporterapido.com', 13),
-(1017, 'Valeria', 'Campos', '8777-8899', 'valeria.campos@gmail.com', 3),
-(1018, 'Hotel', 'Pacífico', '2288-9900', 'reservas@hotelpacifico.com', 5),
-(1019, 'Javier', 'Solorzano', '8999-0011', 'javier.solorzano@yahoo.com', 4),
-(1020, 'Ferretería', 'El Clavo', '2211-3344', 'gerencia@ferreteriaelclavo.com', 6);
+INSERT INTO CLIENTES (ID_CLIENTE, NOMBRE, APELLIDO, TELEFONO, EMAIL, PUNTOS, ID_EMPLEADO) VALUES
+(1001, 'Empresa A', 'S.A.', '2278-0001', 'compras@empresa-a.com', 0, 1),
+(1002, 'Fernanda', 'Montoya', '8765-4321', 'fmontoya@gmail.com', 125, 2),
+(1003, 'Marcos', 'Castillo', '8901-2345', 'marcos.castillo@outlook.com', 45, 3),
+(1004, 'Universidad UNI', 'R.U.L.', '2270-0002', 'ti@uni.edu.ni', 0, 1),
+(1005, 'David', 'Ortega', '8642-1357', 'david.ortega@yahoo.com', 80, 4),
+(1006, 'Bufete Legal', 'Asociados', '2266-5544', 'legal@bufete.com', 0, 5),
+(1007, 'Lucia', 'Barrios', '8555-1234', 'lucia.barrios@gmail.com', 210, 2),
+(1008, 'Restaurante', 'El Sabor', '2299-8877', 'admin@elsabor.com', 0, 6),
+(1009, 'Carlos', 'Sandoval', '8333-4455', 'carlos.sandoval@hotmail.com', 35, 11),
+(1010, 'Oficina Contable', 'Perez y Cia.', '2244-1122', 'contable@perez.com', 0, 5),
+(1011, 'Ana', 'Guzman', '8111-2233', 'ana.guzman@gmail.com', 90, 12),
+(1012, 'Roberto', 'Vargas', '8222-3344', 'roberto.vargas@yahoo.com', 15, 13),
+(1013, 'Clínica Dental', 'Sonrisas', '2233-4455', 'info@sonrisas.com', 0, 1),
+(1014, 'Sofia', 'Molina', '8444-5566', 'sofia.molina@gmail.com', 165, 2),
+(1015, 'Miguel', 'Bermudez', '8666-7788', 'miguel.bermudez@outlook.com', 70, 4),
+(1016, 'Transporte', 'Rápido S.A.', '2255-7788', 'gerencia@transporterapido.com', 0, 13),
+(1017, 'Valeria', 'Campos', '8777-8899', 'valeria.campos@gmail.com', 110, 3),
+(1018, 'Hotel', 'Pacífico', '2288-9900', 'reservas@hotelpacifico.com', 0, 5),
+(1019, 'Javier', 'Solorzano', '8999-0011', 'javier.solorzano@yahoo.com', 50, 4),
+(1020, 'Ferretería', 'El Clavo', '2211-3344', 'gerencia@ferreteriaelclavo.com', 0, 6);
 
 INSERT INTO PROVEEDORES (ID_PROVEEDOR, NOMBRE_EMPRESA, PERSONA_CONTACTO, TELEFONO, DIRECCION, PAGINA_WEB, EMAIL, ID_EMPLEADO) VALUES
 (2001, 'Intcomex', 'Sandra Peña', '2266-7788', 'Miami, FL', 'intcomex.com', 'ventas.ni@intcomex.com', 11),
@@ -500,27 +508,42 @@ INSERT INTO DETALLE_COMPRA (ID_COMPRA, ID_PRODUCTO, CANTIDAD, PRECIO_UNITARIO_CO
 (20, 4020, 30, 1480.00, 1);
 
 -- 7. VENTAS Y DETALLE (IDs de Empleado actualizados)
-INSERT INTO VENTAS (ID_VENTA, FECHA, ID_CLIENTE, ID_EMPLEADO, FACTURA, TOTAL) VALUES
-(6001, '2025-09-28 09:00:00', 1001, 1, 'FAC-V001', 27565.00),
-(6002, '2025-09-30 10:15:00', 1002, 2, 'FAC-V002', 10730.00),
-(6003, '2025-10-01 11:30:00', 1003, 3, 'FAC-V003', 555.00),
-(6004, '2025-10-02 14:00:00', 1004, 1, 'FAC-V004', 131350.00), 
-(6005, '2025-10-03 09:45:00', 1005, 4, 'FAC-V005', 1665.00),
-(6006, '2025-10-03 16:20:00', 1002, 2, 'FAC-V006', 4440.00),
-(6007, '2025-10-04 10:00:00', 1006, 5, 'FAC-V007', 6475.00),
-(6008, '2025-10-04 15:30:00', 1007, 2, 'FAC-V008', 20350.00), 
-(6009, '2025-10-05 11:00:00', 1008, 6, 'FAC-V009', 28120.00),
-(6010, '2025-10-05 13:45:00', 1009, 11, 'FAC-V010', 2405.00),
-(6011, '2025-10-06 09:15:00', 1010, 5, 'FAC-V011', 16650.00),
-(6012, '2025-10-07 16:00:00', 1011, 12, 'FAC-V012', 1665.00),
-(6013, '2025-10-08 10:30:00', 1012, 13, 'FAC-V013', 0.00),
-(6014, '2025-10-09 14:20:00', 1004, 1, 'FAC-V014', 25900.00),
-(6015, '2025-10-10 11:10:00', 1014, 2, 'FAC-V015', 34040.00),
-(6016, '2025-10-11 09:50:00', 1015, 4, 'FAC-V016', 5365.00),
-(6017, '2025-10-12 15:05:00', 1016, 13, 'FAC-V017', 25900.00),
-(6018, '2025-10-13 13:00:00', 1017, 3, 'FAC-V018', 22200.00),
-(6019, '2025-10-14 10:40:00', 1018, 5, 'FAC-V019', 44400.00),
-(6020, '2025-10-15 17:00:00', 1019, 4, 'FAC-V020', 10360.00); 
+INSERT INTO VENTAS (
+    ID_VENTA, FECHA, ID_CLIENTE, ID_EMPLEADO, 
+    ESTADO, TIPO_ENTREGA, DIRECCION_ENVIO, 
+    TOTAL, MONTO_ADELANTO, REFERENCIA_BANCARIA, COMPROBANTE_URL, FACTURA
+) VALUES
+-- Pedidos Completados (Retiro en tienda: Sin dirección, adelanto 0, pago 100% en tienda)
+(6001, '2025-09-28 09:00:00', 1001, 1, 'Completado', 'Retiro en Tienda', NULL, 27565.00, 0.00, NULL, NULL, 'FAC-V001'),
+(6002, '2025-09-30 10:15:00', 1002, 2, 'Completado', 'Retiro en Tienda', NULL, 10730.00, 0.00, NULL, NULL, 'FAC-V002'),
+(6003, '2025-10-01 11:30:00', 1003, 3, 'Completado', 'Retiro en Tienda', NULL, 555.00, 0.00, NULL, NULL, 'FAC-V003'),
+
+-- Pedidos Completados (Envío a domicilio: Con dirección, tuvieron adelanto del 50%, ya tienen factura)
+(6004, '2025-10-02 14:00:00', 1004, 1, 'Completado', 'Envio a Domicilio', 'Managua, Rotonda el Periodista 1c al sur', 131350.00, 65675.00, 'REF-001928', NULL, 'FAC-V004'),
+(6005, '2025-10-03 09:45:00', 1005, 4, 'Completado', 'Envio a Domicilio', 'León, Parque Central 2c al norte', 1665.00, 832.50, 'REF-002847', NULL, 'FAC-V005'),
+
+-- Más pedidos completados mixtos
+(6006, '2025-10-03 16:20:00', 1002, 2, 'Completado', 'Retiro en Tienda', NULL, 4440.00, 0.00, NULL, NULL, 'FAC-V006'),
+(6007, '2025-10-04 10:00:00', 1006, 5, 'Completado', 'Retiro en Tienda', NULL, 6475.00, 0.00, NULL, NULL, 'FAC-V007'),
+(6008, '2025-10-04 15:30:00', 1007, 2, 'Completado', 'Retiro en Tienda', NULL, 20350.00, 0.00, NULL, NULL, 'FAC-V008'),
+(6009, '2025-10-05 11:00:00', 1008, 6, 'Completado', 'Retiro en Tienda', NULL, 28120.00, 0.00, NULL, NULL, 'FAC-V009'),
+(6010, '2025-10-05 13:45:00', 1009, 11, 'Completado', 'Envio a Domicilio', 'Masaya, Mercado de Artesanías 1c al este', 2405.00, 1202.50, 'REF-003746', NULL, 'FAC-V010'),
+(6011, '2025-10-06 09:15:00', 1010, 5, 'Completado', 'Retiro en Tienda', NULL, 16650.00, 0.00, NULL, NULL, 'FAC-V011'),
+(6012, '2025-10-07 16:00:00', 1011, 12, 'Completado', 'Retiro en Tienda', NULL, 1665.00, 0.00, NULL, NULL, 'FAC-V012'),
+
+-- Pedido Rechazado (Para que se vea en el dashboard)
+(6013, '2025-10-08 10:30:00', 1012, 13, 'Rechazado', 'Envio a Domicilio', 'Managua, Plaza Inter', 0.00, 0.00, 'REF-FALSO123', NULL, NULL),
+
+-- Más completados
+(6014, '2025-10-09 14:20:00', 1004, 1, 'Completado', 'Retiro en Tienda', NULL, 25900.00, 0.00, NULL, NULL, 'FAC-V014'),
+(6015, '2025-10-10 11:10:00', 1014, 2, 'Completado', 'Retiro en Tienda', NULL, 34040.00, 0.00, NULL, NULL, 'FAC-V015'),
+(6016, '2025-10-11 09:50:00', 1015, 4, 'Completado', 'Envio a Domicilio', 'Managua, UCA 2c al sur', 5365.00, 2682.50, 'REF-004657', NULL, 'FAC-V016'),
+(6017, '2025-10-12 15:05:00', 1016, 13, 'Completado', 'Retiro en Tienda', NULL, 25900.00, 0.00, NULL, NULL, 'FAC-V017'),
+
+-- ¡Pedidos Pendientes para probar el Dashboard de Administración! (Factura NULL, calculo 50% aplicado)
+(6018, '2025-10-13 13:00:00', 1017, 3, 'Pendiente de Verificacion', 'Envio a Domicilio', 'Managua, Bello Horizonte', 22200.00, 11100.00, 'REF-993847', NULL, NULL),
+(6019, '2025-10-14 10:40:00', 1018, 5, 'Pendiente de Verificacion', 'Envio a Domicilio', 'San Juan del Sur, Frente a la playa', 44400.00, 22200.00, 'REF-112233', NULL, NULL),
+(6020, '2025-10-15 17:00:00', 1019, 4, 'Pendiente de Verificacion', 'Envio a Domicilio', 'Managua, Galerias Santo Domingo', 10360.00, 5180.00, 'REF-887766', NULL, NULL);
 
 INSERT INTO VENTAS_PRODUCTOS (ID_VENTA, ID_PRODUCTO, cantidad_neta, precio_venta, sub_total) VALUES
 (6001, 4001, 1, 27565.00, 27565.00), 

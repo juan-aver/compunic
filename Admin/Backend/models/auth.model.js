@@ -148,6 +148,8 @@ const AuthModel = {
             return {
                 token,
                 empleado: {
+                    id_empleado: empleado.ID_EMPLEADO,
+                    username: empleado.USERNAME,
                     nombre: empleado.NOMBRE,
                     apellido: empleado.APELLIDO,
                     email: empleado.EMAIL
@@ -254,8 +256,8 @@ const AuthModel = {
             await db.query(markTokenUsedQuery, [tokenData.id_token]);
 
             console.log(`✅ Contraseña restablecida para usuario: ${tokenData.username}`);
-
-            return true;
+            
+            return tokenData;
         } catch (error) {
             console.error('❌ Error restableciendo contraseña:', error);
             throw error;
