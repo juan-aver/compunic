@@ -119,80 +119,122 @@ function renderizarItemsVentaNew() {
     if (subtotalDisplay) subtotalDisplay.textContent = `C$${subtotal.toFixed(2)}`;
     if (ivaDisplay) ivaDisplay.textContent = `C$${iva.toFixed(2)}`;
     if (totalDisplay) totalDisplay.textContent = `C$${total.toFixed(2)}`;
+
+    // Re-render POS grid (uses cache) to keep card badges and overlays updated
+    if (typeof renderVentasPOSGrid === 'function') {
+        renderVentasPOSGrid(false);
+    }
 }
 
 // =========================================
 // VENTAS POS - Product Grid + Click-to-Add
 // =========================================
-function renderVentasPOSGrid() {
-    // Empieza la magia ✨
-
+function renderVentasPOSGrid(forceFetch = false) {
     const grid = document.getElementById('ventas-products-grid');
     if (!grid) return;
+
+    if (!forceFetch && window._ventasPOSProductos && window._ventasPOSProductos.length > 0) {
+        renderGridHTML(window._ventasPOSProductos);
+        return;
+    }
 
     fetch(`${API_BASE}/productos`)
         .then(r => r.json())
         .then(productos => {
-            grid.innerHTML = '';
-            if (!productos || productos.length === 0) {
-                grid.innerHTML = '<div class="cart-empty-message"><i class="fas fa-box-open"></i><p>No hay productos disponibles.</p></div>';
-                return;
-            }
-
             window._ventasPOSProductos = productos;
-
-            productos.forEach(p => {
-                const activo = p.activo !== undefined ? Number(p.activo) : (p.ACTIVO !== undefined ? Number(p.ACTIVO) : 1);
-                if (activo === 0) return; // Skip deactivated products
-                const nombre = p.NOMBRE_PRODUCTO ?? p.nombre ?? 'Sin nombre';
-                const precioVenta = parseFloat(p.PRECIO_VENTA ?? p.precio_venta ?? 0);
-                const stock = Number(p.stock ?? p.STOCK ?? 0) || 0;
-                const imagenUrl = p.imagen_url || p.IMAGEN_URL || '';
-                const garantiaDesc = p.garantia_desc ?? p.GARANTIA_DESC ?? '';
-                const garantiaId = p.ID_GARANTIA_TIPO ?? p.id_garantia_tipo ?? '';
-                const idProducto = p.ID_PRODUCTO ?? p.id_producto ?? '';
-
-                const card = document.createElement('div');
-                card.className = 'ventas-pos-product-card';
-                card.dataset.searchText = nombre.toLowerCase();
-                const imgPath = imagenUrl && imagenUrl.startsWith('http') ? imagenUrl : `${SERVER_URL}/${imagenUrl}`;
-                card.innerHTML = `
-                    ${imagenUrl
-                        ? `<img src="${imgPath}" alt="${nombre}">`
-                        : `<div class="pos-card-placeholder"><i class="fas fa-box-open"></i></div>`
-                    }
-                    <div class="pos-card-body">
-                        <p class="pos-card-name" title="${nombre}">${nombre}</p>
-                        <span class="pos-card-price">C$${precioVenta.toFixed(2)}</span>
-                        <span class="pos-card-stock ${stock === 0 ? 'stock-zero' : ''}"><i class="fas fa-cube"></i> ${stock}</span>
-                    </div>
-                `;
-
-                card.addEventListener('click', () => {
-                    if (stock <= 0) {
-                        alert('Este producto no tiene stock disponible.');
-                        return;
-                    }
-                    agregarDesdeCardVenta({
-                        id_producto: idProducto,
-                        nombre: nombre,
-                        precio_unitario: precioVenta,
-                        descuento: 0,
-                        imagen_url: imagenUrl,
-                        garantia_desc: garantiaDesc,
-                        garantia_id: garantiaId
-                    });
-                });
-
-                grid.appendChild(card);
-            });
-
-            initVentasPOSSearch();
+            renderGridHTML(productos);
         })
         .catch(err => {
             console.error('Error loading POS products:', err);
             grid.innerHTML = '<div class="cart-empty-message"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar productos.</p></div>';
         });
+}
+
+function renderGridHTML(productos) {
+    const grid = document.getElementById('ventas-products-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    
+    if (!productos || productos.length === 0) {
+        grid.innerHTML = '<div class="cart-empty-message"><i class="fas fa-box-open"></i><p>No hay productos disponibles.</p></div>';
+        return;
+    }
+
+    productos.forEach(p => {
+        const activo = p.activo !== undefined ? Number(p.activo) : (p.ACTIVO !== undefined ? Number(p.ACTIVO) : 1);
+        if (activo === 0) return; // Skip deactivated products
+        
+        const nombre = p.NOMBRE_PRODUCTO ?? p.nombre ?? 'Sin nombre';
+        const precioVenta = parseFloat(p.PRECIO_VENTA ?? p.precio_venta ?? 0);
+        const stock = Number(p.stock ?? p.STOCK ?? 0) || 0;
+        const imagenUrl = p.imagen_url || p.IMAGEN_URL || '';
+        const garantiaDesc = p.garantia_desc ?? p.GARANTIA_DESC ?? '';
+        const garantiaId = p.ID_GARANTIA_TIPO ?? p.id_garantia_tipo ?? '';
+        const idProducto = p.ID_PRODUCTO ?? p.id_producto ?? '';
+
+        // Check if this item is in the cart
+        const cartItem = itemsVenta.find(i => i.id_producto == idProducto);
+        const qtyInCart = cartItem ? cartItem.cantidad : 0;
+
+        const card = document.createElement('div');
+        card.className = 'ventas-pos-product-card';
+        if (qtyInCart > 0) {
+            card.classList.add('in-cart');
+        }
+        card.dataset.searchText = nombre.toLowerCase();
+        const imgPath = imagenUrl && imagenUrl.startsWith('http') ? imagenUrl : `${SERVER_URL}/${imagenUrl}`;
+        
+        let badgeHtml = '';
+        let overlayHtml = '';
+        
+        if (qtyInCart > 0) {
+            badgeHtml = `<div class="pos-card-cart-badge">${qtyInCart}</div>`;
+            overlayHtml = `
+                <div class="pos-card-qty-overlay" onclick="event.stopPropagation()">
+                    <button class="pos-card-qty-btn btn-dec" onclick="decrementarDesdeCard(event, ${idProducto})">−</button>
+                    <span class="pos-card-qty-val">${qtyInCart}</span>
+                    <button class="pos-card-qty-btn btn-inc" onclick="incrementarDesdeCard(event, ${idProducto}, ${stock})">+</button>
+                </div>
+            `;
+        }
+
+        card.innerHTML = `
+            ${badgeHtml}
+            ${imagenUrl
+                ? `<img src="${imgPath}" alt="${nombre}">`
+                : `<div class="pos-card-placeholder"><i class="fas fa-box-open"></i></div>`
+            }
+            <div class="pos-card-body">
+                <p class="pos-card-name" title="${nombre}">${nombre}</p>
+                <span class="pos-card-price">C$${precioVenta.toFixed(2)}</span>
+                <span class="pos-card-stock ${stock === 0 ? 'stock-zero' : ''}"><i class="fas fa-cube"></i> ${stock}</span>
+            </div>
+            ${overlayHtml}
+        `;
+
+        if (qtyInCart === 0) {
+            card.addEventListener('click', () => {
+                if (stock <= 0) {
+                    alert('Este producto no tiene stock disponible.');
+                    return;
+                }
+                agregarDesdeCardVenta({
+                    id_producto: idProducto,
+                    nombre: nombre,
+                    precio_unitario: precioVenta,
+                    descuento: 0,
+                    imagen_url: imagenUrl,
+                    garantia_desc: garantiaDesc,
+                    garantia_id: garantiaId,
+                    stock: stock
+                });
+            });
+        }
+
+        grid.appendChild(card);
+    });
+
+    initVentasPOSSearch();
 }
 
 function agregarDesdeCardVenta(producto) {
@@ -210,6 +252,7 @@ function agregarDesdeCardVenta(producto) {
             imagen_url: producto.imagen_url || '',
             garantia_desc: producto.garantia_desc || '',
             garantia_id: producto.garantia_id || '',
+            stock: producto.stock,
             subtotal: producto.precio_unitario - (producto.descuento || 0)
         });
     }
@@ -220,6 +263,44 @@ function agregarDesdeCardVenta(producto) {
     if (badge) {
         badge.textContent = itemsVenta.length;
         badge.style.display = itemsVenta.length > 0 ? 'inline' : 'none';
+    }
+}
+
+function decrementarDesdeCard(e, idProducto) {
+    if (e) e.stopPropagation();
+    const existingIdx = itemsVenta.findIndex(i => i.id_producto == idProducto);
+    if (existingIdx >= 0) {
+        const currentQty = itemsVenta[existingIdx].cantidad;
+        if (currentQty <= 1) {
+            if (confirm("¿Deseas remover este producto del carrito?")) {
+                itemsVenta.splice(existingIdx, 1);
+            }
+        } else {
+            itemsVenta[existingIdx].cantidad -= 1;
+            itemsVenta[existingIdx].subtotal = itemsVenta[existingIdx].cantidad * (itemsVenta[existingIdx].precio_unitario - itemsVenta[existingIdx].descuento);
+        }
+        renderizarItemsVentaNew();
+        
+        const badge = document.getElementById('ventas-cart-badge');
+        if (badge) {
+            badge.textContent = itemsVenta.length;
+            badge.style.display = itemsVenta.length > 0 ? 'inline' : 'none';
+        }
+    }
+}
+
+function incrementarDesdeCard(e, idProducto, stock) {
+    if (e) e.stopPropagation();
+    const existingIdx = itemsVenta.findIndex(i => i.id_producto == idProducto);
+    if (existingIdx >= 0) {
+        const currentQty = itemsVenta[existingIdx].cantidad;
+        if (currentQty >= stock) {
+            alert(`❌ Error: No hay suficiente stock. Stock disponible: ${stock}.`);
+            return;
+        }
+        itemsVenta[existingIdx].cantidad += 1;
+        itemsVenta[existingIdx].subtotal = itemsVenta[existingIdx].cantidad * (itemsVenta[existingIdx].precio_unitario - itemsVenta[existingIdx].descuento);
+        renderizarItemsVentaNew();
     }
 }
 
@@ -271,6 +352,9 @@ window.agregarItemVentaNew = agregarItemVentaNew;
 window.actualizarCantidadVenta = actualizarCantidadVenta;
 window.eliminarItemVenta = eliminarItemVenta;
 window.guardarVenta = guardarVenta;
+window.decrementarDesdeCard = decrementarDesdeCard;
+window.incrementarDesdeCard = incrementarDesdeCard;
+window.renderVentasPOSGrid = renderVentasPOSGrid;
 console.log('✅ Funciones de ventas registradas globalmente');
 
 window.inicializarBotonVentas = function () {

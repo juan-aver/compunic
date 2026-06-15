@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const idVenta = params.get('id');
 
@@ -22,9 +22,14 @@
             // 2. Datos del Cliente
             const inputsCliente = document.querySelectorAll('.seccion-cliente .linea-input');
             if (inputsCliente.length >= 3) {
-                inputsCliente[0].textContent = `${venta.NOMBRE_CLIENTE} ${venta.APELLIDO_CLIENTE}`;
+                const nombre = (venta.NOMBRE_CLIENTE || '').toString().trim();
+                const apellido = (venta.APELLIDO_CLIENTE || '').toString().trim();
+                const nombreCompleto = `${nombre} ${apellido}`.replace(/\bnull\b/gi, '').replace(/\s+/g, ' ').trim();
+                inputsCliente[0].textContent = nombreCompleto || 'Cliente Ocasional';
                 inputsCliente[1].textContent = "";
-                inputsCliente[2].textContent = venta.TELEFONO_CLIENTE || "";
+                
+                const tel = (venta.TELEFONO_CLIENTE || "").toString().replace(/^null$/i, "").trim();
+                inputsCliente[2].textContent = tel;
             }
 
             // 3. Fecha

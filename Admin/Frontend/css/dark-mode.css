@@ -776,9 +776,24 @@ thead tr {
    ========================================= */
 
 [data-theme="dark"] #user-display {
-    color: #ffffff !important;
     background: linear-gradient(135deg, #56A5DD, #89c4f4) !important;
     -webkit-background-clip: text !important;
     background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
 }
+
+/* =========================================
+   DARK MODE - POS CARD QUICK CONTROLS
+   ========================================= */
+[data-theme="dark"] .ventas-pos-product-card.in-cart {
+    border-color: #34d399 !important;
+}
+
+[data-theme="dark"] .ventas-pos-product-card.in-cart:hover {
+    border-color: #059669 !important;
+}
+
+[data-theme="dark"] .pos-card-cart-badge {
+    border-color: var(--dark-bg-tertiary, #1a2744) !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.6);
+}

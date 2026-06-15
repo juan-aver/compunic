@@ -992,6 +992,7 @@ select.error {
 
 /* Individual POS product card */
 .ventas-pos-product-card {
+  position: relative;
   background: white;
   border-radius: 10px;
   overflow: hidden;
@@ -1289,3 +1290,108 @@ select.error {
   color: #ef4444 !important;
   background: rgba(239, 68, 68, 0.1) !important;
 }
+
+/* =========================================
+   POS QUICK QUANTITY CONTROLS (CARDS)
+   ========================================= */
+.pos-card-cart-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+    z-index: 5;
+    animation: number-pop 0.3s ease;
+    border: 1.5px solid white;
+}
+
+.pos-card-qty-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    z-index: 4;
+}
+
+/* Show overlay when hovering the card */
+.ventas-pos-product-card:hover .pos-card-qty-overlay {
+    opacity: 1;
+}
+
+/* Action buttons on the card */
+.pos-card-qty-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none !important;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: white !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    padding: 0 !important;
+}
+
+.pos-card-qty-btn.btn-dec {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+}
+
+.pos-card-qty-btn.btn-dec:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+    transform: scale(1.1);
+}
+
+.pos-card-qty-btn.btn-inc {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+
+.pos-card-qty-btn.btn-inc:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    transform: scale(1.1);
+}
+
+.pos-card-qty-btn:active {
+    transform: scale(0.95);
+}
+
+.pos-card-qty-val {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    min-width: 25px;
+    text-align: center;
+}
+
+/* Border styling for cards already in the cart */
+.ventas-pos-product-card.in-cart {
+    border-color: #10b981 !important;
+}
+
+.ventas-pos-product-card.in-cart:hover {
+    border-color: #059669 !important;
+}
+

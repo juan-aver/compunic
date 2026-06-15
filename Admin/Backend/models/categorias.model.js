@@ -39,11 +39,29 @@ const Categoria = {
   },
 
   eliminar: async (id) => {
-    const sql = 'DELETE FROM CATEGORIAS WHERE ID_CATEGORIA=?';
+    const sql = 'UPDATE CATEGORIAS SET ACTIVO=0 WHERE ID_CATEGORIA=?';
     try {
       await db.query(sql, [id]);
     } catch (err) {
-      throw new Error('Error al eliminar la categoría: ' + err.message);
+      throw new Error('Error al dar de baja la categoría: ' + err.message);
+    }
+  },
+
+  darDeBaja: async (id) => {
+    const sql = 'UPDATE CATEGORIAS SET ACTIVO=0 WHERE ID_CATEGORIA=?';
+    try {
+      await db.query(sql, [id]);
+    } catch (err) {
+      throw new Error('Error al dar de baja la categoría: ' + err.message);
+    }
+  },
+
+  actualizarEstado: async (datos) => {
+    const sql = 'UPDATE CATEGORIAS SET ACTIVO=? WHERE ID_CATEGORIA=?';
+    try {
+      await db.query(sql, datos);
+    } catch (err) {
+      throw new Error('Error al actualizar el estado de la categoría: ' + err.message);
     }
   }
 };

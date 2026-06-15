@@ -94,19 +94,31 @@ function cargarCategorias() {
 
             arr.forEach(c => {
                 const tr = document.createElement('tr');
+                const isActivo = c.ACTIVO !== undefined ? Number(c.ACTIVO) !== 0 : true;
+
+                if (!isActivo) {
+                    tr.classList.add('categoria-inactiva');
+                }
+
+                const badgeHtml = isActivo 
+                    ? `<span class="badge-status badge-status-activo">Activa</span>` 
+                    : `<span class="badge-status badge-status-inactivo">Dada de Baja</span>`;
 
                 tr.innerHTML = `
                     <td>${c.ID_CATEGORIA}</td>
-                    <td>${c.NOMBRE_CATEGORIA}</td>
+                    <td>${c.NOMBRE_CATEGORIA} ${badgeHtml}</td>
                     <td style="text-align: center;">
-                        <button onclick="iniciarEdicionCategoria(event, ${c.ID_CATEGORIA}, '${c.NOMBRE_CATEGORIA.replace(/'/g, "\\'")}')"
-                            style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-size: 0.82rem; margin-right: 5px;">
-                            <i class="fas fa-edit"></i> Modificar
+                        <button class="btn-action-table btn-action-edit" onclick="iniciarEdicionCategoria(event, ${c.ID_CATEGORIA}, '${c.NOMBRE_CATEGORIA.replace(/'/g, "\\'")}')" title="Modificar">
+                            <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="eliminarCategoriaPorId(event, ${c.ID_CATEGORIA}, '${c.NOMBRE_CATEGORIA.replace(/'/g, "\\'")}')"
-                            style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-size: 0.82rem;">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
+                        ${isActivo 
+                            ? `<button class="btn-action-table btn-action-delete" onclick="toggleEstadoCategoria(event, ${c.ID_CATEGORIA}, 0)" title="Dar de baja">
+                                 <i class="fas fa-ban"></i>
+                               </button>`
+                            : `<button class="btn-action-table btn-action-reactivate" onclick="toggleEstadoCategoria(event, ${c.ID_CATEGORIA}, 1)" title="Reactivar">
+                                 <i class="fas fa-undo"></i>
+                               </button>`
+                        }
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -136,13 +148,27 @@ function iniciarEdicionCategoria(e, id, nombre) {
     document.getElementById('gestioncategorias')?.scrollIntoView({ behavior: 'smooth' });
 }
 
-// Eliminar directamente desde la fila
-function eliminarCategoriaPorId(e, id, nombre) {
+// Alternar estado de la categoria (dar de baja o reactivar)
+function toggleEstadoCategoria(e, id, nuevoEstado) {
     e.stopPropagation();
-    const form = document.getElementById('formulario-categorias');
-    if (form) form.dataset.idCategoria = id;
-    if (!confirm(`¿Seguro que deseas eliminar la categoría "${nombre}"?`)) return;
-    eliminarCategoria();
+    const accionStr = nuevoEstado === 0 ? 'dar de baja' : 'reactivar';
+    if (!confirm(`¿Seguro que deseas ${accionStr} esta categoría?`)) return;
+
+    fetch(`${API_BASE}/categorias/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activo: nuevoEstado })
+    })
+        .then(res => res.json())
+        .then(() => {
+            alert(`Categoría ${nuevoEstado === 0 ? 'dada de baja' : 'reactivada'} correctamente`);
+            limpiarFormularioCategoria();
+            cargarCategorias();
+            if (typeof poblarSelectCategorias === 'function') {
+                poblarSelectCategorias();
+            }
+        })
+        .catch(error => console.error(`Error al ${accionStr}:`, error));
 }
 
 function limpiarFormularioCategoria() {
@@ -169,9 +195,14 @@ function poblarSelectCategorias() {
             arr.forEach(c => {
                 const id = c.ID_CATEGORIA ?? c.id_categoria ?? c.id ?? c.ID ?? null;
                 const nombre = c.NOMBRE_CATEGORIA ?? c.nombre_categoria ?? c.nombre ?? c.NOMBRE ?? 'Sin Nombre';
+                const activo = c.ACTIVO !== undefined ? c.ACTIVO : (c.activo !== undefined ? c.activo : 1);
 
                 if (!id) {
                     console.warn("Categoría sin ID:", c);
+                    return;
+                }
+                if (Number(activo) === 0) {
+                    // Ignorar categorías inactivas/dadas de baja
                     return;
                 }
                 if (seen.has(String(id))) return;
