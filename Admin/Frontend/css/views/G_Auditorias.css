@@ -58,8 +58,9 @@ h3 {
   display: inline-block;
   color: white;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   text-transform: uppercase;
+  white-space: nowrap !important;
 }
 
 /* Coloration for specific action types in Light Mode */
@@ -118,6 +119,12 @@ h3 {
 
 .badge-devolucion {
   background: linear-gradient(135deg, #f1c40f 0%, #d8a300 100%) !important;
+  color: white !important;
+}
+
+.badge-reingreso,
+.badge-reingreso_confirmado {
+  background: linear-gradient(135deg, #0fcff1 0%, #00d8cd 100%) !important;
   color: white !important;
 }
 
@@ -255,6 +262,14 @@ h3 {
   box-shadow: 0 0 10px rgba(231, 76, 60, 0.1) !important;
 }
 
+[data-theme="dark"] .badge-reingreso,
+[data-theme="dark"] .badge-reingreso_confirmado {
+  background: rgba(15, 207, 241, 0.2) !important;
+  color: #0fcff1 !important;
+  border: 1px solid rgba(15, 207, 241, 0.4) !important;
+  box-shadow: 0 0 10px rgba(15, 207, 241, 0.1) !important;
+}
+
 [data-theme="dark"] .text-detail-code {
   background-color: rgba(255, 255, 255, 0.05) !important;
   color: #e2e8f0 !important;
@@ -305,8 +320,13 @@ th {
   letter-spacing: 0.5px;
 }
 
-th:first-child { border-radius: 8px 0 0 8px; }
-th:last-child { border-radius: 0 8px 8px 0; }
+th:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+th:last-child {
+  border-radius: 0 8px 8px 0;
+}
 
 td {
   padding: 12px 15px;
@@ -329,13 +349,20 @@ tbody tr:hover {
   box-shadow: 0 4px 12px rgba(52, 152, 219, 0.12);
 }
 
-tbody td:first-child { border-radius: 8px 0 0 8px; font-weight: bold; }
-tbody td:last-child { border-radius: 0 8px 8px 0; }
+tbody td:first-child {
+  border-radius: 8px 0 0 8px;
+  font-weight: bold;
+}
+
+tbody td:last-child {
+  border-radius: 0 8px 8px 0;
+}
 
 /* =========================================
    INPUTS Y BOTONES
    ========================================= */
-input, select {
+input,
+select {
   width: 100%;
   padding: 10px 14px;
   border: 1px solid #dcdde1;
@@ -345,7 +372,8 @@ input, select {
   font-size: 0.95rem;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
   outline: none;
   border-color: #3498db;
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
@@ -385,9 +413,21 @@ button {
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-4px); }
-  40%, 80% { transform: translateX(4px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+
+  40%,
+  80% {
+    transform: translateX(4px);
+  }
 }
 
 /* =========================================
@@ -484,4 +524,3 @@ button {
 [data-theme="dark"] .stat-card .stat-detail {
   color: var(--dark-text-muted, #94a3b8) !important;
 }
-

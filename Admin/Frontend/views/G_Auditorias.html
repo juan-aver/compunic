@@ -52,15 +52,16 @@
     <!-- Sección de Búsqueda y Filtros -->
     <div class="busqueda mt-4">
         <h3><i class="fas fa-filter"></i> Filtros de Auditoría</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
             <div>
                 <label for="buscar_auditoria"><i class="fas fa-search"></i> Buscar Usuario</label>
                 <input type="text" id="buscar_auditoria" placeholder="Buscar por username o nombre...">
             </div>
             <div>
-                <label for="filtro_accion"><i class="fas fa-bolt"></i> Acción</label>
-                <select id="filtro_accion">
-                    <option value="">Todas las acciones</option>
+                <label for="filtro_accion"><i class="fas fa-tasks"></i> Acción</label>
+                <select id="filtro_accion" onchange="filtrarAuditorias()">
+                    <option value="">Todas las Acciones</option>
                     <option value="INICIO_SESION">INICIO SESIÓN</option>
                     <option value="CIERRE_SESION">CIERRE SESIÓN</option>
                     <option value="LOGIN_FALLIDO">LOGIN FALLIDO</option>
@@ -72,6 +73,9 @@
                     <option value="VENTA">VENTA</option>
                     <option value="COMPRA">COMPRA</option>
                     <option value="DEVOLUCION">DEVOLUCION</option>
+                    <option value="REINGRESO_CONFIRMADO">REINGRESO CONFIRMADO</option>
+                    <option value="PAGO_APROBADO">PAGO APROBADO</option>
+                    <option value="PAGO_RECHAZADO">PAGO RECHAZADO</option>
                     <option value="RESET_CONTRASENA">RESET CONTRASEÑA</option>
                 </select>
             </div>
@@ -124,7 +128,8 @@
                 </thead>
                 <tbody id="cuerpoAuditorias">
                     <tr>
-                        <td colspan="8" style="text-align: center; padding: 20px;">Cargando registros de auditoría...</td>
+                        <td colspan="8" style="text-align: center; padding: 20px;">Cargando registros de auditoría...
+                        </td>
                     </tr>
                 </tbody>
             </table>
