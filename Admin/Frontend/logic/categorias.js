@@ -295,6 +295,9 @@ function poblarSelectGarantiaTipos() {
                     return;
                 }
 
+                const activo = t.ACTIVO !== undefined ? t.ACTIVO : (t.activo !== undefined ? t.activo : 1);
+                if (Number(activo) === 0) return;
+
                 const opt = document.createElement('option');
                 opt.value = id;
                 const tipo = t.NOMBRE_TIPO ?? t.TIPO ?? t.tipo ?? '';

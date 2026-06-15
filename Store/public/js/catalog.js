@@ -400,7 +400,15 @@ function addToCart(productId) {
     if (!product || product.stock === 0) return;
     const existingItem = cart.find(item => item.id === productId);
     if (existingItem) existingItem.quantity++;
-    else cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 });
+    else cart.push({ 
+        id: product.id, 
+        name: product.name, 
+        price: product.price, 
+        imageUrl: product.imageUrl,
+        model: product.model,
+        stock: product.stock,
+        quantity: 1 
+    });
     updateCart();
     showNotification(`${product.name} agregado al carrito`, 'success');
     // Bounce animation

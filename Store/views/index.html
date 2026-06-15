@@ -15,6 +15,9 @@
     <title>COMPUNIC - Tienda de Productos Electrónicos</title>
 
     <!-- CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../public/css/main.css">
     <link rel="stylesheet" href="../public/css/catalog.css">
 
@@ -55,23 +58,23 @@
                 </div>
                 <!-- Botón de ir al panel admin (Salir de tienda) -->
                 <div class="navbar-user" onclick="window.location.href='/index.html'"
-                    style="cursor: pointer; background: rgba(239, 68, 68, 0.1); border-radius: 12px; padding: 0.5rem 1rem;">
+                    style="cursor: pointer; background: rgba(239, 68, 68, 0.1); border-radius: 12px; padding: 0.5rem 1rem; border-color: rgba(239, 68, 68, 0.25);">
                     <div class="navbar-user-avatar" style="background: transparent; color: #ef4444; width: auto; height: auto;">
-                        <i class="fas fa-sign-out-alt"></i>
+                        <i class="fas fa-arrow-left"></i>
                     </div>
-                    <span style="color: #ef4444;">Salir</span>
+                    <span style="color: #ef4444; font-weight: 600;">Panel Admin</span>
                 </div>
 
-                <div class="navbar-cart" onclick="window.location.href='cart.html'" style="cursor: pointer;">
+                <div class="navbar-cart" onclick="window.location.href='cart.html'" style="cursor: pointer;" id="cartButton">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="navbar-cart-badge" id="cartCount">0</span>
                 </div>
 
                 <div class="navbar-user" id="exitButton" style="cursor: pointer;">
                     <div class="navbar-user-avatar">
-                        <i class="fas fa-sign-out-alt"></i>
+                        <i class="fas fa-user"></i>
                     </div>
-                    <span>Salir</span>
+                    <span>Mi Cuenta</span>
                 </div>
             </div>
         </div>
@@ -82,6 +85,9 @@
          ============================================ -->
     <section class="hero">
         <div class="container hero-content">
+            <div class="hero-eyebrow">
+                <i class="fas fa-bolt"></i> Tienda Online Oficial
+            </div>
             <h1 class="hero-title">
                 Tecnología de Vanguardia
                 <br>
@@ -114,8 +120,8 @@
                     <i class="fas fa-shopping-bag"></i>
                     Ver Catálogo
                 </a>
-                <a href="#categories" class="btn btn-outline btn-lg" style="color: white; border-color: white;">
-                    <i class="fas fa-fire"></i>
+                <a href="#categories" class="btn btn-outline btn-lg" style="color: white; border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.06);">
+                    <i class="fas fa-layer-group"></i>
                     Categorías
                 </a>
             </div>

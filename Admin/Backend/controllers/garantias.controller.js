@@ -99,9 +99,27 @@ const garantiasController = {
 
     actualizar: async (req, res) => {
         const { id } = req.params;
-        const { fecha, hora, duracion_meses, id_garantia_tipo, id_garantia_estado, condicion, exclusiones } = req.body;
+        const { fecha, hora, duracion_meses, id_garantia_tipo, id_garantia_estado, condicion, exclusiones, activo } = req.body;
 
         try {
+            // Si se pasa 'activo', se actualiza el estado (dar de baja / reactivar)
+            if (activo !== undefined) {
+                const valActivo = Number(activo);
+                await Garantia.actualizarEstado(valActivo, id);
+                res.json({ mensaje: valActivo === 0 ? 'Garantía dada de baja' : 'Garantía reactivada' });
+
+                const accionAuditoria = valActivo === 0 ? 'DAR DE BAJA' : 'REACTIVAR';
+                AuditoriaModel.registrar({
+                    id_empleado: req.userId || null,
+                    username: req.username || 'Sistema',
+                    accion: accionAuditoria,
+                    tabla: 'GARANTIAS',
+                    id_registro: id,
+                    descripcion: `Se cambió el estado de la garantía ID: ${id} a ${valActivo === 0 ? 'Inactivo (Dada de Baja)' : 'Activo'}`
+                }).catch(e => console.error('Audit log error:', e));
+                return;
+            }
+
             // Orden: FECHA, CONDICION, EXCLUSIONES, HORA, DURACION_MESES, ID_GARANTIA_TIPO, ID_GARANTIA_ESTADO, ID_GARANTIA
             await Garantia.actualizar([
                 fecha,
@@ -131,19 +149,20 @@ const garantiasController = {
     eliminar: async (req, res) => {
         const { id } = req.params;
         try {
-            await Garantia.eliminar(id);
-            res.json({ mensaje: 'Garantía eliminada' });
+            await Garantia.darDeBaja(id);
+            res.json({ mensaje: 'Garantía dada de baja' });
 
             AuditoriaModel.registrar({
                 id_empleado: req.userId || null,
                 username: req.username || 'Sistema',
-                accion: 'ELIMINAR',
+                accion: 'DAR DE BAJA',
                 tabla: 'GARANTIAS',
-                descripcion: `Se eliminó la garantía ID: ${id}`
+                id_registro: id,
+                descripcion: `Se dio de baja la garantía ID: ${id}`
             }).catch(e => console.error('Audit log error:', e));
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'Error al eliminar garantía' });
+            res.status(500).json({ error: 'Error al dar de baja garantía: ' + err.message });
         }
     }
 };

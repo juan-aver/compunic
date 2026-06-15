@@ -178,7 +178,7 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
 
                         // Exponer funciones inline globalmente
                         window.seleccionarGarantiaEditar = seleccionarGarantiaEditar;
-                        window.eliminarGarantiaPorId = eliminarGarantiaPorId;
+                        window.toggleEstadoGarantia = toggleEstadoGarantia;
 
                         const btnAdd = document.getElementById('btn_agregar_garantia');
                         const btnMod = document.getElementById('btn_modificar_garantia');

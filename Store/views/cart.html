@@ -39,24 +39,24 @@
             <div class="navbar-actions">
                 <!-- Botón de ir al panel admin (Salir de tienda) -->
                 <div class="navbar-user" onclick="window.location.href='/index.html'"
-                    style="cursor: pointer; background: rgba(239, 68, 68, 0.1); border-radius: 12px; padding: 0.5rem 1rem;">
+                    style="cursor: pointer; background: rgba(239, 68, 68, 0.1); border-radius: 12px; padding: 0.5rem 1rem; border-color: rgba(239, 68, 68, 0.25);">
                     <div class="navbar-user-avatar"
                         style="background: transparent; color: #ef4444; width: auto; height: auto;">
-                        <i class="fas fa-sign-out-alt"></i>
+                        <i class="fas fa-arrow-left"></i>
                     </div>
-                    <span style="color: #ef4444;">Salir</span>
+                    <span style="color: #ef4444; font-weight: 600;">Panel Admin</span>
                 </div>
 
-                <div class="navbar-cart" onclick="window.location.href='cart.html'" style="cursor: pointer;">
+                <div class="navbar-cart" onclick="window.location.href='cart.html'" style="cursor: pointer;" id="cartButton">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="navbar-cart-badge" id="cartCount">0</span>
                 </div>
 
                 <div class="navbar-user" id="exitButton" style="cursor: pointer;">
                     <div class="navbar-user-avatar">
-                        <i class="fas fa-sign-out-alt"></i>
+                        <i class="fas fa-user"></i>
                     </div>
-                    <span>Salir</span>
+                    <span>Mi Cuenta</span>
                 </div>
             </div>
         </div>
@@ -143,6 +143,7 @@
 
     <!-- JavaScript -->
     <script src="../public/js/api.js"></script>
+    <script src="../public/js/store-auth.js"></script>
     <script src="../public/js/cart.js"></script>
 
 </body>

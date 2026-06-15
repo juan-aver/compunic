@@ -33,9 +33,31 @@ function getGradientForProduct(id) {
 // FUNCIONES DEL CARRITO
 // ============================================
 
-function loadCart() {
+async function loadCart() {
     const savedCart = localStorage.getItem('compunic_cart');
     cart = savedCart ? JSON.parse(savedCart) : [];
+    
+    if (cart.length > 0) {
+        try {
+            const products = await StoreAPI.obtenerProductos();
+            cart = cart.map(item => {
+                const p = products.find(prod => (prod.ID_PRODUCTO || prod.id_producto) === item.id);
+                if (p) {
+                    return {
+                        ...item,
+                        imageUrl: p.imagen_url || p.IMAGEN_URL || null,
+                        model: p.MODELO || p.modelo || item.model || 'N/A',
+                        stock: parseInt(p.stock_disponible || p.stock || 0)
+                    };
+                }
+                return item;
+            });
+            saveCart();
+        } catch (e) {
+            console.warn("No se pudieron enriquecer las imágenes desde la API:", e);
+        }
+    }
+    
     renderCart();
     updateCartCount();
 }
@@ -132,7 +154,7 @@ function renderCart() {
 
         return `
             <div class="cart-item" data-product-id="${item.id}">
-                <div class="cart-item-image" style="background: ${item.imageUrl ? '#f0f0f0' : gradient};">
+                <div class="cart-item-image" style="background: ${item.imageUrl ? '#ffffff' : gradient};">
                     ${imageContent}
                 </div>
                 

@@ -837,3 +837,119 @@ input.error,
 select.error {
     animation: error-flash 0.5s ease-in-out 2;
 }
+
+/* =========================================
+   SLEEK ACTION BUTTONS IN TABLE
+   ========================================= */
+.btn-action-table {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none !important;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: white !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin: 0 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 0 !important;
+}
+
+.btn-action-table i {
+    pointer-events: none;
+}
+
+.btn-action-table:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.btn-action-table:active {
+    transform: translateY(0) scale(0.95);
+}
+
+/* Edit button - Indigo Gradient */
+.btn-action-edit {
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+}
+
+.btn-action-edit:hover {
+    background: linear-gradient(135deg, #4338ca 0%, #2563eb 100%) !important;
+}
+
+/* Deactivate/Delete button - Crimson/Red Gradient */
+.btn-action-delete {
+    background: linear-gradient(135deg, #e11d48 0%, #ef4444 100%) !important;
+}
+
+.btn-action-delete:hover {
+    background: linear-gradient(135deg, #be123c 0%, #dc2626 100%) !important;
+}
+
+/* Reactivate button - Emerald/Teal Gradient */
+.btn-action-reactivate {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+}
+
+.btn-action-reactivate:hover {
+    background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+}
+
+/* Deactivated guarantee styling in table */
+tr.garantia-inactiva td {
+    color: #9ca3af !important;
+}
+
+tr.garantia-inactiva td:nth-child(4) {
+    text-decoration: line-through;
+    color: #9ca3af !important;
+}
+
+/* Badges for status */
+.badge-status {
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-left: 10px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.badge-status-activo {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-status-inactivo {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Dark theme support */
+[data-theme="dark"] .btn-action-table {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] tr.garantia-inactiva td {
+    color: #4b5563 !important;
+}
+
+[data-theme="dark"] tr.garantia-inactiva td:nth-child(4) {
+    color: #6b7280 !important;
+}
+
+[data-theme="dark"] .badge-status-activo {
+    background-color: rgba(16, 185, 129, 0.25);
+    color: #34d399;
+}
+
+[data-theme="dark"] .badge-status-inactivo {
+    background-color: rgba(239, 68, 68, 0.25);
+    color: #f87171;
+}

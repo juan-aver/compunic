@@ -46,6 +46,12 @@ function cargarGarantias() {
                 const tr = document.createElement('tr');
                 tr.style.cursor = 'pointer';
 
+                const isActivo = g.ACTIVO !== undefined ? Number(g.ACTIVO) !== 0 : true;
+
+                if (!isActivo) {
+                    tr.classList.add('garantia-inactiva');
+                }
+
                 const fechaRegistro = g.FECHA ? new Date(g.FECHA).toLocaleDateString('es-NI') : '-';
                 const duracion = g.DURACION_MESES || 0;
 
@@ -57,23 +63,30 @@ function cargarGarantias() {
                     fechaVence = base.toLocaleDateString('es-NI');
                 }
 
+                const badgeHtml = isActivo 
+                    ? `<span class="badge-status badge-status-activo">Activa</span>` 
+                    : `<span class="badge-status badge-status-inactivo">Dada de Baja</span>`;
+
                 // Botones según rol
                 const botonesAccion = esAdmin
-                    ? `<button onclick="seleccionarGarantiaEditar(event, ${JSON.stringify(g).replace(/"/g, '&quot;')})"
-                            style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; margin-right: 4px;">
+                    ? `<button class="btn-action-table btn-action-edit" onclick="seleccionarGarantiaEditar(event, ${JSON.stringify(g).replace(/"/g, '&quot;')})" title="Modificar">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="eliminarGarantiaPorId(event, ${g.ID_GARANTIA})"
-                            style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">
-                            <i class="fas fa-trash"></i>
-                        </button>`
+                        ${isActivo 
+                            ? `<button class="btn-action-table btn-action-delete" onclick="toggleEstadoGarantia(event, ${g.ID_GARANTIA}, 0)" title="Dar de baja">
+                                 <i class="fas fa-ban"></i>
+                               </button>`
+                            : `<button class="btn-action-table btn-action-reactivate" onclick="toggleEstadoGarantia(event, ${g.ID_GARANTIA}, 1)" title="Reactivar">
+                                 <i class="fas fa-undo"></i>
+                               </button>`
+                        }`
                     : `<span style="color: #999; font-size: 0.8rem;">Solo admin</span>`;
 
                 tr.innerHTML = `
                   <td>${g.ID_GARANTIA}</td>
                   <td>${fechaRegistro}</td>
                   <td>${fechaVence}</td>
-                  <td>${g.NOMBRE_TIPO || ''}</td>
+                  <td>${g.NOMBRE_TIPO || ''} ${badgeHtml}</td>
                   <td>${g.NOMBRE_ESTADO || ''}</td>
                   <td>${duracion} meses</td>
                   <td>${g.CONDICION || ''}</td>
@@ -112,19 +125,27 @@ function seleccionarGarantiaEditar(e, g) {
 }
 window.seleccionarGarantiaEditar = seleccionarGarantiaEditar;
 
-// Eliminar garantía directo desde la fila
-function eliminarGarantiaPorId(e, id) {
+// Alternar estado de la garantía (dar de baja o reactivar)
+function toggleEstadoGarantia(e, id, nuevoEstado) {
     e.stopPropagation();
-    if (!confirm(`¿Estás seguro de eliminar la garantía ID ${id}?`)) return;
-    fetch(`${API_BASE}/garantias/${id}`, { method: 'DELETE' })
+    const accionStr = nuevoEstado === 0 ? 'dar de baja' : 'reactivar';
+    if (!confirm(`¿Seguro que deseas ${accionStr} esta garantía?`)) return;
+
+    fetch(`${API_BASE}/garantias/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activo: nuevoEstado })
+    })
         .then(res => res.json())
         .then(() => {
-            alert('Garantía eliminada correctamente');
+            alert(`Garantía ${nuevoEstado === 0 ? 'dada de baja' : 'reactivada'} correctamente`);
             cargarGarantias();
+            if (typeof poblarSelectGarantiaTipos === 'function') poblarSelectGarantiaTipos();
+            if (typeof poblarSelectGarantias === 'function') poblarSelectGarantias();
         })
-        .catch(err => console.error('Error eliminando garantía:', err));
+        .catch(error => console.error(`Error al ${accionStr}:`, error));
 }
-window.eliminarGarantiaPorId = eliminarGarantiaPorId;
+window.toggleEstadoGarantia = toggleEstadoGarantia;
 
 function cargarTiposGarantia() {
     fetch(`${API_BASE}/garantias/tipos`)

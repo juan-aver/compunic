@@ -623,6 +623,9 @@ function poblarSelectGarantias() {
             if (!select) return;
             select.innerHTML = '<option value="" selected>Por Defecto</option>';
             garantias.forEach(g => {
+                const activo = g.ACTIVO !== undefined ? g.ACTIVO : (g.activo !== undefined ? g.activo : 1);
+                if (Number(activo) === 0) return;
+
                 const option = document.createElement('option');
                 option.value = g.ID_GARANTIA;
                 option.textContent = `${g.NOMBRE_TIPO} - ${g.DURACION_MESES} Meses`;

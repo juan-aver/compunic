@@ -94,12 +94,23 @@ const Garantia = {
         }
     },
 
-    eliminar: async (id) => {
-        const sql = 'DELETE FROM GARANTIAS WHERE ID_GARANTIA=?';
+    darDeBaja: async (id) => {
+        const sql = 'UPDATE GARANTIAS SET ACTIVO = 0 WHERE ID_GARANTIA=?';
         try {
-            await db.query(sql, [id]);
+            const [result] = await db.query(sql, [id]);
+            return result;
         } catch (err) {
-            throw new Error('Error al eliminar garantía: ' + err.message);
+            throw new Error('Error al dar de baja garantía: ' + err.message);
+        }
+    },
+
+    actualizarEstado: async (activo, id) => {
+        const sql = 'UPDATE GARANTIAS SET ACTIVO = ? WHERE ID_GARANTIA=?';
+        try {
+            const [result] = await db.query(sql, [activo, id]);
+            return result;
+        } catch (err) {
+            throw new Error('Error al actualizar estado de garantía: ' + err.message);
         }
     }
 };
