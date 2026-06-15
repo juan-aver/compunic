@@ -11,7 +11,7 @@ const db = require('../config/db.js');
 const Categoria = {
   obtenerTodas: async () => {
     try {
-      const [resultados] = await db.query('SELECT * FROM CATEGORIAS');
+      const [resultados] = await db.query('SELECT * FROM CATEGORIAS ORDER BY ID_CATEGORIA DESC');
       return resultados;
     } catch (err) {
       throw new Error('Error al obtener las categorías: ' + err.message);
