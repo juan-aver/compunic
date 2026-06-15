@@ -417,8 +417,14 @@
 
         badge.textContent = orderNum;
 
+        const isCod = orderMethod === 'Pago contra entrega' || orderMethod === 'Pago en Efectivo' || orderMethod === 'Pago en Efectivo (al retirar)';
+
         const map = {
-            PENDIENTE:   { icon: 'fas fa-receipt', title: '¡Pedido Recibido!',     sub: 'Realiza el pago y sube tu comprobante para confirmar' },
+            PENDIENTE:   { 
+                icon: 'fas fa-receipt', 
+                title: '¡Pedido Recibido!',     
+                sub: isCod ? 'Tu pedido ha sido registrado y está listo para ser coordinado.' : 'Realiza el pago y sube tu comprobante para confirmar' 
+            },
             VERIFICANDO: { icon: 'fas fa-search',  title: 'Verificando tu pago…',  sub: 'Nuestro equipo está revisando tu comprobante' },
             CONFIRMADO:  { icon: 'fas fa-check-circle', title: '¡Pedido Confirmado!', sub: 'Tu pago fue verificado. ¡Gracias por tu compra!' },
             RECHAZADO:   { icon: 'fas fa-times-circle', title: 'Problema con el Pago', sub: 'Hubo un problema al verificar tu comprobante' }
@@ -449,10 +455,11 @@
             el.className = `ts-line${cfg.lines[i-1] ? ' done' : ''}`;
         }
 
+        const isCod = orderMethod === 'Pago contra entrega' || orderMethod === 'Pago en Efectivo' || orderMethod === 'Pago en Efectivo (al retirar)';
         const badge = document.getElementById('statusBadge');
         const text  = document.getElementById('statusText');
         const labels = {
-            PENDIENTE:   ['pendiente',   'fas fa-clock',        'Esperando pago'],
+            PENDIENTE:   ['pendiente',   'fas fa-clock',        isCod ? 'Pendiente de entrega/retiro' : 'Esperando pago'],
             VERIFICANDO: ['verificando', 'fas fa-search',       'Verificando pago'],
             CONFIRMADO:  ['confirmado',  'fas fa-check-circle', 'Pedido confirmado'],
             RECHAZADO:   ['rechazado',   'fas fa-times-circle', 'Pago rechazado']
@@ -525,7 +532,7 @@
 
         // Estado PENDIENTE — mostrar instrucciones + subida
         const bank = BANK_DATA[orderMethod];
-        const isCod = orderMethod === 'Pago contra entrega';
+        const isCod = orderMethod === 'Pago contra entrega' || orderMethod === 'Pago en Efectivo' || orderMethod === 'Pago en Efectivo (al retirar)';
 
         let paySection = '';
         if (isCod) {
