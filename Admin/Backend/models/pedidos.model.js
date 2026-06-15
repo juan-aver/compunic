@@ -1,13 +1,11 @@
 
-// models/pedidos.model.js
-// Modelo para gestionar pedidos desde la tienda web
-
 const path = require('path');
 const fs   = require('fs');
 const db   = require('../config/db');
 const movimientosStockModel = require('./movimientos_stock.model');
 const invoiceService = require('../services/invoice.service');
 const emailService   = require('../services/email.service');
+const AuditoriaModel = require('./auditoria.model');
 
 const Pedidos = {
     /**
@@ -129,6 +127,16 @@ const Pedidos = {
             `, [total, idEmpleadoVenta, idCliente, datosCliente.direccion || null, total * 0.5, referencia || null]);
 
             const idVenta = resultVenta.insertId;
+
+            // Registrar auditoría del pedido web recibido (Pago Pendiente)
+            AuditoriaModel.registrar({
+                id_empleado: idEmpleadoVenta,
+                username: 'Tienda Web',
+                accion: 'PAGO_PENDIENTE',
+                tabla: 'VENTAS',
+                id_registro: idVenta,
+                detalle: `Se registró un pedido web pendiente de pago por un total de C$ ${total.toFixed(2)}`
+            }).catch(e => console.error('Audit log error:', e));
 
             // 6. Insertar productos de la venta
             for (const item of productos) {

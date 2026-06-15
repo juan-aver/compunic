@@ -6,6 +6,7 @@
 
 const db = require('../config/db');
 const emailService = require('../services/email.service');
+const AuditoriaModel = require('../models/auditoria.model');
 
 const pagosController = {
 
@@ -137,6 +138,16 @@ const pagosController = {
                 [nFactura, id]
             );
 
+            // Registrar auditoría
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'PAGO_APROBADO',
+                tabla: 'VENTAS',
+                id_registro: id,
+                detalle: `Se aprobó el pago del pedido web ID: ${id} (Factura: ${nFactura})`
+            }).catch(e => console.error('Audit log error:', e));
+
             // Notificar al cliente por email (sin bloquear)
             try {
                 await emailService.sendPagoConfirmadoEmail(
@@ -185,6 +196,16 @@ const pagosController = {
                 [id]
             );
 
+            // Registrar auditoría
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'PAGO_RECHAZADO',
+                tabla: 'VENTAS',
+                id_registro: id,
+                detalle: `Se rechazó el pago del pedido web ID: ${id}. Motivo: ${motivo}`
+            }).catch(e => console.error('Audit log error:', e));
+
             // Notificar al cliente
             try {
                 await emailService.sendPagoRechazadoEmail(
@@ -215,6 +236,17 @@ const pagosController = {
                 "UPDATE VENTAS SET ESTADO = 'Pendiente de Verificacion' WHERE ID_VENTA = ? AND (FACTURA IS NULL OR FACTURA LIKE 'WEB-%')",
                 [id]
             );
+
+            // Registrar auditoría
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'PAGO_PENDIENTE',
+                tabla: 'VENTAS',
+                id_registro: id,
+                detalle: `Se marcó el pedido web ID: ${id} como pendiente de verificación`
+            }).catch(e => console.error('Audit log error:', e));
+
             res.json({ success: true, mensaje: 'Pedido marcado como en verificación' });
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
@@ -250,6 +282,16 @@ const pagosController = {
                 "UPDATE VENTAS SET ESTADO = 'Aprobado', FACTURA = ? WHERE ID_VENTA = ?",
                 [nFactura, id]
             );
+
+            // Registrar auditoría
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'PAGO_APROBADO',
+                tabla: 'VENTAS',
+                id_registro: id,
+                detalle: `Se aprobó en físico el pago del pedido web ID: ${id} (Factura: ${nFactura})`
+            }).catch(e => console.error('Audit log error:', e));
 
             try {
                 await emailService.sendPagoConfirmadoEmail(

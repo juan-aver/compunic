@@ -132,6 +132,21 @@ h3 {
   color: white !important;
 }
 
+.badge-pago_pendiente {
+  background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%) !important;
+  color: white !important;
+}
+
+.badge-pago_aprobado {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
+  color: white !important;
+}
+
+.badge-pago_rechazado {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  color: white !important;
+}
+
 /* =========================================
    DARK MODE OVERRIDES (GLASS COMPATIBLE)
    ========================================= */
@@ -218,6 +233,26 @@ h3 {
   background: rgba(52, 73, 94, 0.2) !important;
   color: #cbd5e1 !important;
   border: 1px solid rgba(52, 73, 94, 0.4) !important;
+}
+
+[data-theme="dark"] .badge-pago_pendiente {
+  background: rgba(241, 196, 15, 0.2) !important;
+  color: #f1c40f !important;
+  border: 1px solid rgba(241, 196, 15, 0.4) !important;
+}
+
+[data-theme="dark"] .badge-pago_aprobado {
+  background: rgba(46, 204, 113, 0.2) !important;
+  color: #2ecc71 !important;
+  border: 1px solid rgba(46, 204, 113, 0.4) !important;
+  box-shadow: 0 0 10px rgba(46, 204, 113, 0.1) !important;
+}
+
+[data-theme="dark"] .badge-pago_rechazado {
+  background: rgba(231, 76, 60, 0.2) !important;
+  color: #fc5c65 !important;
+  border: 1px solid rgba(231, 76, 60, 0.4) !important;
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.1) !important;
 }
 
 [data-theme="dark"] .text-detail-code {
