@@ -44,6 +44,7 @@ function mostrarDetalleProducto(producto) {
         marca: producto.nombre_marca || producto.NOMBRE_MARCA || producto.MARCA || 'N/A',
         proveedor: producto.nombre_proveedor || producto.NOMBRE_PROVEEDOR || producto.PROVEEDOR || 'N/A',
         garantia: producto.garantia_meses || producto.GARANTIA_MESES || 'N/A',
+        garantia_proveedor: producto.garantia_proveedor || producto.GARANTIA_PROVEEDOR || 0,
         stock: producto.stock ?? producto.stock_actual_calculado ?? producto.STOCK ?? '0',
         precio_compra: parseFloat(producto.precio_compra || producto.PRECIO_COMPRA || 0),
         precio_venta: parseFloat(producto.precio_venta || producto.PRECIO_VENTA || 0),
@@ -73,6 +74,7 @@ function mostrarDetalleProducto(producto) {
     setField('modal_marca', p.marca);
     setField('modal_proveedor', p.proveedor);
     setField('modal_garantia', p.garantia !== 'N/A' && !String(p.garantia).toLowerCase().includes('mes') ? p.garantia + ' meses' : p.garantia);
+    setField('modal_garantia_proveedor', p.garantia_proveedor ? p.garantia_proveedor + ' meses' : 'Sin Garantía');
     setField('modal_stock', p.stock);
     setField('modal_precio_compra', 'C$' + p.precio_compra.toFixed(2));
     setField('modal_precio_venta', 'C$' + p.precio_venta.toFixed(2));
@@ -278,6 +280,8 @@ function renderProductTable(data) {
         const precioCompra = parseFloat(producto.precio_compra ?? producto.PRECIO_COMPRA ?? 0);
         const precioVenta = parseFloat(producto.precio_venta ?? producto.PRECIO_VENTA ?? 0);
         const garantia = producto.garantia_meses ?? producto.GARANTIA_MESES ?? producto.ID_GARANTIAS ?? producto.id_garantias ?? '';
+        const valGp = producto.garantia_proveedor ?? producto.GARANTIA_PROVEEDOR ?? 0;
+        const garantiaProv = valGp ? `${valGp} meses` : 'Sin Garantía';
         const stock = Number(producto.stock ?? producto.stock_actual_calculado ?? producto.STOCK ?? 0) || 0;
         const categoria = producto.nombre_categoria ?? producto.NOMBRE_CATEGORIA ?? producto.CATEGORIA ?? producto.id_categoria ?? '';
         const marcaName = producto.nombre_marca ?? producto.NOMBRE_MARCA ?? producto.MARCA ?? producto.ID_MARCA ?? '';
@@ -298,6 +302,7 @@ function renderProductTable(data) {
             <td>${marcaName}</td>
             <td>${proveedorName}</td>
             <td>${garantia}</td>
+            <td>${garantiaProv}</td>
             <td><span class="${stock <= 5 ? 'text-red-500 font-bold' : ''}">${stock}</span></td>
             <td>C$${precioCompra.toFixed(2)}</td>
             <td>C$${precioVenta.toFixed(2)}</td>
@@ -489,6 +494,10 @@ function cargarFormularioProducto(p) {
     if (document.getElementById('precio_venta')) document.getElementById('precio_venta').value = p.precio_venta ?? p.PRECIO_VENTA ?? '';
     if (document.getElementById('precio_compra')) document.getElementById('precio_compra').value = p.precio_compra ?? p.PRECIO_COMPRA ?? '';
     if (document.getElementById('stock_actual')) document.getElementById('stock_actual').value = p.stock ?? p.stock_actual_calculado ?? 0;
+    if (document.getElementById('garantia_proveedor_ref')) {
+        const valGp = p.garantia_proveedor ?? p.GARANTIA_PROVEEDOR ?? 0;
+        document.getElementById('garantia_proveedor_ref').value = valGp ? `${valGp} meses` : 'Sin Garantía';
+    }
 
     // Preview de imagen
     const previewContainer = document.getElementById('preview_imagen_container');

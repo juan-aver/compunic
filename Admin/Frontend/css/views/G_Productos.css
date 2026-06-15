@@ -2432,3 +2432,54 @@ textarea[readonly] {
     min-width: 100%;
   }
 }
+
+/* =========================================
+   MEJORAS DE AJUSTE Y DESPLAZAMIENTO PARA LA TABLA DE PRODUCTOS (SIN SCROLLBAR)
+   ========================================= */
+#tablaProductosContainer {
+  width: 100%;
+  overflow-x: hidden; /* Evita barras de desplazamiento */
+  margin-top: 15px;
+  border-radius: 8px;
+}
+
+#tablaProductosContainer table {
+  width: 100%;
+  table-layout: fixed; /* Fuerza a la tabla a encajar estrictamente dentro de su contenedor */
+  border-collapse: separate;
+  border-spacing: 0 6px;
+}
+
+#tablaProductosContainer th,
+#tablaProductosContainer td {
+  font-size: 0.82rem; /* Tamaño de letra ligeramente más compacto */
+  padding: 8px 6px;  /* Padding celda compacto */
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Recorta textos largos con puntos suspensivos si exceden el espacio de la columna */
+  white-space: nowrap;
+}
+
+/* Permitir saltos de línea legibles para Nombre, Categoría y Proveedor */
+#tablaProductosContainer td:nth-child(2),
+#tablaProductosContainer td:nth-child(5),
+#tablaProductosContainer td:nth-child(7) {
+  white-space: normal;
+  text-overflow: clip;
+  line-height: 1.25;
+}
+
+/* Ancho por columna para sumar exactamente el 100% de la tabla */
+#tablaProductosContainer th:nth-child(1), #tablaProductosContainer td:nth-child(1) { width: 4.5%; text-align: center; }   /* ID */
+#tablaProductosContainer th:nth-child(2), #tablaProductosContainer td:nth-child(2) { width: 17%; }                    /* Nombre */
+#tablaProductosContainer th:nth-child(3), #tablaProductosContainer td:nth-child(3) { width: 8%; }                     /* Modelo */
+#tablaProductosContainer th:nth-child(4), #tablaProductosContainer td:nth-child(4) { width: 9%; text-align: center; }  /* Detalles */
+#tablaProductosContainer th:nth-child(5), #tablaProductosContainer td:nth-child(5) { width: 10%; }                    /* Categoría */
+#tablaProductosContainer th:nth-child(6), #tablaProductosContainer td:nth-child(6) { width: 7.5%; }                   /* Marca */
+#tablaProductosContainer th:nth-child(7), #tablaProductosContainer td:nth-child(7) { width: 10.5%; }                  /* Proveedor */
+#tablaProductosContainer th:nth-child(8), #tablaProductosContainer td:nth-child(8) { width: 9%; }                     /* Gar. Cliente */
+#tablaProductosContainer th:nth-child(9), #tablaProductosContainer td:nth-child(9) { width: 8.5%; }                   /* Gar. Proveedor */
+#tablaProductosContainer th:nth-child(10), #tablaProductosContainer td:nth-child(10) { width: 4.5%; text-align: center; } /* Stock */
+#tablaProductosContainer th:nth-child(11), #tablaProductosContainer td:nth-child(11) { width: 5.5%; text-align: right; }  /* P. Compra */
+#tablaProductosContainer th:nth-child(12), #tablaProductosContainer td:nth-child(12) { width: 6%; text-align: right; }    /* P. Venta */
+

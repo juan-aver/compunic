@@ -107,6 +107,7 @@ const productosController = {
           nombre_proveedor: r.nombre_proveedor ?? r.NOMBRE_EMPRESA ?? r.NOMBRE_PROVEEDOR ?? '',
           nombre_categoria: r.nombre_categoria ?? r.NOMBRE_CATEGORIA ?? '',
           garantia_meses: r.GARANTIA_MESES ?? r.garantia_meses ?? null,
+          garantia_proveedor: r.GARANTIA_PROVEEDOR ?? r.garantia_proveedor ?? 0,
           stock: stockNum,
           _raw: {
             ID_MARCA: r.ID_MARCA ?? null,

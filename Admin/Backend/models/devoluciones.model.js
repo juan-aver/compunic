@@ -19,8 +19,9 @@ const Devoluciones = {
           d.CANTIDAD,
           d.MOTIVO,
           d.ACCION,
+          d.REINGRESO_CONFIRMADO,
           d.FECHA_DEVOLUCION,
-          CONCAT('FAC-V', LPAD(v.ID_VENTA, 3, '0')) AS FACTURA,
+          COALESCE(v.FACTURA, CONCAT('FAC-V', LPAD(v.ID_VENTA, 3, '0'))) AS FACTURA,
           p.NOMBRE_PRODUCTO,
           vp.cantidad_neta AS CANTIDAD_VENDIDA
         FROM DEVOLUCIONES d
@@ -42,7 +43,7 @@ const Devoluciones = {
             const sql = `
         SELECT 
           d.*,
-          CONCAT('FAC-V', LPAD(v.ID_VENTA, 3, '0')) AS FACTURA,
+          COALESCE(v.FACTURA, CONCAT('FAC-V', LPAD(v.ID_VENTA, 3, '0'))) AS FACTURA,
           p.NOMBRE_PRODUCTO
         FROM DEVOLUCIONES d
         INNER JOIN VENTAS v ON d.ID_VENTA = v.ID_VENTA
@@ -145,9 +146,9 @@ const Devoluciones = {
             );
             const nombreProducto = prodInfo[0]?.NOMBRE_PRODUCTO || 'Producto';
 
-            // 3. Obtener factura de la venta
+            // 3. Obtener factura de la venta (usando la columna FACTURA almacenada para evitar truncamiento)
             const [ventaInfo] = await connection.query(
-                "SELECT CONCAT('FAC-V', LPAD(ID_VENTA, 3, '0')) AS FACTURA FROM VENTAS WHERE ID_VENTA = ?",
+                "SELECT FACTURA FROM VENTAS WHERE ID_VENTA = ?",
                 [id_venta]
             );
             const factura = ventaInfo[0]?.FACTURA || `FAC-V${String(id_venta).padStart(3, '0')}`;
@@ -222,6 +223,76 @@ const Devoluciones = {
             throw new Error('Error al actualizar devolución: ' + err.message);
         }
     },
+
+    // Confirmar reingreso al stock (registro de entrada física + marca en BD)
+    confirmarReingreso: async (id) => {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            // Obtener datos de la devolución (verificar que no esté ya confirmada)
+            const [devRows] = await connection.query(
+                `SELECT d.ID_PRODUCTO, d.CANTIDAD, d.REINGRESO_CONFIRMADO, p.NOMBRE_PRODUCTO,
+                        COALESCE(v.FACTURA, CONCAT('FAC-V', LPAD(v.ID_VENTA, 3, '0'))) AS FACTURA
+                 FROM DEVOLUCIONES d
+                 INNER JOIN PRODUCTOS p ON d.ID_PRODUCTO = p.ID_PRODUCTO
+                 INNER JOIN VENTAS v ON d.ID_VENTA = v.ID_VENTA
+                 WHERE d.ID_DEVOLUCION = ? AND d.ACCION = 'reingreso'`,
+                [id]
+            );
+
+            if (devRows.length === 0) {
+                throw new Error('Devolución no encontrada o no es de tipo reingreso');
+            }
+
+            if (devRows[0].REINGRESO_CONFIRMADO === 1) {
+                throw new Error('Este reingreso ya fue confirmado anteriormente');
+            }
+
+            const { ID_PRODUCTO, CANTIDAD, NOMBRE_PRODUCTO, FACTURA } = devRows[0];
+
+            // Calcular stock actual (incluyendo reingresos ya confirmados)
+            const [stockInfo] = await connection.query(
+                `SELECT (
+                    COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = ?), 0) -
+                    COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp WHERE vp.ID_PRODUCTO = ?), 0) +
+                    COALESCE((SELECT SUM(d2.CANTIDAD) FROM DEVOLUCIONES d2 WHERE d2.ID_PRODUCTO = ? AND d2.ACCION = 'reingreso' AND d2.REINGRESO_CONFIRMADO = 1), 0)
+                ) AS stock_actual`,
+                [ID_PRODUCTO, ID_PRODUCTO, ID_PRODUCTO]
+            );
+            const stockActual = stockInfo[0]?.stock_actual ?? 0;
+            const stockNuevo = Number(stockActual) + Number(CANTIDAD);
+
+            // 1. Marcar como confirmado en DEVOLUCIONES (persistente)
+            await connection.query(
+                'UPDATE DEVOLUCIONES SET REINGRESO_CONFIRMADO = 1 WHERE ID_DEVOLUCION = ?',
+                [id]
+            );
+
+            // 2. Registrar entrada en MOVIMIENTOS_STOCK (auditoría)
+            await connection.query(
+                `INSERT INTO MOVIMIENTOS_STOCK
+                 (ID_PRODUCTO, NOMBRE_PRODUCTO, TIPO_MOVIMIENTO, MOTIVO, CANTIDAD, STOCK_RESULTANTE)
+                 VALUES (?, ?, 'entrada', ?, ?, ?)`,
+                [
+                    ID_PRODUCTO,
+                    NOMBRE_PRODUCTO,
+                    `Reingreso confirmado - Dev #${id} - ${FACTURA} - Producto reparado`,
+                    CANTIDAD,
+                    stockNuevo
+                ]
+            );
+
+            await connection.commit();
+            return { id_producto: ID_PRODUCTO, nombre: NOMBRE_PRODUCTO, cantidad: CANTIDAD, stock_nuevo: stockNuevo };
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
+        }
+    },
+
 
     // Eliminar una devolución
     eliminar: async (id) => {
