@@ -293,6 +293,150 @@ tfoot,
 
 .badge-reingreso {
   background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  cursor: pointer;
+  border: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.35);
+}
+
+.badge-reingreso:hover {
+  transform: scale(1.07);
+  box-shadow: 0 4px 14px rgba(40, 167, 69, 0.55);
+  filter: brightness(1.1);
+}
+
+.badge-reingreso:active {
+  transform: scale(0.97);
+}
+
+.badge-reingreso.confirmado {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+  box-shadow: 0 2px 6px rgba(23, 162, 184, 0.35);
+  cursor: default;
+}
+
+/* =========================================
+   MODAL DE REINGRESO
+   ========================================= */
+
+.reingreso-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInOverlay 0.2s ease;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.reingreso-modal {
+  background: var(--bg-card, #1e2330);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 460px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  animation: slideUpModal 0.25s ease;
+}
+
+@keyframes slideUpModal {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.reingreso-modal h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  color: var(--text-primary, #f0f0f0);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reingreso-modal .modal-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted, #8a8fa8);
+  margin-bottom: 1.5rem;
+}
+
+.reingreso-modal .detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.reingreso-modal .detail-item {
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+}
+
+.reingreso-modal .detail-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #8a8fa8);
+  margin-bottom: 0.2rem;
+}
+
+.reingreso-modal .detail-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #f0f0f0);
+}
+
+.reingreso-modal .modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.reingreso-modal .btn-confirm-reingreso {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.reingreso-modal .btn-confirm-reingreso:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(40, 167, 69, 0.45);
+}
+
+.reingreso-modal .btn-confirm-reingreso:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.reingreso-modal .btn-cancel-reingreso {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-primary, #f0f0f0);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 0.7rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.reingreso-modal .btn-cancel-reingreso:hover {
+  background: rgba(255,255,255,0.14);
 }
 
 .badge-garantia {

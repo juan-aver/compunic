@@ -30,6 +30,10 @@ router.post('/', devolucionesController.create);
 // PUT http://localhost:3001/api/devoluciones/:id
 router.put('/:id', devolucionesController.update);
 
+// Ruta para confirmar reingreso al stock
+// POST http://localhost:3001/api/devoluciones/:id/confirmar-reingreso
+router.post('/:id/confirmar-reingreso', devolucionesController.confirmarReingreso);
+
 // Ruta para eliminar una devolución
 // DELETE http://localhost:3001/api/devoluciones/:id
 router.delete('/:id', devolucionesController.delete);

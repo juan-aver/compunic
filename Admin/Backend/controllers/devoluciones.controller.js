@@ -152,6 +152,30 @@ exports.update = async (req, res) => {
     }
 };
 
+// Confirmar reingreso al stock
+exports.confirmarReingreso = async (req, res) => {
+    const id = req.params.id;
+    try {
+        const resultado = await Devoluciones.confirmarReingreso(id);
+        res.send({
+            message: `Reingreso confirmado. ${resultado.nombre} (x${resultado.cantidad}) registrado en stock.`,
+            stock_nuevo: resultado.stock_nuevo,
+            id_producto: resultado.id_producto
+        });
+
+        AuditoriaModel.registrar({
+            id_empleado: req.userId || null,
+            username: req.username || 'Sistema',
+            accion: 'REINGRESO_CONFIRMADO',
+            tabla: 'DEVOLUCIONES',
+            descripcion: `Reingreso confirmado Dev #${id} | Producto ID: ${resultado.id_producto} | Cantidad: ${resultado.cantidad}`
+        }).catch(e => console.error('Audit log error:', e));
+    } catch (err) {
+        console.error('Error al confirmar reingreso:', err);
+        res.status(500).send({ message: err.message || 'Error al confirmar reingreso' });
+    }
+};
+
 // Eliminar una devolución
 exports.delete = async (req, res) => {
     const id = req.params.id;

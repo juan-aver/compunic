@@ -5,7 +5,6 @@ const db = require('../config/db.js');
 const Producto = {
   obtenerTodos: async () => {
     try {
-      // CONSULTA SQL REESCRITA PARA CALCULAR STOCK Y UNIR GARANTÍA
       const query = `
         SELECT 
           p.ID_PRODUCTO,
@@ -16,9 +15,17 @@ const Producto = {
           COALESCE(p.ACTIVO, 1) AS ACTIVO,
           (
             COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = p.ID_PRODUCTO), 0) - 
-            COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp WHERE vp.ID_PRODUCTO = p.ID_PRODUCTO), 0)
+            COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp WHERE vp.ID_PRODUCTO = p.ID_PRODUCTO), 0) +
+            COALESCE((SELECT SUM(d.CANTIDAD) FROM DEVOLUCIONES d WHERE d.ID_PRODUCTO = p.ID_PRODUCTO AND d.ACCION = 'reingreso' AND d.REINGRESO_CONFIRMADO = 1), 0)
           ) AS stock_actual_calculado,
           CONCAT(g.DURACION_MESES, ' Meses - ', COALESCE(gt.TIPO, 'Estándar')) AS GARANTIA_MESES,
+          COALESCE(
+            (SELECT dc.MESES_GARANTIA 
+             FROM DETALLE_COMPRA dc 
+             WHERE dc.ID_PRODUCTO = p.ID_PRODUCTO 
+             ORDER BY dc.ID_DETALLE DESC 
+             LIMIT 1), 0
+          ) AS GARANTIA_PROVEEDOR,
           p.PRECIO_COMPRA,
           p.PRECIO_VENTA,
           m.NOMBRE_MARCA AS nombre_marca, 
@@ -55,7 +62,8 @@ const Producto = {
       SELECT 
         (
           COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = p.ID_PRODUCTO), 0) - 
-          COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp WHERE vp.ID_PRODUCTO = p.ID_PRODUCTO), 0)
+          COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp WHERE vp.ID_PRODUCTO = p.ID_PRODUCTO), 0) +
+          COALESCE((SELECT SUM(d.CANTIDAD) FROM DEVOLUCIONES d WHERE d.ID_PRODUCTO = p.ID_PRODUCTO AND d.ACCION = 'reingreso' AND d.REINGRESO_CONFIRMADO = 1), 0)
         ) AS stock
       FROM 
         PRODUCTOS p
