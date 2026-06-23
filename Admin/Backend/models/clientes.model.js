@@ -36,7 +36,7 @@ const Cliente = {
   agregar: async (datos) => {
     // Asumimos que ID_CLIENTE es Auto Increment.
     // OJO: No enviamos ID_VENDEDOR porque no está en tu formulario HTML.
-    const sql = 'INSERT INTO CLIENTES (NOMBRE, APELLIDO, TELEFONO, EMAIL) VALUES (?, ?, ?, ?)';
+    const sql = 'INSERT INTO CLIENTES (NOMBRE, APELLIDO, TELEFONO, EMAIL, CEDULA) VALUES (?, ?, ?, ?, ?)';
     try {
       const [result] = await db.query(sql, datos);
       return result;
@@ -46,7 +46,7 @@ const Cliente = {
   },
 
   actualizar: async (datos) => {
-    const sql = 'UPDATE CLIENTES SET NOMBRE=?, APELLIDO=?, TELEFONO=?, EMAIL=? WHERE ID_CLIENTE=?';
+    const sql = 'UPDATE CLIENTES SET NOMBRE=?, APELLIDO=?, TELEFONO=?, EMAIL=?, CEDULA=? WHERE ID_CLIENTE=?';
     try {
       await db.query(sql, datos);
     } catch (err) {
@@ -73,10 +73,10 @@ const Cliente = {
   },
 
   // LLAMADO A PROCEDIMIENTO ALMACENADO sp_NuevoCliente
-  agregarRapido: async (nombre, apellido, telefono, email, id_empleado) => {
+  agregarRapido: async (nombre, apellido, telefono, email, id_empleado, cedula) => {
     try {
-      const sql = 'CALL sp_NuevoCliente(?, ?, ?, ?, ?)';
-      const [result] = await db.query(sql, [nombre, apellido, telefono, email, id_empleado]);
+      const sql = 'CALL sp_NuevoCliente(?, ?, ?, ?, ?, ?)';
+      const [result] = await db.query(sql, [nombre, apellido, telefono, email, id_empleado, cedula]);
       return result;
     } catch (err) {
       throw new Error('Error al registrar cliente rápido: ' + err.message);

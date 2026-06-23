@@ -67,11 +67,12 @@ const Ventas = {
           item.idProducto,
           item.cantidad,
           item.precioUnitario,
-          item.subtotal
+          item.subtotal,
+          item.numeros_serie || null
         ]);
 
         await connection.query(
-          'INSERT INTO VENTAS_PRODUCTOS (ID_VENTA, ID_PRODUCTO, cantidad_neta, precio_venta, sub_total) VALUES ?',
+          'INSERT INTO VENTAS_PRODUCTOS (ID_VENTA, ID_PRODUCTO, cantidad_neta, precio_venta, sub_total, numeros_serie) VALUES ?',
           [values]
         );
       }
@@ -113,15 +114,20 @@ const Ventas = {
 
     const venta = rows[0];
 
-    // Obtener los productos de la venta
+    // Obtener los productos de la venta con seriales y garantías
     const queryProductos = `
       SELECT 
         vp.cantidad_neta AS CANTIDAD,
         p.NOMBRE_PRODUCTO,
         vp.precio_venta AS PRECIO_UNITARIO,
-        vp.sub_total AS SUBTOTAL
+        vp.sub_total AS SUBTOTAL,
+        vp.numeros_serie AS NUMEROS_SERIE,
+        g.DURACION_MESES AS GARANTIA_MESES,
+        g.CONDICION AS GARANTIA_CONDICION,
+        g.EXCLUSIONES AS GARANTIA_EXCLUSIONES
       FROM VENTAS_PRODUCTOS vp
       INNER JOIN PRODUCTOS p ON vp.ID_PRODUCTO = p.ID_PRODUCTO
+      LEFT JOIN GARANTIAS g ON p.ID_GARANTIAS = g.ID_GARANTIA
       WHERE vp.ID_VENTA = ?
     `;
 

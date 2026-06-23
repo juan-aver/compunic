@@ -425,19 +425,65 @@ function guardarVenta() {
         return alert('❌ Error: Solo se pueden realizar ventas en la fecha actual. La fecha debe ser: ' + new Date(fechaActualStr).toLocaleDateString());
     }
 
-    const payload = {
-        id_cliente: idCliente,
-        nombre_cliente_ocasional: nombreClienteOcasional,
-        id_empleado: idVendedor,
-        fecha: fecha,
-        factura: factura,
-        items: itemsVenta.map(item => ({
-            idProducto: item.id_producto,
-            cantidad: item.cantidad,
-            precioUnitario: item.precio_unitario,
-            subtotal: item.subtotal
-        }))
+    // Validación de > 10,000
+    const subtotalVenta = itemsVenta.reduce((acc, it) => acc + it.subtotal, 0);
+    const totalVenta = subtotalVenta * 1.15;
+    if (totalVenta > 10000 && esOcasional) {
+        return alert("Para ventas mayores a C$ 10,000 debe seleccionar un cliente registrado (que tenga Cédula y Teléfono).");
+    }
+
+    // Mostrar modal para números de serie
+    let formHtml = '<div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">';
+    itemsVenta.forEach((item, idx) => {
+        formHtml += `<div style="margin-bottom: 10px;">
+            <label style="font-size:12px; display:block; margin-bottom:5px;">Seriales para: <b>${item.nombre}</b> (Cant: ${item.cantidad})</label>
+            <input type="text" id="serial_${idx}" class="form-input" style="width:100%;" placeholder="Ej: SN123, SN124...">
+        </div>`;
+    });
+    formHtml += '</div>';
+
+    const overlay = document.createElement('div');
+    overlay.style = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:center;align-items:center;';
+    
+    const modal = document.createElement('div');
+    modal.style = 'background:var(--bg-card, white);padding:20px;border-radius:8px;width:400px;max-width:90%;color:var(--text-color, black);';
+    modal.innerHTML = `
+        <h3 style="margin-top:0;">Ingresar Números de Serie</h3>
+        <p style="font-size:12px;margin-bottom:15px;opacity:0.8;">Opcional. Separe con comas si son varios.</p>
+        ${formHtml}
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+            <button id="btnCancelSerial" class="btn-cancel" style="padding:8px 15px;background:#ccc;border:none;border-radius:4px;cursor:pointer;">Cancelar</button>
+            <button id="btnSaveSerial" class="btn-register" style="padding:8px 15px;background:#28a745;color:white;border:none;border-radius:4px;cursor:pointer;">Confirmar y Guardar</button>
+        </div>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    document.getElementById('btnCancelSerial').onclick = () => {
+        document.body.removeChild(overlay);
     };
+
+    document.getElementById('btnSaveSerial').onclick = () => {
+        itemsVenta.forEach((item, idx) => {
+            item.numeros_serie = document.getElementById('serial_' + idx).value;
+        });
+        document.body.removeChild(overlay);
+        
+        const payload = {
+            id_cliente: idCliente,
+            nombre_cliente_ocasional: nombreClienteOcasional,
+            id_empleado: idVendedor,
+            fecha: fecha,
+            factura: factura,
+            items: itemsVenta.map(item => ({
+                idProducto: item.id_producto,
+                cantidad: item.cantidad,
+                precioUnitario: item.precio_unitario,
+                subtotal: item.subtotal,
+                numeros_serie: item.numeros_serie
+            }))
+        };
 
     fetch(`${API_BASE}/ventas`, {
         method: 'POST',
@@ -446,7 +492,7 @@ function guardarVenta() {
     })
         .then(async res => {
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Error al guardar venta');
+            if (!res.ok) throw new Error(data.message || data.error || 'Error al guardar venta');
             return data;
         })
         .then(data => {
@@ -469,6 +515,7 @@ function guardarVenta() {
             console.error(err);
             alert('❌ Error: ' + err.message);
         });
+    };
 }
 
 // Eventos para Ventas

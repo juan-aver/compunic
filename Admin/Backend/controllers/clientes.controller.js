@@ -32,9 +32,9 @@ const clientesController = {
   },
 
   agregar: async (req, res) => {
-    const { nombre, apellido, telefono, email } = req.body;
+    const { nombre, apellido, telefono, email, cedula } = req.body;
     try {
-      const result = await Cliente.agregar([nombre, apellido, telefono, email]);
+      const result = await Cliente.agregar([nombre, apellido, telefono, email, cedula]);
       res.json({ mensaje: 'Cliente creado', id: result.insertId });
 
       AuditoriaModel.registrar({
@@ -52,9 +52,9 @@ const clientesController = {
 
   actualizar: async (req, res) => {
     const { id } = req.params;
-    const { nombre, apellido, telefono, email } = req.body;
+    const { nombre, apellido, telefono, email, cedula } = req.body;
     try {
-      await Cliente.actualizar([nombre, apellido, telefono, email, id]);
+      await Cliente.actualizar([nombre, apellido, telefono, email, cedula, id]);
       res.json({ mensaje: 'Cliente actualizado' });
 
       AuditoriaModel.registrar({
@@ -110,7 +110,7 @@ const clientesController = {
 
   // LLAMADO A PROCEDIMIENTO ALMACENADO sp_NuevoCliente
   agregarRapido: async (req, res) => {
-    const { nombre, apellido, telefono, email, id_empleado } = req.body;
+    const { nombre, apellido, telefono, email, id_empleado, cedula } = req.body;
     
     // Validación básica
     if (!nombre || !apellido || !id_empleado) {
@@ -118,7 +118,7 @@ const clientesController = {
     }
 
     try {
-      const result = await Cliente.agregarRapido(nombre, apellido, telefono, email, id_empleado);
+      const result = await Cliente.agregarRapido(nombre, apellido, telefono, email, id_empleado, cedula);
       res.json({ mensaje: 'Cliente registrado rápidamente', result });
     } catch (err) {
       console.error('Error en registro rápido:', err);

@@ -48,6 +48,7 @@ function cargarClientes() {
                   <td>${c.APELLIDO || ''}</td>
                   <td>${c.TELEFONO || ''}</td>
                   <td>${c.EMAIL || ''}</td>
+                  <td>${c.CEDULA || ''}</td>
                   <td>${actionButtons}</td>
                 `;
                 tbody.appendChild(tr);
@@ -61,6 +62,7 @@ function seleccionarCliente(c) {
     document.getElementById('APELLIDO').value = c.APELLIDO || '';
     document.getElementById('TELEFONO').value = c.TELEFONO || '';
     document.getElementById('EMAIL').value = c.EMAIL || '';
+    document.getElementById('CEDULA').value = c.CEDULA || '';
 
     const form = document.getElementById('formulario-clientes');
     form.dataset.idCliente = c.ID_CLIENTE;
@@ -72,13 +74,14 @@ function agregarCliente() {
     const apellido = document.getElementById('APELLIDO').value;
     const telefono = document.getElementById('TELEFONO').value;
     const email = document.getElementById('EMAIL').value;
+    const cedula = document.getElementById('CEDULA').value;
 
     if (!nombre || !apellido) return alert("Nombre y Apellido son obligatorios");
 
     fetch(`${API_BASE}/clientes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, apellido, telefono, email })
+        body: JSON.stringify({ nombre, apellido, telefono, email, cedula })
     })
         .then(res => res.json())
         .then(data => {
@@ -98,11 +101,12 @@ function modificarCliente() {
     const apellido = document.getElementById('APELLIDO').value;
     const telefono = document.getElementById('TELEFONO').value;
     const email = document.getElementById('EMAIL').value;
+    const cedula = document.getElementById('CEDULA').value;
 
     fetch(`${API_BASE}/clientes/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, apellido, telefono, email })
+        body: JSON.stringify({ nombre, apellido, telefono, email, cedula })
     })
         .then(res => res.json())
         .then(() => {
@@ -188,6 +192,7 @@ function buscarCliente() {
                   <td>${c.APELLIDO || ''}</td>
                   <td>${c.TELEFONO || ''}</td>
                   <td>${c.EMAIL || ''}</td>
+                  <td>${c.CEDULA || ''}</td>
                   <td>${actionButtons}</td>
                 `;
                 tbody.appendChild(tr);

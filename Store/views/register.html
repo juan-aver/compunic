@@ -208,6 +208,14 @@
             </div>
 
             <div class="form-group">
+                <label>Cédula de Identidad</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-id-card input-icon"></i>
+                    <input type="text" id="cedula" required placeholder="000-000000-0000A">
+                </div>
+            </div>
+
+            <div class="form-group">
                 <label>Contraseña</label>
                 <div class="input-wrapper">
                     <i class="fas fa-lock input-icon"></i>
@@ -236,6 +244,7 @@
             const apellido = document.getElementById('apellido').value;
             const telefono = document.getElementById('telefono').value;
             const email = document.getElementById('email').value;
+            const cedula = document.getElementById('cedula').value;
             const password = document.getElementById('password').value;
             const btn = e.target.querySelector('button');
             const errorMsg = document.getElementById('errorMsg');
@@ -244,7 +253,7 @@
             btn.disabled = true;
             errorMsg.style.display = 'none';
 
-            const response = await StoreAuth.register({ nombre, apellido, telefono, email, password });
+            const response = await StoreAuth.register({ nombre, apellido, telefono, email, cedula, password });
             
             if (response.success) {
                 window.location.href = 'index.html';

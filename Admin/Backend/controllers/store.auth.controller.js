@@ -7,10 +7,10 @@ const storeAuthController = {
     // Registrar un nuevo cliente desde la web
     register: async (req, res) => {
         try {
-            const { nombre, apellido, telefono, email, password } = req.body;
+            const { nombre, apellido, telefono, email, password, cedula } = req.body;
 
-            if (!nombre || !email || !password) {
-                return res.status(400).json({ success: false, message: 'Nombre, email y contraseña son obligatorios' });
+            if (!nombre || !email || !password || !cedula || !telefono) {
+                return res.status(400).json({ success: false, message: 'Nombre, email, contraseña, cédula y teléfono son obligatorios' });
             }
 
             // Verificar si el correo ya existe
@@ -25,8 +25,8 @@ const storeAuthController = {
 
             // Insertar el nuevo cliente (por defecto tienen 0 puntos)
             const [result] = await db.query(
-                'INSERT INTO clientes (NOMBRE, APELLIDO, TELEFONO, EMAIL, PASSWORD_HASH, PUNTOS) VALUES (?, ?, ?, ?, ?, ?)',
-                [nombre, apellido || '', telefono || '', email, passwordHash, 0]
+                'INSERT INTO clientes (NOMBRE, APELLIDO, TELEFONO, EMAIL, PASSWORD_HASH, CEDULA, PUNTOS) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [nombre, apellido || '', telefono, email, passwordHash, cedula, 0]
             );
 
             // Generar token JWT para que el cliente quede logueado de inmediato
@@ -97,6 +97,7 @@ const storeAuthController = {
                     nombre: cliente.NOMBRE,
                     apellido: cliente.APELLIDO,
                     email: cliente.EMAIL,
+                    cedula: cliente.CEDULA,
                     puntos: cliente.PUNTOS
                 }
             });
@@ -123,7 +124,7 @@ const storeAuthController = {
                 return res.status(403).json({ success: false, message: 'Acceso denegado' });
             }
 
-            const [clientes] = await db.query('SELECT ID_CLIENTE, NOMBRE, APELLIDO, EMAIL, TELEFONO, PUNTOS FROM clientes WHERE ID_CLIENTE = ?', [decoded.id]);
+            const [clientes] = await db.query('SELECT ID_CLIENTE, NOMBRE, APELLIDO, EMAIL, TELEFONO, CEDULA, PUNTOS FROM clientes WHERE ID_CLIENTE = ?', [decoded.id]);
             
             if (clientes.length === 0) {
                 return res.status(404).json({ success: false, message: 'Cliente no encontrado' });

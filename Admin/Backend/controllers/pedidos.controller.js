@@ -68,6 +68,14 @@ const pedidosController = {
                 });
             }
 
+            // Validar monto > 10,000
+            if (total > 10000 && !cliente.cedula) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Para compras mayores a C$ 10,000 debe tener registrada su Cédula de Identidad. Actualice su perfil.'
+                });
+            }
+
             // Validar formato de email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(cliente.email)) {

@@ -41,6 +41,18 @@ exports.create = async (req, res) => {
   };
 
   try {
+    const subtotalVenta = items.reduce((sum, item) => sum + item.subtotal, 0);
+    const totalVenta = subtotalVenta * 1.15;
+
+    if (totalVenta > 10000) {
+      if (!id_cliente) {
+        return res.status(400).send({ message: "Para ventas mayores a C$ 10,000 debe seleccionar un cliente registrado con Cédula." });
+      }
+      const [cRows] = await db.query('SELECT CEDULA, TELEFONO FROM CLIENTES WHERE ID_CLIENTE = ?', [id_cliente]);
+      if (!cRows[0] || !cRows[0].CEDULA || !cRows[0].TELEFONO) {
+        return res.status(400).send({ message: "Para ventas mayores a C$ 10,000 el cliente debe tener registrada su Cédula y Teléfono. Por favor actualice el perfil del cliente." });
+      }
+    }
     // ✅ NUEVO: Verificar que los productos estén activos y obtener stock ANTES de insertar la venta
     const stocksAnteriores = {};
     for (const item of venta.items) {

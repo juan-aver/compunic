@@ -107,6 +107,7 @@ CREATE TABLE CLIENTES (
     APELLIDO VARCHAR(100),
     TELEFONO VARCHAR(20),
     EMAIL VARCHAR(255),
+    CEDULA VARCHAR(20) UNIQUE,
     PUNTOS INT DEFAULT 0, -- Nueva columna agregada con valor inicial de 0
     ID_EMPLEADO INT, -- Apunta al vendedor
     FOREIGN KEY (ID_EMPLEADO) REFERENCES EMPLEADOS(ID_EMPLEADO)
@@ -209,6 +210,7 @@ CREATE TABLE DEVOLUCIONES (
     CANTIDAD INT NOT NULL,
     MOTIVO VARCHAR(255), 
     ACCION ENUM('reingreso', 'desecho', 'garantia') NOT NULL,
+    REINGRESO_CONFIRMADO TINYINT(1) DEFAULT 0,
     FECHA_DEVOLUCION DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ID_VENTA) REFERENCES VENTAS(ID_VENTA),
     FOREIGN KEY (ID_PRODUCTO) REFERENCES PRODUCTOS(ID_PRODUCTO)
@@ -263,6 +265,7 @@ CREATE TABLE VENTAS_PRODUCTOS (
     cantidad_neta INT,
     precio_venta DECIMAL(12, 2),
     sub_total DECIMAL(12, 2),
+    numeros_serie VARCHAR(500) NULL,
     PRIMARY KEY (ID_VENTA, ID_PRODUCTO),
     FOREIGN KEY (ID_VENTA) REFERENCES VENTAS(ID_VENTA),
     FOREIGN KEY (ID_PRODUCTO) REFERENCES PRODUCTOS(ID_PRODUCTO)
@@ -658,16 +661,17 @@ CREATE PROCEDURE sp_NuevoCliente(
     IN p_apellido VARCHAR(100),
     IN p_telefono VARCHAR(20),
     IN p_email VARCHAR(255),
-    IN p_id_empleado INT
+    IN p_id_empleado INT,
+    IN p_cedula VARCHAR(20)
 )
 BEGIN
-    INSERT INTO CLIENTES (NOMBRE, APELLIDO, TELEFONO, EMAIL, ID_EMPLEADO) 
-    VALUES (p_nombre, p_apellido, p_telefono, p_email, p_id_empleado);
+    INSERT INTO CLIENTES (NOMBRE, APELLIDO, TELEFONO, EMAIL, ID_EMPLEADO, CEDULA) 
+    VALUES (p_nombre, p_apellido, p_telefono, p_email, p_id_empleado, p_cedula);
 END //
 
 DELIMITER ;
 
-CALL sp_NuevoCliente('Juan', 'Pérez', '8888-9999', 'juanperez@gmail.com', 1);
+CALL sp_NuevoCliente('Juan', 'Pérez', '8888-9999', 'juanperez@gmail.com', 1, '001-123456-7890A');
 
 -- Procedimiento actualizado con ID_EMPLEADO
 DELIMITER //

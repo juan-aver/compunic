@@ -387,6 +387,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const total = Math.max(0, subtotal - pointsUsed);
+        if (total > 10000) {
+            const user = typeof StoreAuth !== 'undefined' ? StoreAuth.getUser() : null;
+            if (!user || !user.cedula) {
+                showNotification("Para compras mayores a C$ 10,000 es obligatorio tener la Cédula registrada en su perfil.", 'error');
+                return;
+            }
+        }
+
         submitBtn.disabled = true;
         loadingOverlay.style.display = 'flex';
 

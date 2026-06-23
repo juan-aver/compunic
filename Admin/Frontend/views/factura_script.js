@@ -46,10 +46,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tbody) {
                 tbody.innerHTML = '';
                 venta.items.forEach(item => {
+                    let descripcion = item.NOMBRE_PRODUCTO;
+                    if (item.NUMEROS_SERIE) {
+                        descripcion += `<br><small style="color:#555;">S/N: ${item.NUMEROS_SERIE}</small>`;
+                    }
+                    if (item.GARANTIA_MESES && item.GARANTIA_MESES > 0) {
+                        descripcion += `<br><small style="color:#555;">Garantía: ${item.GARANTIA_MESES} Meses. ${item.GARANTIA_CONDICION || ''}</small>`;
+                    }
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${item.CANTIDAD}</td>
-                        <td>${item.NOMBRE_PRODUCTO}</td>
+                        <td style="text-align:left; padding:5px;">${descripcion}</td>
                         <td>C$ ${parseFloat(item.PRECIO_UNITARIO).toFixed(2)}</td>
                         <td>C$ ${parseFloat(item.SUBTOTAL).toFixed(2)}</td>
                     `;
@@ -75,6 +82,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 valoresTotal[2].textContent = `C$ ${totalConIVA.toFixed(2)}`;
                 valoresTotal[3].textContent = ``;
             }
+
+            // Políticas de Garantía
+            const politicasDiv = document.createElement('div');
+            politicasDiv.style = "margin-top: 15px; font-size: 9px; line-height: 1.2; padding: 10px; border: 1px dashed #ccc; page-break-inside: avoid;";
+            politicasDiv.innerHTML = `
+                <strong>POLÍTICAS DE GARANTÍA COMPUNIC</strong><br>
+                1. La garantía cubre defectos de fábrica bajo uso normal y no aplica por daños causados por golpes, humedad, descargas eléctricas, o mala manipulación.<br>
+                2. Todo equipo ingresado a garantía requiere la presentación de esta factura original en buen estado.<br>
+                3. El tiempo de respuesta por garantía está sujeto a diagnóstico técnico (3 a 15 días hábiles).<br>
+                4. Exclusiones: Los consumibles (cartuchos, tóner) y el software (virus, desconfiguración) no están cubiertos.<br>
+                5. Los productos no tienen cambio si la caja original está rota o falta algún accesorio.<br>
+            `;
+            document.querySelector('.seccion-final').after(politicasDiv);
 
             // 6. Configurar botón de descarga PDF
             configurarBotonPDF(venta.FACTURA);
