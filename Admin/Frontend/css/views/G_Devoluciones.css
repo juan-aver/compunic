@@ -337,13 +337,15 @@ tfoot,
 }
 
 .reingreso-modal {
-  background: var(--bg-card, #1e2330);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(30, 35, 48, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 16px;
   padding: 2rem;
   max-width: 460px;
   width: 90%;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   animation: slideUpModal 0.25s ease;
 }
 

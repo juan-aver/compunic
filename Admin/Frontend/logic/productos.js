@@ -207,6 +207,9 @@ function renderProductCards(data) {
 
         // Badges
         let badges = '';
+        if (nombre.includes('(Seminuevo)')) {
+            badges += '<span class="badge" style="background: #e67e22; color: white;"><i class="fas fa-recycle"></i> SEMINUEVO</span>';
+        }
         if (activo === 0) {
             badges += '<span class="badge badge-baja"><i class="fas fa-ban"></i> Dado de Baja</span>';
         } else if (stock === 0) {
@@ -214,6 +217,11 @@ function renderProductCards(data) {
         } else if (stock < 5) {
             badges += '<span class="badge badge-stock-bajo"><i class="fas fa-exclamation-triangle"></i> Stock Bajo</span>';
         }
+        
+        const seriesNuevas = Number(producto.series_nuevas || 0);
+        const seriesSeminuevas = Number(producto.series_seminuevas || 0);
+        if (seriesNuevas > 0) badges += `<span class="badge" style="background: #27ae60; color: white;"><i class="fas fa-box"></i> Nuevos: ${seriesNuevas}</span>`;
+        if (seriesSeminuevas > 0) badges += `<span class="badge" style="background: #e67e22; color: white;"><i class="fas fa-recycle"></i> Seminuevos: ${seriesSeminuevas}</span>`;
 
         // Image
         const imgPath = imagenUrl && imagenUrl.startsWith('http') ? imagenUrl : `${SERVER_URL}/${imagenUrl}`;
@@ -246,6 +254,9 @@ function renderProductCards(data) {
                     <span class="${stockClass}"><i class="fas fa-cube"></i> ${stock}</span>
                 </div>
                 <div class="card-actions">
+                    <button class="btn-card-detail" style="background: #9b59b6; border-color: #9b59b6;" onclick="event.stopPropagation(); abrirModalSeries(window._allProductos[${data.indexOf(producto)}])">
+                        <i class="fas fa-barcode"></i> Series
+                    </button>
                     <button class="btn-card-detail" onclick="event.stopPropagation(); mostrarDetalleProducto(window._allProductos[${data.indexOf(producto)}])">
                         <i class="fas fa-eye"></i> Detalle
                     </button>
@@ -288,14 +299,22 @@ function renderProductTable(data) {
         const proveedorName = producto.nombre_proveedor ?? producto.NOMBRE_PROVEEDOR ?? producto.PROVEEDOR ?? producto.ID_PROVEEDOR ?? '';
 
         const fila = document.createElement('tr');
+        const nombreDisplay = nombre.includes('(Seminuevo)') 
+            ? `${nombre} <br><span class="badge" style="background: #e67e22; color: white; padding: 2px 6px; font-size: 0.75em; border-radius: 4px; display: inline-block; margin-top: 4px;"><i class="fas fa-recycle"></i> SEMINUEVO</span>` 
+            : nombre;
+
         fila.innerHTML = `
             <td>${id}</td>
-            <td>${nombre}</td>
+            <td>${nombreDisplay}</td>
             <td>${modelo}</td>
             <td style="text-align: center;">
               <button onclick="mostrarDetalleProducto(window._allProductos[${data.indexOf(producto)}])" 
-                style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+                style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; width: 100%;">
                 Ver Detalles
+              </button>
+              <button onclick="abrirModalSeries(window._allProductos[${data.indexOf(producto)}])" 
+                style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: 600; width: 100%;">
+                <i class="fas fa-barcode"></i> Series
               </button>
             </td>
             <td>${categoria}</td>
@@ -699,3 +718,219 @@ function _recolectarFormulario() {
         stock: document.getElementById("stock").value ? parseInt(document.getElementById("stock").value) : 0
     };
 }
+
+// ========================================================================================================
+// LÓGICA DE SERIES
+// ========================================================================================================
+
+let idProductoSeriesActual = null;
+
+function actualizarPrefijos(id_producto) {
+    fetch(`${API_BASE}/series/${id_producto}`, {
+        headers: { 'x-user-id': localStorage.getItem('compunic_admin_id') }
+    })
+    .then(res => res.json())
+    .then(todasLasSeries => {
+        let prefixes = new Set();
+        todasLasSeries.forEach(s => {
+            const match = s.NUMERO_SERIE.match(/^([a-zA-Z\-]+)\d+$/);
+            if (match) {
+                prefixes.add(match[1]);
+            }
+        });
+        const datalist = document.getElementById('lista-prefijos');
+        if (datalist) {
+            datalist.innerHTML = '';
+            prefixes.forEach(p => {
+                datalist.innerHTML += `<option value="${p}"></option>`;
+            });
+        }
+    })
+    .catch(err => console.error('Error cargando prefijos:', err));
+}
+
+function abrirModalSeries(producto) {
+    idProductoSeriesActual = producto.id_producto ?? producto.ID_PRODUCTO ?? producto.id;
+    const nombre = producto.nombre ?? producto.NOMBRE ?? producto.NOMBRE_PRODUCTO ?? '';
+    
+    document.getElementById('modalSeriesTitle').innerHTML = `<i class="fas fa-barcode"></i> Series de: ${nombre}`;
+    document.getElementById('modalSeries').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    mostrarFormSerie('individual');
+    cargarSeriesDisponibles(idProductoSeriesActual);
+    actualizarPrefijos(idProductoSeriesActual);
+}
+window.abrirModalSeries = abrirModalSeries;
+
+function cerrarModalSeries() {
+    document.getElementById('modalSeries').style.display = 'none';
+    document.body.style.overflow = '';
+    idProductoSeriesActual = null;
+    if (typeof cargarProductos === 'function') cargarProductos(); // Refresh to update badges
+}
+window.cerrarModalSeries = cerrarModalSeries;
+
+function mostrarFormSerie(tipo) {
+    document.getElementById('formSerieIndividual').style.display = tipo === 'individual' ? 'block' : 'none';
+    document.getElementById('formSerieLote').style.display = tipo === 'lote' ? 'block' : 'none';
+    document.getElementById('formSerieAuto').style.display = tipo === 'auto' ? 'block' : 'none';
+}
+window.mostrarFormSerie = mostrarFormSerie;
+
+function cargarSeriesDisponibles(id_producto) {
+    const tbody = document.getElementById('tabla_series_disponibles');
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Cargando...</td></tr>';
+    
+    fetch(`${API_BASE}/series/${id_producto}/disponibles`, {
+        headers: { 'x-user-id': localStorage.getItem('compunic_admin_id') }
+    })
+    .then(res => res.json())
+    .then(series => {
+        tbody.innerHTML = '';
+        if (series.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #777;">No hay series en stock para este producto</td></tr>';
+            return;
+        }
+        
+        series.forEach(serie => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${serie.NUMERO_SERIE}</strong></td>
+                <td><span class="badge" style="background: ${serie.CONDICION === 'Nuevo' ? '#27ae60' : '#e67e22'};">${serie.CONDICION}</span></td>
+                <td>
+                    <button onclick="eliminarSerie(${serie.ID_SERIE})" style="color: red; background: none; border: none; cursor: pointer;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    })
+    .catch(err => {
+        console.error('Error cargando series:', err);
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: red;">Error al cargar series</td></tr>';
+    });
+}
+window.cargarSeriesDisponibles = cargarSeriesDisponibles;
+
+function enviarSeries(seriales) {
+    if (!idProductoSeriesActual) return alert('No hay producto seleccionado');
+    
+    fetch(`${API_BASE}/series`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'x-user-id': localStorage.getItem('compunic_admin_id'),
+            'x-user-username': localStorage.getItem('compunic_admin_username')
+        },
+        body: JSON.stringify({
+            id_producto: idProductoSeriesActual,
+            seriales: seriales
+        })
+    })
+    .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            throw new Error(data.message || 'Error al registrar series');
+        }
+        return data;
+    })
+    .then(data => {
+        alert(data.message || 'Series registradas exitosamente');
+        // Clear inputs
+        document.getElementById('serie_individual').value = '';
+        document.getElementById('series_lote').value = '';
+        document.getElementById('serie_prefijo').value = '';
+        
+        cargarSeriesDisponibles(idProductoSeriesActual);
+    })
+    .catch(err => {
+        console.error(err);
+        alert(err.message);
+    });
+}
+
+function guardarSerieIndividual() {
+    const serie = document.getElementById('serie_individual').value.trim();
+    const condicion = document.getElementById('condicion_individual').value;
+    
+    if (!serie) return alert('Ingrese un número de serie');
+    
+    enviarSeries([{ numero_serie: serie, condicion: condicion }]);
+}
+window.guardarSerieIndividual = guardarSerieIndividual;
+
+function guardarSeriesLote() {
+    const texto = document.getElementById('series_lote').value;
+    const condicion = document.getElementById('condicion_lote').value;
+    
+    const arraySeries = texto.split(/[\n,]+/).map(s => s.trim()).filter(s => s.length > 0);
+    
+    if (arraySeries.length === 0) return alert('No se encontraron series válidas');
+    
+    const seriales = arraySeries.map(s => ({ numero_serie: s, condicion: condicion }));
+    enviarSeries(seriales);
+}
+window.guardarSeriesLote = guardarSeriesLote;
+
+function guardarSeriesAuto() {
+    const prefijo = document.getElementById('serie_prefijo').value.trim();
+    const cantidad = parseInt(document.getElementById('serie_cantidad').value);
+    
+    if (!prefijo) return alert('Ingrese un prefijo');
+    if (!cantidad || cantidad <= 0) return alert('Ingrese una cantidad válida');
+    
+    fetch(`${API_BASE}/series/${idProductoSeriesActual}`, {
+        headers: { 'x-user-id': localStorage.getItem('compunic_admin_id') }
+    })
+    .then(res => res.json())
+    .then(todasLasSeries => {
+        let maxSuffix = 0;
+        todasLasSeries.forEach(s => {
+            if (s.NUMERO_SERIE.startsWith(prefijo)) {
+                const suffixStr = s.NUMERO_SERIE.substring(prefijo.length);
+                const suffixNum = parseInt(suffixStr, 10);
+                if (!isNaN(suffixNum) && suffixNum > maxSuffix) {
+                    maxSuffix = suffixNum;
+                }
+            }
+        });
+
+        const seriales = [];
+        for (let i = 1; i <= cantidad; i++) {
+            seriales.push({ numero_serie: `${prefijo}${String(maxSuffix + i).padStart(3, '0')}`, condicion: 'Nuevo' });
+        }
+        
+        enviarSeries(seriales);
+    })
+    .catch(err => {
+        console.error('Error al auto-generar:', err);
+        alert('Error al verificar las series existentes para generar nuevas');
+    });
+}
+window.guardarSeriesAuto = guardarSeriesAuto;
+
+function eliminarSerie(id_serie) {
+    if (!confirm('¿Seguro que desea eliminar esta serie del sistema?')) return;
+    
+    fetch(`${API_BASE}/series/${id_serie}`, {
+        method: 'DELETE',
+        headers: { 
+            'x-user-id': localStorage.getItem('compunic_admin_id'),
+            'x-user-username': localStorage.getItem('compunic_admin_username')
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Error al eliminar serie');
+        return res.json();
+    })
+    .then(() => {
+        cargarSeriesDisponibles(idProductoSeriesActual);
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Error al eliminar serie');
+    });
+}
+window.eliminarSerie = eliminarSerie;

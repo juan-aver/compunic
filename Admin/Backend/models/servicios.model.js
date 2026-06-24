@@ -75,6 +75,16 @@ const Servicio = {
         }
     },
 
+    actualizarEstado: async (id, idEstado) => {
+        try {
+            const sql = `UPDATE SERVICIOS SET ID_SERVICIO_ESTADO = ? WHERE ID_SERVICIO = ?`;
+            const [result] = await db.query(sql, [idEstado, id]);
+            return result;
+        } catch (err) {
+            throw new Error('Error al actualizar estado del servicio: ' + err.message);
+        }
+    },
+
     eliminar: async (id) => {
         try {
             const sql = `DELETE FROM SERVICIOS WHERE ID_SERVICIO = ?`;

@@ -121,8 +121,29 @@
         </section>
 
         <div class="table-container" style="margin-top: 25px;">
-            <h2><i class="fas fa-history"></i> Historial de Trabajos Realizados</h2>
-            <table id="tabla-servicios">
+            <h2 style="color: var(--warning-color);"><i class="fas fa-tools"></i> Servicios Activos (En Progreso / Pendientes)</h2>
+            <table id="tabla-servicios-activos">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Descripción</th>
+                        <th>Cliente</th>
+                        <th>Tipo</th>
+                        <th>Garantía</th>
+                        <th>F. Solicitud</th>
+                        <th>Costo</th>
+                        <th>Estado</th>
+                        <th style="text-align: center;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-container" style="margin-top: 35px; opacity: 0.9;">
+            <h2 style="color: var(--success-color);"><i class="fas fa-history"></i> Historial de Trabajos Realizados</h2>
+            <table id="tabla-servicios-historial">
                 <thead>
                     <tr>
                         <th>ID</th>

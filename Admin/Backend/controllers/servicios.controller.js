@@ -71,6 +71,31 @@ const serviciosController = {
         }
     },
 
+    updateEstado: async (req, res) => {
+        try {
+            const { id_servicio_estado } = req.body;
+            if (!id_servicio_estado) {
+                return res.status(400).json({ message: 'El estado es requerido' });
+            }
+
+            const result = await Servicio.actualizarEstado(req.params.id, id_servicio_estado);
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: 'Servicio no encontrado' });
+            }
+            res.json({ message: 'Estado del servicio actualizado' });
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Sistema',
+                accion: 'MODIFICAR',
+                tabla: 'SERVICIOS',
+                descripcion: `Se cambió el estado del servicio ID: ${req.params.id} al estado ID: ${id_servicio_estado}`
+            }).catch(e => console.error('Audit log error:', e));
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    },
+
     delete: async (req, res) => {
         try {
             const result = await Servicio.eliminar(req.params.id);

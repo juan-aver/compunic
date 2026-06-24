@@ -136,6 +136,80 @@
   </div>
 </div>
 
+<!-- Modal de Gestión de Series -->
+<div id="modalSeries" class="producto-form-modal" style="display: none;">
+  <div class="producto-form-modal-overlay" onclick="cerrarModalSeries()"></div>
+  <div class="producto-form-modal-content" style="max-width: 600px;">
+    <div class="producto-form-modal-header">
+      <h3 id="modalSeriesTitle"><i class="fas fa-barcode"></i> Gestión de Series</h3>
+      <button class="producto-form-modal-close" onclick="cerrarModalSeries()">&times;</button>
+    </div>
+    <div class="producto-form-modal-body">
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <button onclick="mostrarFormSerie('individual')" class="btn-modal-save" style="flex:1"><i class="fas fa-plus"></i> Individual</button>
+        <button onclick="mostrarFormSerie('lote')" class="btn-modal-update" style="flex:1"><i class="fas fa-list"></i> En Lote</button>
+        <button onclick="mostrarFormSerie('auto')" class="btn-modal-cancel" style="flex:1; background: #9b59b6;"><i class="fas fa-magic"></i> Auto-Generar</button>
+      </div>
+
+      <!-- Formularios -->
+      <div id="formSerieIndividual" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <label style="font-weight: bold;">Número de Serie</label>
+        <input type="text" id="serie_individual" placeholder="Ej: SN-12345" style="width: 100%; margin-bottom: 10px;" />
+        <label style="font-weight: bold;">Condición</label>
+        <select id="condicion_individual" style="width: 100%; margin-bottom: 10px;">
+          <option value="Nuevo">Nuevo</option>
+          <option value="Seminuevo">Seminuevo</option>
+        </select>
+        <button class="btn-modal-save" onclick="guardarSerieIndividual()" style="width: 100%;">Registrar Serie</button>
+      </div>
+
+      <div id="formSerieLote" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <label style="font-weight: bold;">Pegar números de serie (separados por coma o salto de línea)</label>
+        <textarea id="series_lote" rows="4" style="width: 100%; margin-bottom: 10px;" placeholder="SN-1, SN-2, SN-3..."></textarea>
+        <label style="font-weight: bold;">Condición (para todos)</label>
+        <select id="condicion_lote" style="width: 100%; margin-bottom: 10px;">
+          <option value="Nuevo">Nuevo</option>
+          <option value="Seminuevo">Seminuevo</option>
+        </select>
+        <button class="btn-modal-update" onclick="guardarSeriesLote()" style="width: 100%;">Registrar Lote</button>
+      </div>
+
+      <div id="formSerieAuto" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+          <div style="flex: 2;">
+            <label style="font-weight: bold;">Prefijo</label>
+            <input type="text" id="serie_prefijo" placeholder="Ej: RAM-FURY-" style="width: 100%;" list="lista-prefijos" />
+            <datalist id="lista-prefijos"></datalist>
+          </div>
+          <div style="flex: 1;">
+            <label style="font-weight: bold;">Cantidad</label>
+            <input type="number" id="serie_cantidad" value="10" min="1" style="width: 100%;" />
+          </div>
+        </div>
+        <button class="btn-modal-save" onclick="guardarSeriesAuto()" style="width: 100%; background: #9b59b6;">Generar y Registrar</button>
+      </div>
+
+      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;" />
+      
+      <h4>Series Disponibles (En Stock)</h4>
+      <div style="max-height: 200px; overflow-y: auto;">
+        <table style="width: 100%; font-size: 0.9em;">
+          <thead>
+            <tr>
+              <th>Serie</th>
+              <th>Condición</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tabla_series_disponibles">
+            <!-- Renderizado por JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 <section class="tabla" id="seccion-tabla">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
     <h2 style="margin: 0;">Inventario de Productos</h2>

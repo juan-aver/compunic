@@ -345,12 +345,33 @@ function eliminarItemVenta(index) {
     }
 }
 
+function cancelarVenta() {
+    if (itemsVenta.length === 0) {
+        document.getElementById('sale-form').reset();
+        return;
+    }
+    
+    if (confirm("¿Estás seguro de que deseas cancelar la venta actual? Se perderán todos los productos agregados.")) {
+        itemsVenta = [];
+        renderizarItemsVentaNew();
+        document.getElementById('sale-form').reset();
+        
+        // Resetear badge
+        const badge = document.getElementById('ventas-cart-badge');
+        if (badge) {
+            badge.textContent = '0';
+            badge.style.display = 'none';
+        }
+    }
+}
+
 // ============================================================================
 // HACER FUNCIONES GLOBALES
 // ============================================================================
 window.agregarItemVentaNew = agregarItemVentaNew;
 window.actualizarCantidadVenta = actualizarCantidadVenta;
 window.eliminarItemVenta = eliminarItemVenta;
+window.cancelarVenta = cancelarVenta;
 window.guardarVenta = guardarVenta;
 window.decrementarDesdeCard = decrementarDesdeCard;
 window.incrementarDesdeCard = incrementarDesdeCard;
@@ -432,90 +453,134 @@ function guardarVenta() {
         return alert("Para ventas mayores a C$ 10,000 debe seleccionar un cliente registrado (que tenga Cédula y Teléfono).");
     }
 
-    // Mostrar modal para números de serie
-    let formHtml = '<div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">';
-    itemsVenta.forEach((item, idx) => {
-        formHtml += `<div style="margin-bottom: 10px;">
-            <label style="font-size:12px; display:block; margin-bottom:5px;">Seriales para: <b>${item.nombre}</b> (Cant: ${item.cantidad})</label>
-            <input type="text" id="serial_${idx}" class="form-input" style="width:100%;" placeholder="Ej: SN123, SN124...">
-        </div>`;
-    });
-    formHtml += '</div>';
-
-    const overlay = document.createElement('div');
-    overlay.style = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:center;align-items:center;';
-    
-    const modal = document.createElement('div');
-    modal.style = 'background:var(--bg-card, white);padding:20px;border-radius:8px;width:400px;max-width:90%;color:var(--text-color, black);';
-    modal.innerHTML = `
-        <h3 style="margin-top:0;">Ingresar Números de Serie</h3>
-        <p style="font-size:12px;margin-bottom:15px;opacity:0.8;">Opcional. Separe con comas si son varios.</p>
-        ${formHtml}
-        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
-            <button id="btnCancelSerial" class="btn-cancel" style="padding:8px 15px;background:#ccc;border:none;border-radius:4px;cursor:pointer;">Cancelar</button>
-            <button id="btnSaveSerial" class="btn-register" style="padding:8px 15px;background:#28a745;color:white;border:none;border-radius:4px;cursor:pointer;">Confirmar y Guardar</button>
-        </div>
-    `;
-
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-
-    document.getElementById('btnCancelSerial').onclick = () => {
-        document.body.removeChild(overlay);
-    };
-
-    document.getElementById('btnSaveSerial').onclick = () => {
-        itemsVenta.forEach((item, idx) => {
-            item.numeros_serie = document.getElementById('serial_' + idx).value;
-        });
-        document.body.removeChild(overlay);
+    // 1. Fetch available serials for all items before showing modal
+    Promise.all(itemsVenta.map(item => 
+        fetch(`${API_BASE}/series/${item.id_producto}/disponibles`, {
+            headers: { 'x-user-id': localStorage.getItem('compunic_admin_id') }
+        }).then(r => r.json()).catch(() => [])
+    )).then(results => {
+        let formHtml = '<div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">';
         
-        const payload = {
-            id_cliente: idCliente,
-            nombre_cliente_ocasional: nombreClienteOcasional,
-            id_empleado: idVendedor,
-            fecha: fecha,
-            factura: factura,
-            items: itemsVenta.map(item => ({
-                idProducto: item.id_producto,
-                cantidad: item.cantidad,
-                precioUnitario: item.precio_unitario,
-                subtotal: item.subtotal,
-                numeros_serie: item.numeros_serie
-            }))
+        itemsVenta.forEach((item, idx) => {
+            const seriesDisponibles = results[idx];
+            let selectHtml = '';
+            
+            if (seriesDisponibles.length > 0) {
+                selectHtml = `<div style="font-size: 11px; margin-bottom: 5px;">Seleccione hasta ${item.cantidad} serie(s):</div>`;
+                selectHtml += `<div class="series-checkbox-list" id="series_list_${idx}" style="max-height: 100px; overflow-y: auto; border: 1px solid var(--border-color, #ddd); padding: 5px; border-radius: 4px; margin-bottom: 5px; background: var(--bg-input, #fff);">`;
+                
+                seriesDisponibles.forEach(s => {
+                    const condicionStyle = s.CONDICION === 'Nuevo' ? 'color: #27ae60;' : 'color: #e67e22;';
+                    selectHtml += `<label style="display: block; margin-bottom: 3px; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" value="${s.NUMERO_SERIE}" class="cb-serie-${idx}" onchange="checkMaxSeries(this, ${item.cantidad}, ${idx})">
+                        ${s.NUMERO_SERIE} <span style="font-size: 10px; ${condicionStyle}">(${s.CONDICION})</span>
+                    </label>`;
+                });
+                
+                selectHtml += `</div>`;
+            } else {
+                selectHtml = `<div style="font-size: 11px; color: #e67e22; margin-bottom: 5px;">⚠️ No hay series registradas para este producto.</div>`;
+            }
+            
+            formHtml += `<div style="margin-bottom: 15px; padding: 10px; background: var(--bg-card-alt, #f8f9fa); border-radius: 5px;">
+                <label style="font-size:13px; display:block; margin-bottom:5px; font-weight: bold; color: var(--text-color, #333);">
+                    ${item.nombre} <span style="color: #666; font-weight: normal;">(Cant: ${item.cantidad})</span>
+                </label>
+                ${selectHtml}
+                <div style="font-size: 11px; margin-bottom: 3px;">O escriba manualmente (separados por coma):</div>
+                <input type="text" id="serial_manual_${idx}" class="form-input" style="width:100%; font-size: 12px;" placeholder="Ej: SN123, SN124...">
+            </div>`;
+        });
+        formHtml += '</div>';
+
+        const overlay = document.createElement('div');
+        overlay.style = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:center;align-items:center;';
+        
+        const modal = document.createElement('div');
+        modal.style = 'background:var(--bg-card, white);padding:20px;border-radius:8px;width:450px;max-width:90%;color:var(--text-color, black); box-shadow: 0 4px 15px rgba(0,0,0,0.2);';
+        modal.innerHTML = `
+            <h3 style="margin-top:0; margin-bottom: 15px; color: var(--text-color, #333);"><i class="fas fa-barcode"></i> Asignar Series a la Venta</h3>
+            ${formHtml}
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+                <button id="btnCancelSerial" class="btn-cancel" style="padding:8px 15px;background:#ccc;color:#333;border:none;border-radius:4px;cursor:pointer;">Cancelar</button>
+                <button id="btnSaveSerial" class="btn-register" style="padding:8px 15px;background:#28a745;color:white;border:none;border-radius:4px;cursor:pointer;"><i class="fas fa-save"></i> Confirmar y Guardar</button>
+            </div>
+        `;
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        document.getElementById('btnCancelSerial').onclick = () => {
+            document.body.removeChild(overlay);
         };
 
-    fetch(`${API_BASE}/ventas`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-        .then(async res => {
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || data.error || 'Error al guardar venta');
-            return data;
-        })
-        .then(data => {
-            alert('✅ Venta registrada con éxito ID: ' + data.id_venta);
-            itemsVenta = [];
-            document.getElementById('sale-form').reset();
-            const fecha = new Date();
-            const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-            document.getElementById('factura-input').value = `FAC-${fecha.getFullYear()}${random}`;
-            if (typeof window.inicializarFechaVenta === 'function') {
-                window.inicializarFechaVenta();
-            }
-            // Reset cliente ocasional
-            const wrapper = document.getElementById('cliente-ocasional-wrapper');
-            if (wrapper) wrapper.style.display = 'none';
-            renderizarItemsVentaNew();
-            cargarVentas();
-        })
-        .catch(err => {
-            console.error(err);
-            alert('❌ Error: ' + err.message);
-        });
-    };
+        document.getElementById('btnSaveSerial').onclick = () => {
+            itemsVenta.forEach((item, idx) => {
+                // Get checked checkboxes
+                const checkboxes = document.querySelectorAll(`.cb-serie-${idx}:checked`);
+                const selectedSeries = Array.from(checkboxes).map(cb => cb.value);
+                
+                // Get manual input
+                const manualInput = document.getElementById('serial_manual_' + idx).value.trim();
+                const manualSeries = manualInput ? manualInput.split(',').map(s => s.trim()).filter(s => s) : [];
+                
+                // Combine and remove duplicates
+                const allSeries = [...new Set([...selectedSeries, ...manualSeries])].join(', ');
+                
+                item.numeros_serie = allSeries;
+            });
+            document.body.removeChild(overlay);
+            
+            const payload = {
+                id_cliente: idCliente,
+                nombre_cliente_ocasional: nombreClienteOcasional,
+                id_empleado: idVendedor,
+                fecha: fecha,
+                factura: factura,
+                items: itemsVenta.map(item => ({
+                    idProducto: item.id_producto,
+                    cantidad: item.cantidad,
+                    precioUnitario: item.precio_unitario,
+                    subtotal: item.subtotal,
+                    numeros_serie: item.numeros_serie
+                }))
+            };
+
+            fetch(`${API_BASE}/ventas`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(async res => {
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || data.error || 'Error al guardar venta');
+                    return data;
+                })
+                .then(data => {
+                    alert('✅ Venta registrada con éxito ID: ' + data.id_venta);
+                    itemsVenta = [];
+                    document.getElementById('sale-form').reset();
+                    const fecha = new Date();
+                    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+                    document.getElementById('factura-input').value = `FAC-${fecha.getFullYear()}${random}`;
+                    if (typeof window.inicializarFechaVenta === 'function') {
+                        window.inicializarFechaVenta();
+                    }
+                    // Reset cliente ocasional
+                    const wrapper = document.getElementById('cliente-ocasional-wrapper');
+                    if (wrapper) wrapper.style.display = 'none';
+                    renderizarItemsVentaNew();
+                    cargarVentas();
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('❌ Error: ' + err.message);
+                });
+        };
+    }).catch(err => {
+        console.error("Error fetching series", err);
+        alert("Ocurrió un error al preparar el registro de series.");
+    });
 }
 
 // Eventos para Ventas

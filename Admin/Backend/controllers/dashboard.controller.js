@@ -161,37 +161,24 @@ exports.getVentasVsCostos = async (req, res) => {
     }
 };
 
-// Obtener stock por categoría
-exports.getStockPorCategoria = async (req, res) => {
+// Obtener servicios por estado
+exports.getServiciosPorEstado = async (req, res) => {
     try {
         const query = `
             SELECT 
-                c.NOMBRE_CATEGORIA,
-                COUNT(DISTINCT p.ID_PRODUCTO) as total_productos,
-                SUM(
-                    COALESCE(
-                        (SELECT SUM(dc.CANTIDAD) 
-                         FROM DETALLE_COMPRA dc 
-                         WHERE dc.ID_PRODUCTO = p.ID_PRODUCTO), 0
-                    ) - 
-                    COALESCE(
-                        (SELECT SUM(vp.cantidad_neta) 
-                         FROM VENTAS_PRODUCTOS vp 
-                         WHERE vp.ID_PRODUCTO = p.ID_PRODUCTO), 0
-                    )
-                ) as stock_total
-            FROM CATEGORIAS c
-            LEFT JOIN PRODUCTO_CATEGORIA pc ON c.ID_CATEGORIA = pc.ID_CATEGORIA
-            LEFT JOIN PRODUCTOS p ON pc.ID_PRODUCTO = p.ID_PRODUCTO
-            GROUP BY c.ID_CATEGORIA, c.NOMBRE_CATEGORIA
-            ORDER BY stock_total DESC
+                se.ESTADO,
+                COUNT(s.ID_SERVICIO) as total_servicios
+            FROM SERVICIO_ESTADOS se
+            LEFT JOIN SERVICIOS s ON se.ID_SERVICIO_ESTADO = s.ID_SERVICIO_ESTADO
+            GROUP BY se.ID_SERVICIO_ESTADO, se.ESTADO
+            ORDER BY total_servicios DESC
         `;
         const [datos] = await db.query(query);
 
         res.json(datos);
     } catch (err) {
-        console.error('Error al obtener stock por categoría:', err);
-        res.status(500).json({ error: 'Error al obtener stock por categoría' });
+        console.error('Error al obtener servicios por estado:', err);
+        res.status(500).json({ error: 'Error al obtener servicios por estado' });
     }
 };
 

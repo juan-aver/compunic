@@ -8,8 +8,35 @@
 
 /* ========================================= */
 /* =========================================
-   ESTILO GLASS PARA CONTENEDORES
+   FULL-VIEWPORT POS LAYOUT
+   Sobrescribimos los contenedores padre para
+   que la vista de Ventas ocupe 100% del viewport
+   sin scroll en la página principal.
    ========================================= */
+
+/* Bloquear scroll en la página cuando ventas está cargado */
+.main-content {
+  height: 100vh !important;
+  overflow: hidden !important;
+  padding: 10px 15px 0 15px !important;
+  max-width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Ocultar el header "Sistema de Inventario" para ganar espacio */
+.main-content > .page-header {
+  display: none !important;
+}
+
+/* El div #content ocupa todo lo restante */
+#content {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
 
 .container-fluid,
 .full-width-container {
@@ -19,14 +46,43 @@
   border: none;
   box-shadow: none;
   border-radius: 0;
-  padding: 25px;
-  margin-bottom: 30px;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
-/* Efecto glass en los contenedores internos con 70% opacidad */
+.container-fluid > .container,
+.container-fluid > .full-width-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Efecto glass en los contenedores internos */
 .formulario,
+.form-section {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  border-radius: 15px;
+  padding: 15px 20px;
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .tabla,
-.form-section,
 .glass-table-section,
 .busqueda {
   background: rgba(255, 255, 255, 0.7);
@@ -35,8 +91,17 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
   border-radius: 15px;
-  padding: 25px;
-  margin-bottom: 20px;
+  padding: 20px;
+  margin: 0;
+}
+
+/* El formulario de venta también debe estirarse */
+#sale-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 h1 {
@@ -48,12 +113,13 @@ h1 {
 
 h2,
 h3 {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   border-bottom: 3px solid #007bff;
-  padding-bottom: 10px;
+  padding-bottom: 8px;
   color: #2c3e50;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 p {
@@ -899,11 +965,12 @@ select.error {
 .ventas-pos-header {
   display: flex;
   gap: 12px;
-  margin-bottom: 15px;
-  padding: 12px 16px;
+  margin-bottom: 10px;
+  padding: 10px 16px;
   background: rgba(255, 255, 255, 0.7);
   border-radius: 10px;
   border: 1px solid #e5e7eb;
+  flex-shrink: 0;
 }
 
 .pos-header-field {
@@ -934,18 +1001,22 @@ select.error {
 .ventas-pos-container {
   display: flex;
   gap: 20px;
-  min-height: 500px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .ventas-product-list {
-  flex: 2.5;
+  flex: 1.8;
   overflow-y: auto;
-  max-height: 600px;
+  min-height: 0;
   padding-right: 5px;
 }
 
-.ventas-product-list::-webkit-scrollbar {
-  width: 6px;
+.ventas-pos-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 15px;
 }
 
 .ventas-product-list::-webkit-scrollbar-thumb {
@@ -1065,7 +1136,8 @@ select.error {
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  min-width: 300px;
+  min-width: 350px;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -1093,7 +1165,8 @@ select.error {
   flex: 1;
   overflow-y: auto;
   padding: 10px;
-  max-height: 300px;
+  min-height: 200px;
+  /* Removed max-height to let it fill the flex container */
 }
 
 .ventas-cart-section .cart-total-section {
@@ -1172,7 +1245,8 @@ select.error {
 
 .cart-item-card {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   background: #1a1c29;
   border-radius: 8px;
   margin-bottom: 12px;
@@ -1181,25 +1255,33 @@ select.error {
 }
 
 .cart-item-img {
-  width: 100%;
-  height: 90px;
+  width: 70px;
+  height: 70px;
   object-fit: cover;
   display: block;
+  border-radius: 6px;
+  margin: 10px;
+  flex-shrink: 0;
 }
 
 .cart-item-img-placeholder {
-  width: 100%;
-  height: 90px;
+  width: 70px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #2a2d3e;
   color: #6b7280;
-  font-size: 2rem;
+  font-size: 1.5rem;
+  border-radius: 6px;
+  margin: 10px;
+  flex-shrink: 0;
 }
 
 .cart-item-details {
-  padding: 10px 12px;
+  flex: 1;
+  padding: 10px 12px 10px 0;
+  min-width: 0;
 }
 
 .cart-item-name {

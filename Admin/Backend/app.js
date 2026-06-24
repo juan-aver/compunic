@@ -30,6 +30,7 @@ const aurumRoutes = require('./routes/aurum.routes.js');
 const aurumService = require('./services/aurum.service');
 const pagosRoutes  = require('./routes/pagos.routes.js');
 const auditoriaRoutes = require('./routes/auditoria.routes.js');
+const seriesRoutes = require('./routes/series.routes.js');
 
 
 const app = express();
@@ -79,7 +80,7 @@ app.use('/api/aurum', aurumRoutes);
 app.use('/api/admin/pagos', pagosRoutes);
 app.use('/api/auditorias', auditoriaRoutes);
 app.use('/api/reportes/auditoria', auditoriaRoutes);
-
+app.use('/api/series', seriesRoutes);
 
 
 

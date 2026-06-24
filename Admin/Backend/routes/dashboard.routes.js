@@ -16,7 +16,7 @@ router.get('/servicios-pendientes', dashboardController.getServiciosPendientes);
 router.get('/stock-critico', dashboardController.getStockCritico);
 router.get('/clientes-nuevos', dashboardController.getClientesNuevos);
 router.get('/ventas-vs-costos', dashboardController.getVentasVsCostos);
-router.get('/stock-por-categoria', dashboardController.getStockPorCategoria);
+router.get('/servicios-por-estado', dashboardController.getServiciosPorEstado);
 
 // Nuevas estadísticas de negocio
 router.get('/top-cliente', dashboardController.getTopCliente);

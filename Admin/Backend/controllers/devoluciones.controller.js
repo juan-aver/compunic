@@ -62,7 +62,7 @@ exports.create = async (req, res) => {
         });
     }
 
-    const { id_venta, id_producto, cantidad, motivo, accion } = req.body;
+    const { id_venta, id_producto, cantidad, motivo, accion, numero_serie } = req.body;
 
     // Validar que la acción sea válida
     const accionesValidas = ['reingreso', 'desecho', 'garantia'];
@@ -97,7 +97,8 @@ exports.create = async (req, res) => {
             id_producto: parseInt(id_producto),
             cantidad: parseInt(cantidad),
             motivo: motivo || '',
-            accion: accion
+            accion: accion,
+            numero_serie: numero_serie || ''
         };
 
         const idDevolucion = await Devoluciones.crear(devolucion);
@@ -155,8 +156,9 @@ exports.update = async (req, res) => {
 // Confirmar reingreso al stock
 exports.confirmarReingreso = async (req, res) => {
     const id = req.params.id;
+    const { precio_seminuevo, id_garantia } = req.body || {};
     try {
-        const resultado = await Devoluciones.confirmarReingreso(id);
+        const resultado = await Devoluciones.confirmarReingreso(id, precio_seminuevo, id_garantia);
         res.send({
             message: `Reingreso confirmado. ${resultado.nombre} (x${resultado.cantidad}) registrado en stock.`,
             stock_nuevo: resultado.stock_nuevo,

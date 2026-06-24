@@ -30,6 +30,7 @@ body {
     background: var(--bg-color);
     color: var(--text-color);
     line-height: 1.5;
+    overflow-x: hidden;
 }
 
 a {
@@ -145,7 +146,8 @@ ul {
     transition: all 0.2s ease;
 }
 
-.nav-item-dropdown:hover .dropdown-menu {
+.nav-item-dropdown:hover .dropdown-menu,
+.dropdown-menu.active {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
@@ -611,4 +613,75 @@ ul {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* =========================================
+   NAVBAR TOGGLE (Global)
+   ========================================= */
+
+/* Toggle button - always visible */
+.nav-toggle-btn {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1100;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #145D90;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    transition: all 0.3s ease;
+}
+
+.nav-toggle-btn:hover {
+    color: #56A5DD;
+    transform: scale(1.15);
+    box-shadow: none;
+}
+
+.nav-toggle-btn i {
+    transition: transform 0.3s ease;
+}
+
+/* When nav is visible, button sits inside the nav area */
+body:not(.nav-hidden) .nav-toggle-btn {
+    top: 12px;
+    left: 12px;
+}
+
+/* When nav is hidden, button moves to top-left corner */
+body.nav-hidden .nav-toggle-btn {
+    top: 8px;
+    left: 8px;
+    color: white;
+}
+
+body.nav-hidden .nav-toggle-btn i {
+    transform: rotate(180deg);
+}
+
+/* Smooth transition for the nav */
+.top-nav {
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+                opacity 0.35s ease,
+                max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top;
+}
+
+/* Hidden state */
+body.nav-hidden .top-nav {
+    transform: translateY(-100%);
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
 }

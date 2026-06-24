@@ -203,3 +203,91 @@ async function cargarGraficoStockCategoria() {
         console.error('Error al cargar gráfico stock/categoría:', error);
     }
 }
+
+// ==========================================
+// NUEVAS FUNCIONES PARA MODALES (Pop-ups)
+// ==========================================
+
+// Abrir modal de Stock Crítico
+async function abrirModalStockCritico() {
+    const modal = document.getElementById('stock-critico-modal');
+    const body = document.getElementById('stock-critico-body');
+    
+    if (!modal || !body) return;
+
+    body.innerHTML = '<tr><td colspan="2" style="text-align: center;">Cargando...</td></tr>';
+    modal.style.display = 'flex';
+
+    try {
+        const response = await fetch(`${API_BASE_DASHBOARD}/stock-critico`);
+        const data = await response.json();
+
+        if (!data.productos || data.productos.length === 0) {
+            body.innerHTML = '<tr><td colspan="2" style="text-align: center;">No hay productos con stock crítico.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = data.productos.map(p => `
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 10px;">${p.nombre}</td>
+                <td style="padding: 10px; color: var(--error-color); font-weight: bold;">${p.stock}</td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        console.error('Error fetching stock critico:', e);
+        body.innerHTML = '<tr><td colspan="2" style="text-align: center; color: red;">Error al cargar datos.</td></tr>';
+    }
+}
+
+// Abrir modal de Servicios Pendientes
+async function abrirModalServiciosPendientes() {
+    const modal = document.getElementById('servicios-pendientes-modal');
+    const body = document.getElementById('servicios-pendientes-body');
+    
+    if (!modal || !body) return;
+
+    body.innerHTML = '<tr><td colspan="4" style="text-align: center;">Cargando...</td></tr>';
+    modal.style.display = 'flex';
+
+    try {
+        const res = await fetch(`${API_BASE}/servicios`);
+        const servicios = await res.json();
+        
+        // Filtrar pendientes y en progreso (excluir 'Completado' o similares)
+        let pendientes = servicios.filter(s => {
+            const estado = s.ESTADO_SERVICIO ? s.ESTADO_SERVICIO.toLowerCase() : '';
+            return !estado.includes('completado') && !estado.includes('entregado');
+        });
+        
+        // Ordenar por antigüedad (los más antiguos primero = menor fecha)
+        pendientes.sort((a, b) => new Date(a.FECHA_SOLICITUD) - new Date(b.FECHA_SOLICITUD));
+
+        if (pendientes.length === 0) {
+            body.innerHTML = '<tr><td colspan="4" style="text-align: center;">No hay servicios pendientes.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = pendientes.map((s, index) => {
+            // Calcular días desde la solicitud para ver si es urgente (ej. > 2 días)
+            const dias = Math.floor((new Date() - new Date(s.FECHA_SOLICITUD)) / (1000 * 60 * 60 * 24));
+            
+            // Los primeros (más antiguos) o los de > 2 días son urgentes
+            const isUrgente = dias >= 2 || index < 3; 
+            
+            const rowStyle = isUrgente ? 'color: #ef4444; font-weight: 600; background-color: rgba(239, 68, 68, 0.05);' : '';
+            const tagUrgente = isUrgente ? ' <span style="background: #ef4444; color: white; font-size: 10px; padding: 2px 5px; border-radius: 4px; margin-left: 5px;">URGENTE</span>' : '';
+
+            return `
+            <tr style="border-bottom: 1px solid var(--border-color); ${rowStyle}">
+                <td style="padding: 10px;">#${s.ID_SERVICIO}</td>
+                <td style="padding: 10px;">${s.DESCRIPCION || 'Sin descripción'}${tagUrgente}</td>
+                <td style="padding: 10px;">${new Date(s.FECHA_SOLICITUD).toLocaleDateString()}</td>
+                <td style="padding: 10px;">${s.ESTADO_SERVICIO || 'Desconocido'}</td>
+            </tr>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error('Error fetching servicios pendientes:', e);
+        body.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Error al cargar datos.</td></tr>';
+    }
+}

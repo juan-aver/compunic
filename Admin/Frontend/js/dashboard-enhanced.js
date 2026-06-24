@@ -191,7 +191,7 @@ const DashboardEnhanced = {
         // Esperar a que los datos se carguen del backend
         setTimeout(() => {
             this.createVentasCostosChart();
-            this.createStockCategoriaChart();
+            this.createServiciosEstadoChart();
         }, 1000);
     },
 
@@ -301,95 +301,123 @@ const DashboardEnhanced = {
         this.charts.ventasCostos.render();
     },
 
-    createStockCategoriaChart() {
-        const element = document.getElementById('chart-stock-categoria');
+    async createServiciosEstadoChart() {
+        const element = document.getElementById('chart-servicios-estado');
         if (!element) return;
 
-        // Datos de ejemplo
-        const stockData = {
-            categorias: ['Laptops', 'Periféricos', 'Componentes', 'Accesorios', 'Software'],
-            cantidades: [45, 120, 78, 95, 32]
-        };
+        let estados = ['Completado', 'En Progreso', 'Pendiente'];
+        let cantidades = [0, 0, 0];
+
+        try {
+            const response = await fetch(`${typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:3000/api'}/dashboard/servicios-por-estado`);
+            const data = await response.json();
+            if (data && data.length > 0) {
+                estados = data.map(d => d.ESTADO);
+                cantidades = data.map(d => parseInt(d.total_servicios, 10) || 0);
+            }
+        } catch (e) {
+            console.error('Error fetching servicios por estado:', e);
+        }
 
         const isDark = this.getCurrentTheme() === 'dark';
 
         const options = {
-            series: [{
-                name: 'Stock',
-                data: stockData.cantidades
-            }],
+            series: cantidades,
             chart: {
-                type: 'bar',
+                type: 'donut',
                 height: 350,
-                toolbar: {
-                    show: true
-                },
                 background: 'transparent',
                 foreColor: isDark ? '#cbd5e1' : '#64748b',
                 animations: {
                     enabled: true,
                     easing: 'easeinout',
                     speed: 800
+                },
+                events: {
+                    dataPointSelection: async (event, chartContext, config) => {
+                        const index = config.dataPointIndex;
+                        const estadoSeleccionado = estados[index];
+                        if (!estadoSeleccionado) return;
+
+                        const modal = document.getElementById('servicios-estado-modal');
+                        const titulo = document.getElementById('servicios-estado-titulo');
+                        const body = document.getElementById('servicios-estado-body');
+                        
+                        titulo.textContent = `Tickets: ${estadoSeleccionado}`;
+                        body.innerHTML = '<tr><td colspan="3" style="text-align: center;">Cargando servicios...</td></tr>';
+                        modal.style.display = 'flex';
+
+                        try {
+                            const baseUrl = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:3000/api';
+                            const res = await fetch(`${baseUrl}/servicios`);
+                            const servicios = await res.json();
+                            
+                            // Filtrar servicios por estado
+                            const filtrados = servicios.filter(s => s.ESTADO_SERVICIO === estadoSeleccionado || s.ESTADO === estadoSeleccionado || s.NOMBRE_ESTADO === estadoSeleccionado);
+                            
+                            if (filtrados.length === 0) {
+                                body.innerHTML = '<tr><td colspan="3" style="text-align: center;">No hay tickets en este estado.</td></tr>';
+                                return;
+                            }
+
+                            body.innerHTML = filtrados.map(s => `
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 10px;">#${s.ID_SERVICIO}</td>
+                                    <td style="padding: 10px;">${s.DESCRIPCION || 'Sin descripción'}</td>
+                                    <td style="padding: 10px;">${new Date(s.FECHA_SOLICITUD).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('');
+                        } catch (e) {
+                            console.error('Error fetching servicios', e);
+                            body.innerHTML = '<tr><td colspan="3" style="text-align: center; color: red;">Error al cargar datos.</td></tr>';
+                        }
+                    }
                 }
             },
+            labels: estados,
             plotOptions: {
-                bar: {
-                    horizontal: true,
-                    borderRadius: 8,
-                    distributed: true,
-                    dataLabels: {
-                        position: 'top'
+                pie: {
+                    donut: {
+                        size: '70%',
+                        labels: {
+                            show: true,
+                            name: { show: true },
+                            value: { show: true }
+                        }
                     }
                 }
             },
             colors: [
-                this.colors.primary,
                 this.colors.success,
                 this.colors.warning,
+                this.colors.error,
                 this.colors.info,
-                this.colors.secondary
+                this.colors.primary
             ],
             dataLabels: {
-                enabled: true,
-                style: {
-                    colors: ['#fff']
-                },
-                offsetX: 30
+                enabled: true
             },
-            xaxis: {
-                categories: stockData.categorias,
-                labels: {
-                    style: {
-                        colors: isDark ? '#cbd5e1' : '#64748b'
-                    }
-                }
-            },
-            yaxis: {
-                labels: {
-                    style: {
-                        colors: isDark ? '#cbd5e1' : '#64748b'
-                    }
-                }
-            },
-            grid: {
-                borderColor: isDark ? '#334155' : '#e2e8f0',
-                strokeDashArray: 4
+            stroke: {
+                colors: isDark ? ['#1e293b'] : ['#ffffff']
             },
             legend: {
-                show: false
+                position: 'bottom',
+                labels: {
+                    colors: isDark ? '#cbd5e1' : '#64748b'
+                }
             },
             tooltip: {
                 theme: isDark ? 'dark' : 'light',
                 y: {
                     formatter: (value) => {
-                        return value + ' productos';
+                        return value + ' tickets';
                     }
                 }
             }
         };
 
-        this.charts.stockCategoria = new ApexCharts(element, options);
-        this.charts.stockCategoria.render();
+        this.charts.serviciosEstado = new ApexCharts(element, options);
+        this.charts.serviciosEstado.render();
     },
 
     // ==========================================

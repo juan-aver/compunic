@@ -15,6 +15,7 @@ router.get('/estados', serviciosController.getEstados);
 router.get('/:id', serviciosController.getById);
 router.post('/', serviciosController.create);
 router.put('/:id', serviciosController.update);
+router.put('/:id/estado', serviciosController.updateEstado);
 router.delete('/:id', serviciosController.delete);
 
 module.exports = router;

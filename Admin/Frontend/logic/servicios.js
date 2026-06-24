@@ -74,28 +74,41 @@ function cerrarModalServicio() {
 window.cerrarModalServicio = cerrarModalServicio;
 
 function cargarServicios() {
-    const tabla = document.getElementById("tabla-servicios");
-    if (!tabla) return;
+    const tablaActivos = document.getElementById("tabla-servicios-activos");
+    const tablaHistorial = document.getElementById("tabla-servicios-historial");
+    if (!tablaActivos || !tablaHistorial) return;
 
-    const tbody = tabla.querySelector("tbody");
-    if (!tbody) return;
+    const tbodyActivos = tablaActivos.querySelector("tbody");
+    const tbodyHistorial = tablaHistorial.querySelector("tbody");
+    if (!tbodyActivos || !tbodyHistorial) return;
 
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Cargando historial...</td></tr>';
+    tbodyActivos.innerHTML = '<tr><td colspan="9" style="text-align:center;">Cargando servicios activos...</td></tr>';
+    tbodyHistorial.innerHTML = '<tr><td colspan="10" style="text-align:center;">Cargando historial...</td></tr>';
 
-    fetch(`${API_BASE}/servicios`)
+    // Para la edición inline, necesitamos los estados disponibles
+    fetch(`${API_BASE}/servicios/estados`)
+        .then(res => res.json())
+        .then(estadosDB => {
+            window._estadosServicios = estadosDB;
+
+            return fetch(`${API_BASE}/servicios`);
+        })
         .then(res => res.json())
         .then(data => {
             const lista = Array.isArray(data) ? data : (data.data || []);
-            tbody.innerHTML = "";
+            tbodyActivos.innerHTML = "";
+            tbodyHistorial.innerHTML = "";
 
             if (lista.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No hay trabajos registrados.</td></tr>';
+                tbodyActivos.innerHTML = '<tr><td colspan="9" style="text-align:center;">No hay servicios activos.</td></tr>';
+                tbodyHistorial.innerHTML = '<tr><td colspan="10" style="text-align:center;">No hay trabajos registrados en el historial.</td></tr>';
                 return;
             }
 
-            lista.forEach(s => {
-                const tr = document.createElement("tr");
+            let countActivos = 0;
+            let countHistorial = 0;
 
+            lista.forEach(s => {
                 const cliente = s.NOMBRE_CLIENTE
                     ? `${s.NOMBRE_CLIENTE} ${s.APELLIDO_CLIENTE || ''}`
                     : (s.nombre_cliente || `ID: ${s.ID_CLIENTE}`);
@@ -110,33 +123,101 @@ function cargarServicios() {
                 const fechaSolicitud = s.FECHA_SOLICITUD ? new Date(s.FECHA_SOLICITUD).toLocaleDateString() : '-';
                 const fechaEjecucion = s.FECHA_EJECUCION ? new Date(s.FECHA_EJECUCION).toLocaleDateString() : '-';
 
-                tr.innerHTML = `
-                    <td>${s.ID_SERVICIO || s.id_servicio}</td>
-                    <td>${s.DESCRIPCION || s.descripcion || '-'}</td>
-                    <td>${cliente}</td>
-                    <td>${tipo}</td>
-                    <td>${garantia}</td>
-                    <td>${fechaSolicitud}</td>
-                    <td>${fechaEjecucion}</td>
-                    <td>${estado}</td>
-                    <td>C$${parseFloat(s.COSTO || 0).toFixed(2)}</td>
-                    <td style="text-align:center;">
-                        <button onclick="editarServicioPorFila(event, window._allServicios[${lista.indexOf(s)}])"
-                            style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-                    </td>
-                `;
+                const tr = document.createElement("tr");
 
-                tbody.appendChild(tr);
+                // Clasificar en Activos o Historial
+                const estadoLower = estado.toLowerCase();
+                const esHistorial = estadoLower.includes('completado') || estadoLower.includes('entregado') || estadoLower.includes('cancelado');
+
+                if (esHistorial) {
+                    // TABLA HISTORIAL
+                    tr.innerHTML = `
+                        <td>${s.ID_SERVICIO || s.id_servicio}</td>
+                        <td>${s.DESCRIPCION || s.descripcion || '-'}</td>
+                        <td>${cliente}</td>
+                        <td>${tipo}</td>
+                        <td>${garantia}</td>
+                        <td>${fechaSolicitud}</td>
+                        <td>${fechaEjecucion}</td>
+                        <td><span class="badge ${estadoLower.includes('cancelado') ? 'badge-error' : 'badge-success'}">${estado}</span></td>
+                        <td>C$${parseFloat(s.COSTO || 0).toFixed(2)}</td>
+                        <td style="text-align:center;">
+                            <button onclick="editarServicioPorFila(event, window._allServicios[${lista.indexOf(s)}])"
+                                style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                        </td>
+                    `;
+                    tbodyHistorial.appendChild(tr);
+                    countHistorial++;
+                } else {
+                    // TABLA ACTIVOS (En Progreso / Pendientes)
+                    // Select dinámico para estado
+                    let optionsHTML = '';
+                    if (window._estadosServicios) {
+                        window._estadosServicios.forEach(e => {
+                            const selected = (e.ID_SERVICIO_ESTADO === s.ID_SERVICIO_ESTADO) ? 'selected' : '';
+                            optionsHTML += `<option value="${e.ID_SERVICIO_ESTADO}" ${selected}>${e.ESTADO}</option>`;
+                        });
+                    }
+
+                    tr.innerHTML = `
+                        <td>${s.ID_SERVICIO || s.id_servicio}</td>
+                        <td>${s.DESCRIPCION || s.descripcion || '-'}</td>
+                        <td>${cliente}</td>
+                        <td>${tipo}</td>
+                        <td>${garantia}</td>
+                        <td>${fechaSolicitud}</td>
+                        <td>C$${parseFloat(s.COSTO || 0).toFixed(2)}</td>
+                        <td>
+                            <select onchange="cambiarEstadoServicioInline(${s.ID_SERVICIO || s.id_servicio}, this.value)"
+                                style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; background-color: #ffffff; color: #334155; font-weight: 500; cursor: pointer; outline: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                ${optionsHTML}
+                            </select>
+                        </td>
+                        <td style="text-align:center;">
+                            <button onclick="editarServicioPorFila(event, window._allServicios[${lista.indexOf(s)}])"
+                                style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">
+                                <i class="fas fa-edit"></i> Completa
+                            </button>
+                        </td>
+                    `;
+                    tbodyActivos.appendChild(tr);
+                    countActivos++;
+                }
             });
+
+            if (countActivos === 0) tbodyActivos.innerHTML = '<tr><td colspan="9" style="text-align:center;">No hay servicios activos.</td></tr>';
+            if (countHistorial === 0) tbodyHistorial.innerHTML = '<tr><td colspan="10" style="text-align:center;">No hay trabajos registrados en el historial.</td></tr>';
 
             window._allServicios = lista;
         })
         .catch(err => {
             console.error(err);
-            tbody.innerHTML = `<tr><td colspan="10" style="color:red; text-align:center;">Error de conexión</td></tr>`;
+            tbodyActivos.innerHTML = `<tr><td colspan="9" style="color:red; text-align:center;">Error de conexión</td></tr>`;
+            tbodyHistorial.innerHTML = `<tr><td colspan="10" style="color:red; text-align:center;">Error de conexión</td></tr>`;
         });
+}
+
+function cambiarEstadoServicioInline(idServicio, nuevoEstadoId) {
+    fetch(`${API_BASE}/servicios/${idServicio}/estado`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_servicio_estado: nuevoEstadoId })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Error al actualizar estado');
+        return res.json();
+    })
+    .then(data => {
+        // En lugar de alert molesto, podemos mostrar un toast o simplemente recargar
+        cargarServicios();
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Error al actualizar estado: ' + err.message);
+        cargarServicios(); // Revertir visualmente recargando
+    });
 }
 
 // Cargar servicio en modal para editar

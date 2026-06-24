@@ -117,6 +117,20 @@
 </head>
 
 <body>
+  <!-- Botón toggle para ocultar/mostrar navbar -->
+  <button class="nav-toggle-btn" id="nav-toggle-btn" title="Ocultar/Mostrar menú">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+  <script>
+    // Restaurar estado guardado
+    if (localStorage.getItem('nav-hidden') === 'true') {
+      document.body.classList.add('nav-hidden');
+    }
+    document.getElementById('nav-toggle-btn').addEventListener('click', function() {
+      document.body.classList.toggle('nav-hidden');
+      localStorage.setItem('nav-hidden', document.body.classList.contains('nav-hidden'));
+    });
+  </script>
   <div class="app-container">
     <nav class="top-nav glass">
       <div class="nav-brand">
@@ -163,12 +177,20 @@
           </ul>
         </li>
       </ul>
-      <div class="user-profile">
-        <span id="user-display">Usuario: ADMIN</span>
-        <img src="assets/img/icon user.png" alt="User" class="user-avatar">
-        <button onclick="AurumTutorial.start(false)" class="btn-tutorial">✨ Guía Aurum</button>
-        <button onclick="Auth.logout()"
-          style="margin-left: 20px; background: #d00505; border: none; color: #ffffff; padding: 10px 20px; cursor: pointer; font-weight: bold;">Salir</button>
+      <div class="user-profile" style="position: relative;">
+        <!-- The theme toggle gets prepended here by JS -->
+        <img src="assets/img/icon user.png" alt="User" class="user-avatar" id="user-avatar-btn" style="cursor: pointer;" onclick="document.getElementById('user-profile-menu').classList.toggle('active')">
+        
+        <!-- Dropdown / Modal Perfil -->
+        <div id="user-profile-menu" class="dropdown-menu glass user-profile-dropdown" style="right: 0; left: auto; padding: 1rem; min-width: 250px;">
+          <div style="text-align: center; margin-bottom: 15px;">
+            <img src="assets/img/icon user.png" alt="User" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid #56A5DD; margin-bottom: 10px;">
+            <div id="user-display" style="font-weight: bold; font-size: 1.1rem; color: var(--text-color);">Usuario: ADMIN</div>
+          </div>
+          <hr style="border-top: 1px solid rgba(86, 165, 221, 0.2); margin-bottom: 15px;">
+          <button onclick="AurumTutorial.start(false); document.getElementById('user-profile-menu').classList.remove('active');" class="btn-tutorial" style="width: 100%; margin-left: 0; margin-bottom: 10px; justify-content: center; padding: 10px;">✨ Guía Aurum</button>
+          <button onclick="Auth.logout()" style="width: 100%; background: #d00505; border: none; color: #ffffff; padding: 10px; cursor: pointer; font-weight: bold; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">Cerrar Sesión</button>
+        </div>
       </div>
     </nav>
 
@@ -269,7 +291,6 @@
     <div class="main-content desktop-nav">
       <header class="page-header">
         <h1>Sistema de Inventario Compunic</h1>
-        <p class="subtitle">Panel de Control</p>
       </header>
 
       <div id="content">
@@ -292,7 +313,7 @@
           </div>
 
           <!-- Tarjeta 2: Servicios -->
-          <div class="stat-card stat-card-red stagger-item" onclick="cargarVista('gestion-servicios', false)" style="cursor: pointer;">
+          <div class="stat-card stat-card-red stagger-item" onclick="abrirModalServiciosPendientes()" style="cursor: pointer;">
             <div class="stat-icon">
               <i class="fas fa-clipboard-list" style="font-size: 40px;"></i>
             </div>
@@ -307,7 +328,7 @@
           </div>
 
           <!-- Tarjeta 3: Stock Crítico (Solo Admin) -->
-          <div class="stat-card stat-card-yellow stagger-item admin-only" onclick="cargarVista('gestion-productos', false)" style="cursor: pointer;">
+          <div class="stat-card stat-card-yellow stagger-item admin-only" onclick="abrirModalStockCritico()" style="cursor: pointer;">
             <div class="stat-icon">
               <i class="fas fa-box" style="font-size: 40px;"></i>
             </div>
@@ -381,8 +402,8 @@
             </div>
           </div>
           <div class="chart-card">
-            <h4>Stock por Categoría</h4>
-            <div class="chart-placeholder" id="chart-stock-categoria">
+            <h4>Tickets de Servicio por Estado</h4>
+            <div class="chart-placeholder" id="chart-servicios-estado">
               <p>Cargando datos del gráfico...</p>
             </div>
           </div>
@@ -392,6 +413,71 @@
   </div>
   <!-- AURUM Chatbot Widget (solo visible para admins) -->
   <script src="js/aurum-chat.js" defer></script>
+
+  <!-- Modal de Servicios por Estado -->
+  <div id="servicios-estado-modal" class="modal-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div class="modal-content glass" style="width: 90%; max-width: 600px; padding: 2rem; border-radius: 12px; position: relative; background: var(--bg-color); color: var(--text-color); max-height: 80vh; display: flex; flex-direction: column;">
+        <button onclick="document.getElementById('servicios-estado-modal').style.display='none'" class="btn-close" style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color);">&times;</button>
+        <h3 id="servicios-estado-titulo" style="margin-top: 0; color: var(--primary-color);">Tickets</h3>
+        <div class="table-responsive" style="margin-top: 1rem; overflow-y: auto;">
+            <table class="data-table" style="width: 100%; text-align: left; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-color);">
+                        <th style="padding: 10px;">ID</th>
+                        <th style="padding: 10px;">Descripción</th>
+                        <th style="padding: 10px;">Fecha Solicitud</th>
+                    </tr>
+                </thead>
+                <tbody id="servicios-estado-body">
+                    <!-- Filas dinámicas -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+  </div>
+  <!-- Modal de Stock Crítico -->
+  <div id="stock-critico-modal" class="modal-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div class="modal-content glass" style="width: 90%; max-width: 600px; padding: 2rem; border-radius: 12px; position: relative; background: var(--bg-color); color: var(--text-color); max-height: 80vh; display: flex; flex-direction: column;">
+        <button onclick="document.getElementById('stock-critico-modal').style.display='none'" class="btn-close" style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color);">&times;</button>
+        <h3 style="margin-top: 0; color: var(--warning-color);">Stock Crítico</h3>
+        <div class="table-responsive" style="margin-top: 1rem; overflow-y: auto;">
+            <table class="data-table" style="width: 100%; text-align: left; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-color);">
+                        <th style="padding: 10px;">Producto</th>
+                        <th style="padding: 10px;">Stock Actual</th>
+                    </tr>
+                </thead>
+                <tbody id="stock-critico-body">
+                    <!-- Filas dinámicas -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+  </div>
+
+  <!-- Modal de Servicios Pendientes -->
+  <div id="servicios-pendientes-modal" class="modal-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div class="modal-content glass" style="width: 90%; max-width: 700px; padding: 2rem; border-radius: 12px; position: relative; background: var(--bg-color); color: var(--text-color); max-height: 80vh; display: flex; flex-direction: column;">
+        <button onclick="document.getElementById('servicios-pendientes-modal').style.display='none'" class="btn-close" style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color);">&times;</button>
+        <h3 style="margin-top: 0; color: var(--error-color);">Servicios Pendientes / Urgentes</h3>
+        <div class="table-responsive" style="margin-top: 1rem; overflow-y: auto;">
+            <table class="data-table" style="width: 100%; text-align: left; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-color);">
+                        <th style="padding: 10px;">Ticket</th>
+                        <th style="padding: 10px;">Descripción</th>
+                        <th style="padding: 10px;">Fecha Solicitud</th>
+                        <th style="padding: 10px;">Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="servicios-pendientes-body">
+                    <!-- Filas dinámicas -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+  </div>
 </body>
 
 </html>

@@ -30,6 +30,43 @@ const Ventas = {
     try {
       await connection.beginTransaction();
 
+      // 0. Validar números de serie ingresados
+      for (const item of venta.items) {
+        // Check if product requires serial numbers
+        const [checkSeries] = await connection.query(
+          `SELECT COUNT(*) as seriesDisponibles FROM PRODUCTO_SERIES WHERE ID_PRODUCTO = ? AND ESTADO = 'en_stock'`,
+          [item.idProducto]
+        );
+        const requiresSeries = checkSeries[0].seriesDisponibles > 0;
+
+        if (requiresSeries && (!item.numeros_serie || item.numeros_serie.trim() === '')) {
+            throw new Error(`El producto debe llevar números de serie. Por favor seleccione ${item.cantidad} serie(s).`);
+        }
+
+        if (item.numeros_serie && item.numeros_serie.trim() !== '') {
+          const seriesArray = item.numeros_serie.split(',').map(s => s.trim()).filter(s => s);
+          
+          if (seriesArray.length !== item.cantidad && requiresSeries) {
+            throw new Error(`Debe seleccionar exactamente ${item.cantidad} número(s) de serie. Ha seleccionado ${seriesArray.length}.`);
+          }
+          
+          if (seriesArray.length > 0) {
+            const placeholders = seriesArray.map(() => '?').join(',');
+            const [rows] = await connection.query(
+              `SELECT NUMERO_SERIE FROM PRODUCTO_SERIES WHERE ID_PRODUCTO = ? AND NUMERO_SERIE IN (${placeholders}) AND ESTADO = 'en_stock'`,
+              [item.idProducto, ...seriesArray]
+            );
+            
+            const foundSeries = rows.map(r => r.NUMERO_SERIE);
+            const notFound = seriesArray.filter(s => !foundSeries.includes(s));
+            
+            if (notFound.length > 0) {
+              throw new Error(`Las siguientes series no existen o no están disponibles en stock: ${notFound.join(', ')}`);
+            }
+          }
+        }
+      }
+
       // 1. Insertar en VENTAS con FACTURA temporal
       const tempFactura = `TEMP-${Date.now()}`;
 
@@ -60,7 +97,7 @@ const Ventas = {
         [facturaFinal, totalConIVA, idVenta]
       );
 
-      // 3. Insertar productos en VENTAS_PRODUCTOS
+      // 3. Insertar productos en VENTAS_PRODUCTOS y actualizar PRODUCTO_SERIES
       if (venta.items && venta.items.length > 0) {
         const values = venta.items.map(item => [
           idVenta,
@@ -75,6 +112,22 @@ const Ventas = {
           'INSERT INTO VENTAS_PRODUCTOS (ID_VENTA, ID_PRODUCTO, cantidad_neta, precio_venta, sub_total, numeros_serie) VALUES ?',
           [values]
         );
+
+        // Actualizar el estado de las series a 'vendido'
+        for (const item of venta.items) {
+          if (item.numeros_serie) {
+            const seriesArray = item.numeros_serie.split(',').map(s => s.trim()).filter(s => s);
+            if (seriesArray.length > 0) {
+              const placeholders = seriesArray.map(() => '?').join(',');
+              await connection.query(
+                `UPDATE PRODUCTO_SERIES 
+                 SET ESTADO = 'vendido', ID_VENTA = ? 
+                 WHERE ID_PRODUCTO = ? AND NUMERO_SERIE IN (${placeholders})`,
+                [idVenta, item.idProducto, ...seriesArray]
+              );
+            }
+          }
+        }
       }
 
       await connection.commit();

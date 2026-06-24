@@ -68,9 +68,9 @@ class ThemeManager {
      */
     createToggle() {
         // Buscar navbar o header
-        const navbar = document.querySelector('.navbar') ||
-            document.querySelector('header') ||
-            document.querySelector('.top-nav');
+        const navbar = document.querySelector('.top-nav') ||
+            document.querySelector('.navbar') ||
+            document.querySelector('header');
 
         if (!navbar) {
             console.warn('No se encontró navbar para agregar toggle');
@@ -107,8 +107,17 @@ class ThemeManager {
             </button>
         `;
 
-        // Agregar al navbar
-        navbar.appendChild(toggleContainer);
+        // Agregar al contenedor adecuado
+        const userProfile = navbar.querySelector('.user-profile');
+        if (userProfile) {
+            // Insertar al inicio para que el perfil/usuario quede a la derecha
+            userProfile.prepend(toggleContainer);
+            toggleContainer.style.marginLeft = '0';
+            toggleContainer.style.marginRight = '15px';
+            toggleContainer.style.padding = '0';
+        } else {
+            navbar.appendChild(toggleContainer);
+        }
 
         // Agregar event listener
         const toggleButton = document.getElementById('theme-toggle');

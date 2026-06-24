@@ -87,31 +87,38 @@ function abrirModalReingreso(id, nombreProducto, cantidad, factura, fecha, motiv
     overlay.className = 'reingreso-modal-overlay';
 
     overlay.innerHTML = `
-        <div class="reingreso-modal" role="dialog" aria-modal="true">
+        <div class="reingreso-modal" role="dialog" aria-modal="true" style="max-width: 500px;">
             <h3>🔄 Confirmar Reingreso al Stock</h3>
-            <p class="modal-subtitle">¿El producto fue reparado y está listo para reingresar al inventario?</p>
+            <p class="modal-subtitle">Este producto reingresará como <b>Seminuevo</b> en una tarjeta independiente.</p>
 
             <div class="detail-grid">
                 <div class="detail-item">
-                    <div class="detail-label">Producto</div>
+                    <div class="detail-label">Producto Original</div>
                     <div class="detail-value">${nombreProducto}</div>
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Cantidad</div>
                     <div class="detail-value">${cantidad} unidad${cantidad > 1 ? 'es' : ''}</div>
                 </div>
-                <div class="detail-item">
-                    <div class="detail-label">Factura</div>
-                    <div class="detail-value">${factura}</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Fecha devolución</div>
-                    <div class="detail-value">${fecha}</div>
-                </div>
                 ${motivo ? `<div class="detail-item" style="grid-column: 1 / -1;">
-                    <div class="detail-label">Motivo</div>
+                    <div class="detail-label">Motivo de Devolución</div>
                     <div class="detail-value">${motivo}</div>
                 </div>` : ''}
+            </div>
+            
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+            <h4 style="margin-bottom: 10px; color: #2c3e50;">Datos del Producto Seminuevo</h4>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Precio de Venta (Seminuevo)</label>
+                <input type="number" id="reingreso-precio" class="input-form" placeholder="Ej: 50000" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" required />
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Garantía (Seminuevo)</label>
+                <select id="reingreso-garantia" class="input-form" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="" disabled selected>Cargando garantías...</option>
+                </select>
             </div>
 
             <div id="reingreso-resultado" style="display:none; padding: 0.75rem 1rem; border-radius: 10px; margin-bottom: 1rem; font-weight: 600;"></div>
@@ -120,7 +127,7 @@ function abrirModalReingreso(id, nombreProducto, cantidad, factura, fecha, motiv
                 <button type="button" class="btn-cancel-reingreso" onclick="cerrarModalReingreso()">Cancelar</button>
                 <button type="button" class="btn-confirm-reingreso" id="btn-confirmar-reingreso"
                     onclick="ejecutarReingreso(${id}, this)">
-                    ✅ Confirmar Reingreso
+                    ✅ Crear/Actualizar Seminuevo
                 </button>
             </div>
         </div>
@@ -132,6 +139,22 @@ function abrirModalReingreso(id, nombreProducto, cantidad, factura, fecha, motiv
     });
 
     document.body.appendChild(overlay);
+
+    // Cargar garantías
+    fetch(`${API_BASE}/garantias`)
+        .then(res => res.json())
+        .then(garantias => {
+            const select = document.getElementById('reingreso-garantia');
+            if (!select) return;
+            select.innerHTML = '<option value="">Sin garantía específica</option>';
+            garantias.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.ID_GARANTIA;
+                opt.textContent = `${g.DURACION_MESES} meses - ${g.NOMBRE_TIPO || 'Estándar'}`;
+                select.appendChild(opt);
+            });
+        })
+        .catch(console.error);
 }
 
 function cerrarModalReingreso() {
@@ -140,6 +163,19 @@ function cerrarModalReingreso() {
 }
 
 function ejecutarReingreso(idDevolucion, btnEl) {
+    const precioInput = document.getElementById('reingreso-precio');
+    const garantiaSelect = document.getElementById('reingreso-garantia');
+    
+    if (precioInput && !precioInput.value) {
+        alert('Por favor ingrese el precio de venta para el producto seminuevo.');
+        return;
+    }
+
+    const payload = {
+        precio_seminuevo: precioInput ? parseFloat(precioInput.value) : null,
+        id_garantia: garantiaSelect ? garantiaSelect.value : null
+    };
+
     btnEl.disabled = true;
     btnEl.textContent = 'Procesando...';
 
@@ -147,7 +183,8 @@ function ejecutarReingreso(idDevolucion, btnEl) {
 
     fetch(`${API_BASE}/devoluciones/${idDevolucion}/confirmar-reingreso`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
     })
         .then(async res => {
             const data = await res.json();
@@ -161,7 +198,7 @@ function ejecutarReingreso(idDevolucion, btnEl) {
                 resultadoDiv.style.background = 'rgba(40, 167, 69, 0.15)';
                 resultadoDiv.style.border = '1px solid rgba(40, 167, 69, 0.4)';
                 resultadoDiv.style.color = '#28a745';
-                resultadoDiv.innerHTML = `✅ ${data.message}<br><small>Stock actualizado: <strong>${data.stock_nuevo} unidades</strong> disponibles.</small>`;
+                resultadoDiv.innerHTML = `✅ ${data.message}<br><small>Nuevo Stock: <strong>${data.stock_nuevo} unidades</strong> disponibles de Seminuevo.</small>`;
             }
             btnEl.textContent = '✓ Reingresado';
             btnEl.style.background = 'linear-gradient(135deg, #17a2b8 0%, #138496 100%)';
@@ -182,7 +219,7 @@ function ejecutarReingreso(idDevolucion, btnEl) {
                 resultadoDiv.innerHTML = `❌ Error: ${err.message}`;
             }
             btnEl.disabled = false;
-            btnEl.textContent = '✅ Confirmar Reingreso';
+            btnEl.textContent = '✅ Crear/Actualizar Seminuevo';
         });
 }
 
@@ -300,6 +337,7 @@ function agregarDevolucion(event) {
     const cantidad = parseInt(document.getElementById('cantidad-devolucion').value);
     const motivo = document.getElementById('motivo-devolucion').value;
     const accion = document.getElementById('accion-select').value;
+    const serie = document.getElementById('serie-devolucion')?.value?.trim() || '';
 
     if (!idVenta) {
         return alert('Debe seleccionar una venta.');
@@ -329,7 +367,8 @@ function agregarDevolucion(event) {
         id_producto: parseInt(idProducto),
         cantidad: cantidad,
         motivo: motivo,
-        accion: accion
+        accion: accion,
+        numero_serie: serie
     };
 
     fetch(`${API_BASE}/devoluciones`, {
