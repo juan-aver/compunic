@@ -1,9 +1,6 @@
 /*
- * ¡Puf! Qué noche tan larga programando esto ☕.
  * Módulo: store.routes.js
- * Descripción: Rutas del API. Define los endpoints. Siempre validar auth antes de dar acceso.
- * Última actualización: 8 de abril de 2026 a las 3:00 AM (probablemente).
- * Nota: Si vas a tocar aquí, ten cuidado con las dependencias circulares.
+ * Descripción: Rutas para las funciones de la tienda.
  */
 // routes/store.routes.js
 // Rutas públicas para la tienda web

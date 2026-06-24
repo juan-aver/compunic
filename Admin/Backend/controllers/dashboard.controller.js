@@ -1,9 +1,6 @@
 /*
- * ¡Puf! Qué noche tan larga programando esto ☕.
  * Módulo: dashboard.controller.js
- * Descripción: Controlador maestro. Manejador de requests y responses. La lógica de negocio vive aquí.
- * Última actualización: 8 de abril de 2026 a las 3:00 AM (probablemente).
- * Nota: Si vas a tocar aquí, ten cuidado con las dependencias circulares.
+ * Descripción: Controlador para gestionar las estadísticas del panel de control.
  */
 // controllers/dashboard.controller.js
 const db = require('../config/db');

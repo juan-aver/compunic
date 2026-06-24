@@ -1,11 +1,9 @@
 /*
  * ==========================================
  * MÓDULO: administradores-search.js
- * PROPÓSITO: Lógica clave del sistema modularizado.
+ * PROPÓSITO: Buscador para la lista de administradores.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {

@@ -1,14 +1,11 @@
 /*
  * ==========================================
  * MÓDULO: utils.js
- * PROPÓSITO: Lógica clave del sistema modularizado.
+ * PROPÓSITO: Funciones de utilidad comunes para la aplicación.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 function cargarHistorialStock() {
-    // Empieza la magia ✨
 
     const tbody = document.getElementById("tabla-historial")?.querySelector("tbody");
     if (!tbody) return;

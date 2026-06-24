@@ -1,14 +1,11 @@
 /*
  * ==========================================
  * MÓDULO: search_helper.js
- * PROPÓSITO: Lógica clave del sistema modularizado.
+ * PROPÓSITO: Ayudante para búsquedas en la interfaz.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 function filtrarTabla(inputId, tableId, columnIndices) {
-    // Empieza la magia ✨
 
     const input = document.getElementById(inputId);
     if (!input) return;

@@ -1,7 +1,7 @@
 /*
  * ==========================================
  * MÓDULO: devoluciones.js
- * PROPÓSITO: Lógica clave del sistema modularizado.
+ * PROPÓSITO: Lógica para gestionar las devoluciones.
  * FECHA: 8 de abril de 2026
  * ==========================================
  */

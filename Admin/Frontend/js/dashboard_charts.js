@@ -1,11 +1,9 @@
 /*
  * ==========================================
  * MÓDULO: dashboard_charts.js
- * PROPÓSITO: Lógica clave del sistema modularizado.
+ * PROPÓSITO: Configuración y renderizado de gráficos del panel de control.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 // dashboard_charts.js - Implementación de gráficos con Chart.js
 

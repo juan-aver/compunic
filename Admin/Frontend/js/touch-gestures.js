@@ -1,11 +1,9 @@
 /*
  * ==========================================
  * MÓDULO: touch-gestures.js
- * PROPÓSITO: Lógica clave del sistema modularizado.
+ * PROPÓSITO: Soporte para gestos táctiles en pantallas móviles.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 class TouchGestures {
     constructor() {

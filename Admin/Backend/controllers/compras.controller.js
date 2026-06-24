@@ -1,11 +1,9 @@
 /*
  * ==========================================
  * MÓDULO: compras.controller.js
- * PROPÓSITO: Controlador maestro. Manejador de requests y responses. La lógica de negocio vive aquí.
+ * PROPÓSITO: Controlador para la gestión de compras.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 // controllers/compras.controller.js
 const Compras = require('../models/compras.model');

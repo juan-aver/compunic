@@ -1,9 +1,6 @@
 /*
- * ¡Puf! Qué noche tan larga programando esto ☕.
  * Módulo: servicios.routes.js
- * Descripción: Rutas del API. Define los endpoints. Siempre validar auth antes de dar acceso.
- * Última actualización: 8 de abril de 2026 a las 3:00 AM (probablemente).
- * Nota: Si vas a tocar aquí, ten cuidado con las dependencias circulares.
+ * Descripción: Rutas para gestionar los servicios técnicos.
  */
 const express = require('express');
 const router = express.Router();

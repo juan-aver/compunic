@@ -1,11 +1,9 @@
 /*
  * ==========================================
  * MÓDULO: compras.routes.js
- * PROPÓSITO: Rutas del API. Define los endpoints. Siempre validar auth antes de dar acceso.
+ * PROPÓSITO: Rutas para gestionar compras y proveedores.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 // routes/compras.routes.js
 const express = require('express');

@@ -238,6 +238,7 @@
         <option value="25">25</option>
         <option value="50">50</option>
         <option value="100">100</option>
+        <option value="999999">Todos</option>
       </select>
     </div>
 
@@ -359,6 +360,17 @@
       if (typeof poblarSelectMarcas === 'function') poblarSelectMarcas();
       if (typeof poblarSelectProveedores === 'function') poblarSelectProveedores();
       if (typeof poblarSelectGarantiaTipos === 'function') poblarSelectGarantiaTipos();
+      
+      // Agregar event listener para el selector de cantidad de productos a mostrar
+      const perPageSelect = document.getElementById('productos-per-page');
+      if (perPageSelect) {
+        perPageSelect.addEventListener('change', function () {
+          const currentView = localStorage.getItem('compunic_product_view') || 'cards';
+          if (typeof switchProductView === 'function') {
+            switchProductView(currentView);
+          }
+        });
+      }
     }, 500);
   });
 </script>

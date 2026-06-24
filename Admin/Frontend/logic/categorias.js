@@ -1,11 +1,9 @@
 /*
  * ==========================================
  * MÓDULO: categorias.js
- * PROPÓSITO: Lógica clave del sistema modularizado.
+ * PROPÓSITO: Lógica para gestionar las categorías de productos.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 function recolectarDatosCategoria() {
     // Ojo aquí, esta parte es crítica para que todo cuadre.

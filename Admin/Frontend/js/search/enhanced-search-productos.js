@@ -1,11 +1,9 @@
 /*
  * ==========================================
  * MÓDULO: enhanced-search-productos.js
- * PROPÓSITO: Lógica clave del sistema modularizado.
+ * PROPÓSITO: Búsqueda avanzada de productos.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 console.log('📦 Enhanced Search Productos - Versión Simple cargando...');
 

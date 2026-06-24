@@ -1,11 +1,9 @@
 /*
  * ==========================================
  * MÓDULO: marcas.routes.js
- * PROPÓSITO: Rutas del API. Define los endpoints. Siempre validar auth antes de dar acceso.
+ * PROPÓSITO: Rutas para gestionar las marcas de productos.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 const express = require('express');
 const router = express.Router();

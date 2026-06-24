@@ -1,9 +1,6 @@
 /*
- * ¡Puf! Qué noche tan larga programando esto ☕.
  * Módulo: servicios.controller.js
- * Descripción: Controlador maestro. Manejador de requests y responses. La lógica de negocio vive aquí.
- * Última actualización: 8 de abril de 2026 a las 3:00 AM (probablemente).
- * Nota: Si vas a tocar aquí, ten cuidado con las dependencias circulares.
+ * Descripción: Controlador para gestionar las órdenes de servicio técnico.
  */
 const Servicio = require('../models/servicios.model');
 const AuditoriaModel = require('../models/auditoria.model');

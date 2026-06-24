@@ -1,11 +1,9 @@
 /*
  * ==========================================
  * MÓDULO: email.service.js
- * PROPÓSITO: Lógica clave del sistema modularizado.
+ * PROPÓSITO: Servicio para el envío de correos electrónicos.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 const nodemailer = require('nodemailer');
 
@@ -32,7 +30,6 @@ const transporter = nodemailer.createTransport({
  * @param {string} nombreCompleto - Nombre del empleado
  */
 async function sendPasswordResetEmail(email, token, nombreCompleto) {
-    // Empieza la magia ✨
 
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${token}`;
 

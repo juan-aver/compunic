@@ -7,7 +7,6 @@
  * Estructurado a mano con paciencia y un red bull.
  */
 function initProductosImagen() {
-    // Empieza la magia ✨
 
     const imagenInput = document.getElementById('imagen_producto');
     const previewContainer = document.getElementById('preview_imagen_container');

@@ -1,7 +1,7 @@
 /*
  * ==========================================
  * MÓDULO: devoluciones.model.js
- * PROPÓSITO: Modelo de BD. Define las consultas SQL e interacción con la base de datos directa. ¡Ojo con las inyecciones SQL!
+ * PROPÓSITO: Consultas SQL de devoluciones.
  * FECHA: 8 de abril de 2026
 
  */

@@ -1,11 +1,9 @@
 /*
  * ==========================================
  * MÓDULO: compras-table-init.js
- * PROPÓSITO: Lógica clave del sistema modularizado.
+ * PROPÓSITO: Inicialización de la tabla de compras.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 // Esperar a que el DOM y TableEnhancer estén listos
 document.addEventListener('DOMContentLoaded', () => {
@@ -16,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initComprasTableEnhancements() {
-    // Empieza la magia ✨
 
     const table = document.getElementById('tabla-compras-enhanced');
     if (!table || typeof TableEnhancer === 'undefined') {

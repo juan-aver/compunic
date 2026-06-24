@@ -1,11 +1,9 @@
 /*
  * ==========================================
  * MÓDULO: router.js
- * PROPÓSITO: Rutas del API. Define los endpoints. Siempre validar auth antes de dar acceso.
+ * PROPÓSITO: Lógica de enrutamiento y vistas de la aplicación.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 // URL base del API (usar puerto 3001, coincide con `Admin/Backend/server.js`)
 // const API_BASE = 'http://localhost:3001/api'; // COMENTADO: Ya definido en auth.js
@@ -57,7 +55,6 @@ window.inicializarVendedorAutomatico = inicializarVendedorAutomatico;
 
 // 🧭 Esta función inyecta el HTML de la vista y carga el módulo JS correspondiente en el momento exacto
 function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedores = false, Lista_de_usuario = false) {
-    // Empieza la magia ✨
 
     const rutas = {
         'gestion-productos': { html: 'views/G_Productos.html', css: 'css/views/G_Productos.css' },

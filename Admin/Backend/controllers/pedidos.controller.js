@@ -1,11 +1,9 @@
 /*
  * ==========================================
  * MÓDULO: pedidos.controller.js
- * PROPÓSITO: Controlador maestro. Manejador de requests y responses. La lógica de negocio vive aquí.
+ * PROPÓSITO: Controlador para gestionar pedidos de clientes.
  * FECHA: 8 de abril de 2026
  * ==========================================
- * Comentario mental: Asegurarme de no romper el frontend cuando 
- * cambie esto de nuevo. Funciona, no lo toques mucho 🙏.
  */
 // controllers/pedidos.controller.js
 // Controlador para gestionar pedidos desde la tienda web

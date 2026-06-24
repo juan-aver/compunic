@@ -1,9 +1,6 @@
 /*
- * ¡Puf! Qué noche tan larga programando esto ☕.
  * Módulo: vendedor_auto.js
- * Descripción: Lógica clave del sistema modularizado.
- * Última actualización: 8 de abril de 2026 a las 3:00 AM (probablemente).
- * Nota: Si vas a tocar aquí, ten cuidado con las dependencias circulares.
+ * Descripción: Selección automática del vendedor activo.
  */
 // Función para inicializar el vendedor desde la sesión
 function inicializarVendedorAutomatico() {

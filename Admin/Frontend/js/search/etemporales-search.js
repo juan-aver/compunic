@@ -1,9 +1,6 @@
 /*
- * ¡Puf! Qué noche tan larga programando esto ☕.
  * Módulo: etemporales-search.js
- * Descripción: Lógica clave del sistema modularizado.
- * Última actualización: 8 de abril de 2026 a las 3:00 AM (probablemente).
- * Nota: Si vas a tocar aquí, ten cuidado con las dependencias circulares.
+ * Descripción: Buscador de empleados temporales.
  */
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
