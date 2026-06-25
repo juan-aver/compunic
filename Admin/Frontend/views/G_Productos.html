@@ -219,38 +219,16 @@
   </div>
 
   <!-- Controles de Tabla Mejorados -->
-  <div class="table-controls">
-    <div class="search-enhanced-container">
+  <div class="table-controls" style="margin-bottom: 20px;">
+    <div class="search-enhanced-container" style="width: 100%;">
       <!-- Input de búsqueda en tiempo real -->
-      <div class="search-input-wrapper">
+      <div class="search-input-wrapper" style="display: flex; gap: 15px; align-items: center; width: 100%;">
         <input type="text" id="buscar_tabla" class="filter-search"
-          placeholder="Buscar por nombre, modelo, descripción o marca...">
-        <button class="btn-clear-filters" onclick="clearProductosFilters()">
+          placeholder="Buscar por nombre, modelo, descripción o marca..." style="flex: 1; padding: 10px 15px;">
+        <button class="btn-clear-filters" onclick="clearProductosFilters()" style="white-space: nowrap;">
           <i class="fas fa-times"></i> Limpiar
         </button>
       </div>
-    </div>
-
-    <div class="table-per-page">
-      <label>Mostrar:</label>
-      <select class="per-page-select" id="productos-per-page">
-        <option value="10">10</option>
-        <option value="25">25</option>
-        <option value="50">50</option>
-        <option value="100">100</option>
-        <option value="999999">Todos</option>
-      </select>
-    </div>
-
-    <!-- View Toggle -->
-    <div class="view-toggle-container">
-      <button class="view-toggle-btn active" id="btn-view-cards" title="Vista Cards"
-        onclick="switchProductView('cards')">
-        <i class="fas fa-th-large"></i>
-      </button>
-      <button class="view-toggle-btn" id="btn-view-table" title="Vista Tabla" onclick="switchProductView('table')">
-        <i class="fas fa-list"></i>
-      </button>
     </div>
   </div>
 
@@ -259,28 +237,10 @@
     <!-- Cards rendered by JS -->
   </div>
 
-  <!-- Table View (hidden by default) -->
-  <div id="tablaProductosContainer" style="display: none;">
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 50px;">ID</th>
-          <th>Nombre</th>
-          <th>Modelo</th>
-          <th style="width: 100px;">Descripción</th>
-          <th>Categoría</th>
-          <th>Marca</th>
-          <th>Proveedor</th>
-          <th>Gar. Cliente</th>
-          <th>Gar. Proveedor</th>
-          <th>Stock</th>
-          <th>P. Compra</th>
-          <th>P. Venta</th>
-        </tr>
-      </thead>
-      <tbody id="tablaProductos"></tbody>
-    </table>
-  </div>
+
+
+  <!-- Pagination Controls -->
+  <div id="productos-pagination" class="pagination-controls" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px; align-items: center;"></div>
 </section>
 
 <!-- Modal de Descripción del Producto (Redesigned) -->
@@ -361,16 +321,7 @@
       if (typeof poblarSelectProveedores === 'function') poblarSelectProveedores();
       if (typeof poblarSelectGarantiaTipos === 'function') poblarSelectGarantiaTipos();
       
-      // Agregar event listener para el selector de cantidad de productos a mostrar
-      const perPageSelect = document.getElementById('productos-per-page');
-      if (perPageSelect) {
-        perPageSelect.addEventListener('change', function () {
-          const currentView = localStorage.getItem('compunic_product_view') || 'cards';
-          if (typeof switchProductView === 'function') {
-            switchProductView(currentView);
-          }
-        });
-      }
+
     }, 500);
   });
 </script>

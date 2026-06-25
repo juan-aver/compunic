@@ -26,7 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const apellido = (venta.APELLIDO_CLIENTE || '').toString().trim();
                 const nombreCompleto = `${nombre} ${apellido}`.replace(/\bnull\b/gi, '').replace(/\s+/g, ' ').trim();
                 inputsCliente[0].textContent = nombreCompleto || 'Cliente Ocasional';
-                inputsCliente[1].textContent = "";
+                
+                const cedula = (venta.CEDULA_CLIENTE || "").toString().replace(/^null$/i, "").trim();
+                inputsCliente[1].textContent = cedula || 'N/A';
                 
                 const tel = (venta.TELEFONO_CLIENTE || "").toString().replace(/^null$/i, "").trim();
                 inputsCliente[2].textContent = tel;

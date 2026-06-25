@@ -119,11 +119,7 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         if (typeof poblarSelectProveedores === 'function') poblarSelectProveedores();
                         if (typeof poblarSelectGarantiaTipos === 'function') poblarSelectGarantiaTipos();
 
-                        // SEARCH LOGIC FOR PRODUCTS (table + cards)
-                        if (typeof filtrarTabla === 'function') {
-                            filtrarTabla('buscar_tabla', 'tablaProductos', [1, 2, 3, 5]);
-                        }
-                        // Card search filter
+                        // Card search filter (now handles both cards and table views)
                         if (typeof initCardSearch === 'function') initCardSearch();
                     }
                     else if (nombreVista === 'gestion-proveedores') {
@@ -276,8 +272,8 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         // Columns: 1 (No. Factura), 3 (Cliente), 4 (Vendedor)
                         // Table structure in G_ventas.html:
                         // 0: ID Venta, 1: No. Factura, 2: Fecha, 3: Cliente, 4: Vendedor, ...
-                        if (typeof filtrarTabla === 'function') {
-                            filtrarTabla('buscar_venta', 'sales-record-table', [1, 3, 4]);
+                        if (typeof initVentasSearch === 'function') {
+                            initVentasSearch();
                         }
                     } /*compras*/else if (nombreVista === 'gestion-compra') {
                         // POS initialization
@@ -296,8 +292,8 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         if (typeof cargarVentas === 'function') cargarVentas();
 
                         // SEARCH LOGIC FOR SALES
-                        if (typeof filtrarTabla === 'function') {
-                            filtrarTabla('buscar_venta', 'sales-record-table', [1, 3, 4]);
+                        if (typeof initVentasSearch === 'function') {
+                            initVentasSearch();
                         }
                     } else if (nombreVista === 'gestion-devoluciones') {
                         // Inicializar módulo de devoluciones

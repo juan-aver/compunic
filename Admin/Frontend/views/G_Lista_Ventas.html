@@ -2,7 +2,7 @@
   ¡Atención! Este HTML fue ensamblado a altas horas de la noche ☕. 
   Si ves un div anidado 5 veces, lo siento, era necesario para centrar un botón.
 -->
-<link rel="stylesheet" href="css/views/G_ventas.css">
+<link rel="stylesheet" href="css/views/G_Lista_Ventas.css">
 <!-- Dark Mode & Enhanced Animations -->
 <link rel="stylesheet" href="css/views/dark-mode.css">
 <link rel="stylesheet" href="css/views/enhanced-animations.css">
@@ -24,22 +24,15 @@
             <h2 class="section-title-light">Historial de Ventas</h2>
 
             <!-- Controles de Tabla -->
-            <div class="table-controls">
-                <div class="table-filters">
-                    <input type="text" id="buscar_venta" class="filter-search"
-                        placeholder="Buscar por factura o cliente...">
-                    <button class="btn-clear-filters" onclick="clearVentasFilters()">
-                        <i class="fas fa-times"></i> Limpiar
-                    </button>
-                </div>
-                <div class="table-per-page">
-                    <label>Mostrar:</label>
-                    <select class="per-page-select" id="ventas-per-page">
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
+            <div class="table-controls" style="margin-bottom: 20px;">
+                <div class="search-enhanced-container" style="width: 100%;">
+                    <div class="search-input-wrapper" style="display: flex; gap: 15px; align-items: center; width: 100%;">
+                        <input type="text" id="buscar_venta" class="filter-search"
+                            placeholder="Buscar por factura o cliente..." style="flex: 1; padding: 10px 15px;">
+                        <button class="btn-clear-filters" onclick="clearVentasFilters()" style="white-space: nowrap;">
+                            <i class="fas fa-times"></i> Limpiar
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -61,6 +54,9 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Pagination Controls -->
+            <div id="ventas-pagination" class="pagination-controls" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px; align-items: center;"></div>
         </section>
     </div>
 </div>

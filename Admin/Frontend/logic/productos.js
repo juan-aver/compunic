@@ -157,6 +157,10 @@ function cargarFormulario(p) {
 // ========================================================================================================
 
 window._allProductos = []; // Store all products for search/filter
+window._filteredProductos = [];
+window._productosCurrentPage = 1;
+window._productosPerPage = 15;
+window._productosSearchQuery = '';
 
 // 🔥 Obtenemos TODOS los productos del backend y procesamos la vista actual
 function cargarProductos() {
@@ -167,34 +171,61 @@ function cargarProductos() {
         })
         .then(data => {
             window._allProductos = data;
-            const currentView = localStorage.getItem('compunic_product_view') || 'cards';
-            if (currentView === 'cards') {
-                renderProductCards(data);
-            } else {
-                renderProductTable(data);
-            }
+            window._filteredProductos = data;
+            renderProductosPaginated();
         })
         .catch(err => {
             console.error('Error al cargar productos:', err);
         });
 }
 
-function renderProductCards(data) {
+function renderProductosPaginated() {
+    // Calculate slice
+    const startIndex = (window._productosCurrentPage - 1) * window._productosPerPage;
+    const endIndex = startIndex + window._productosPerPage;
+    const paginatedData = window._filteredProductos.slice(startIndex, endIndex);
+    
+    // Always render cards view
+    renderProductCards(paginatedData);
+    
+    // Render pagination controls
+    renderPaginationControls(window._filteredProductos.length);
+}
+
+function renderPaginationControls(totalItems) {
+    const controlsContainer = document.getElementById('productos-pagination');
+    if (!controlsContainer) return;
+    
+    const totalPages = Math.ceil(totalItems / window._productosPerPage);
+    let html = '';
+    
+    if (totalPages > 1) {
+        html += `<button onclick="window.changeProductosPage(${window._productosCurrentPage - 1})" ${window._productosCurrentPage === 1 ? 'disabled' : ''} class="btn-card-detail" style="margin-right: 10px;">&laquo; Anterior</button>`;
+        html += `<span style="margin: 0 10px; font-weight: bold;">Página ${window._productosCurrentPage} de ${totalPages}</span>`;
+        html += `<button onclick="window.changeProductosPage(${window._productosCurrentPage + 1})" ${window._productosCurrentPage === totalPages ? 'disabled' : ''} class="btn-card-detail" style="margin-left: 10px;">Siguiente &raquo;</button>`;
+    } else if (totalItems > 0) {
+        html += `<span style="margin: 0 10px; color: #666;">Mostrando todos los ${totalItems} productos</span>`;
+    }
+    controlsContainer.innerHTML = html;
+}
+
+window.changeProductosPage = function(page) {
+    window._productosCurrentPage = page;
+    renderProductosPaginated();
+};
+
+function renderProductCards(paginatedData) {
     const grid = document.getElementById('productosGrid');
     if (!grid) return;
     grid.innerHTML = '';
 
-    // Apply pagination
-    const perPageSelect = document.getElementById('productos-per-page');
-    const perPage = perPageSelect ? parseInt(perPageSelect.value) : 50;
-    const paginatedData = data.slice(0, perPage);
-
-    if (paginatedData.length === 0) {
+    if (!paginatedData || paginatedData.length === 0) {
         grid.innerHTML = '<div class="no-products-message"><i class="fas fa-box-open"></i>No hay productos encontrados</div>';
         return;
     }
 
     paginatedData.forEach((producto, index) => {
+        const gIndex = window._allProductos.indexOf(producto);
         const nombre = producto.nombre ?? producto.NOMBRE ?? producto.NOMBRE_PRODUCTO ?? 'Sin nombre';
         const modelo = producto.modelo ?? producto.MODELO ?? '';
         const categoria = producto.nombre_categoria ?? producto.NOMBRE_CATEGORIA ?? producto.CATEGORIA ?? '';
@@ -253,13 +284,13 @@ function renderProductCards(data) {
                     <span class="${stockClass}"><i class="fas fa-cube"></i> ${stock}</span>
                 </div>
                 <div class="card-actions">
-                    <button class="btn-card-detail" style="background: #9b59b6; border-color: #9b59b6;" onclick="event.stopPropagation(); abrirModalSeries(window._allProductos[${data.indexOf(producto)}])">
+                    <button class="btn-card-detail" style="background: #9b59b6; border-color: #9b59b6;" onclick="event.stopPropagation(); abrirModalSeries(window._allProductos[${gIndex}])">
                         <i class="fas fa-barcode"></i> Series
                     </button>
-                    <button class="btn-card-detail" onclick="event.stopPropagation(); mostrarDetalleProducto(window._allProductos[${data.indexOf(producto)}])">
+                    <button class="btn-card-detail" onclick="event.stopPropagation(); mostrarDetalleProducto(window._allProductos[${gIndex}])">
                         <i class="fas fa-eye"></i> Detalle
                     </button>
-                    <button class="btn-card-edit" onclick="event.stopPropagation(); seleccionarProducto(window._allProductos[${data.indexOf(producto)}])">
+                    <button class="btn-card-edit" onclick="event.stopPropagation(); seleccionarProducto(window._allProductos[${gIndex}])">
                         <i class="fas fa-edit"></i> Editar
                     </button>
                 </div>
@@ -273,96 +304,7 @@ function renderProductCards(data) {
     });
 }
 
-function renderProductTable(data) {
-    const tbody = document.getElementById('tablaProductos');
-    if (!tbody) return;
-    tbody.innerHTML = '';
 
-    // Apply pagination
-    const perPageSelect = document.getElementById('productos-per-page');
-    const perPage = perPageSelect ? parseInt(perPageSelect.value) : 50;
-    const paginatedData = data.slice(0, perPage);
-
-    paginatedData.forEach(producto => {
-        const id = producto.id_producto ?? producto.ID_PRODUCTO ?? producto.id ?? '';
-        const nombre = producto.nombre ?? producto.NOMBRE ?? producto.NOMBRE_PRODUCTO ?? 'Sin nombre';
-        const modelo = producto.modelo ?? producto.MODELO ?? '';
-        const precioCompra = parseFloat(producto.precio_compra ?? producto.PRECIO_COMPRA ?? 0);
-        const precioVenta = parseFloat(producto.precio_venta ?? producto.PRECIO_VENTA ?? 0);
-        const garantia = producto.garantia_meses ?? producto.GARANTIA_MESES ?? producto.ID_GARANTIAS ?? producto.id_garantias ?? '';
-        const valGp = producto.garantia_proveedor ?? producto.GARANTIA_PROVEEDOR ?? 0;
-        const garantiaProv = valGp ? `${valGp} meses` : 'Sin Garantía';
-        const stock = Number(producto.stock ?? producto.stock_actual_calculado ?? producto.STOCK ?? 0) || 0;
-        const categoria = producto.nombre_categoria ?? producto.NOMBRE_CATEGORIA ?? producto.CATEGORIA ?? producto.id_categoria ?? '';
-        const marcaName = producto.nombre_marca ?? producto.NOMBRE_MARCA ?? producto.MARCA ?? producto.ID_MARCA ?? '';
-        const proveedorName = producto.nombre_proveedor ?? producto.NOMBRE_PROVEEDOR ?? producto.PROVEEDOR ?? producto.ID_PROVEEDOR ?? '';
-
-        const fila = document.createElement('tr');
-        const nombreDisplay = nombre.includes('(Seminuevo)') 
-            ? `${nombre} <br><span class="badge" style="background: #e67e22; color: white; padding: 2px 6px; font-size: 0.75em; border-radius: 4px; display: inline-block; margin-top: 4px;"><i class="fas fa-recycle"></i> SEMINUEVO</span>` 
-            : nombre;
-
-        fila.innerHTML = `
-            <td>${id}</td>
-            <td>${nombreDisplay}</td>
-            <td>${modelo}</td>
-            <td style="text-align: center;">
-              <button onclick="mostrarDetalleProducto(window._allProductos[${data.indexOf(producto)}])" 
-                style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; width: 100%;">
-                Ver Detalles
-              </button>
-              <button onclick="abrirModalSeries(window._allProductos[${data.indexOf(producto)}])" 
-                style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: 600; width: 100%;">
-                <i class="fas fa-barcode"></i> Series
-              </button>
-            </td>
-            <td>${categoria}</td>
-            <td>${marcaName}</td>
-            <td>${proveedorName}</td>
-            <td>${garantia}</td>
-            <td>${garantiaProv}</td>
-            <td><span class="${stock <= 5 ? 'text-red-500 font-bold' : ''}">${stock}</span></td>
-            <td>C$${precioCompra.toFixed(2)}</td>
-            <td>C$${precioVenta.toFixed(2)}</td>
-        `;
-        fila.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'BUTTON') {
-                seleccionarProducto(producto, fila);
-            }
-        });
-        tbody.appendChild(fila);
-    });
-}
-
-// Toggle between cards and table view
-function switchProductView(view, skipReload) {
-    localStorage.setItem('compunic_product_view', view);
-
-    const cardsBtn = document.getElementById('btn-view-cards');
-    const tableBtn = document.getElementById('btn-view-table');
-    const grid = document.getElementById('productosGrid');
-    const tableContainer = document.getElementById('tablaProductosContainer');
-
-    if (cardsBtn && tableBtn) {
-        cardsBtn.classList.toggle('active', view === 'cards');
-        tableBtn.classList.toggle('active', view === 'table');
-    }
-
-    if (grid && tableContainer) {
-        grid.style.display = view === 'cards' ? 'grid' : 'none';
-        tableContainer.style.display = view === 'table' ? 'block' : 'none';
-    }
-
-    // Re-render if data already loaded
-    if (!skipReload && window._allProductos && window._allProductos.length > 0) {
-        if (view === 'cards') {
-            renderProductCards(window._allProductos);
-        } else {
-            renderProductTable(window._allProductos);
-        }
-    }
-}
-window.switchProductView = switchProductView;
 
 // Card search filter
 function initCardSearch() {
@@ -370,17 +312,25 @@ function initCardSearch() {
     if (!input) return;
 
     input.addEventListener('keyup', function () {
-        const filter = this.value.toLowerCase();
-        const currentView = localStorage.getItem('compunic_product_view') || 'cards';
-
-        if (currentView === 'cards') {
-            const cards = document.querySelectorAll('#productosGrid .product-card');
-            cards.forEach(card => {
-                const text = card.dataset.searchText || card.textContent.toLowerCase();
-                card.style.display = text.includes(filter) ? '' : 'none';
+        window._productosSearchQuery = this.value.toLowerCase();
+        
+        if (!window._productosSearchQuery) {
+            window._filteredProductos = window._allProductos;
+        } else {
+            window._filteredProductos = window._allProductos.filter(producto => {
+                const nombre = (producto.nombre ?? producto.NOMBRE ?? producto.NOMBRE_PRODUCTO ?? '').toLowerCase();
+                const modelo = (producto.modelo ?? producto.MODELO ?? '').toLowerCase();
+                const categoria = (producto.nombre_categoria ?? producto.NOMBRE_CATEGORIA ?? producto.CATEGORIA ?? '').toLowerCase();
+                const marca = (producto.nombre_marca ?? producto.NOMBRE_MARCA ?? producto.MARCA ?? '').toLowerCase();
+                const desc = (producto.descripcion ?? producto.DESCRIPCION ?? '').toLowerCase();
+                
+                const searchStr = `${nombre} ${modelo} ${categoria} ${marca} ${desc}`;
+                return searchStr.includes(window._productosSearchQuery);
             });
         }
-        // Table filtering is handled by filtrarTabla separately
+        
+        window._productosCurrentPage = 1;
+        renderProductosPaginated();
     });
 }
 window.initCardSearch = initCardSearch;

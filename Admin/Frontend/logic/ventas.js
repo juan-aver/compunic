@@ -26,7 +26,8 @@ function agregarItemVentaNew() {
     console.log('📦 Producto:', idProd, nombreProd, 'Cant:', cant, 'Stock:', stockDisponible);
 
     if (!idProd || !cant || cant <= 0 || isNaN(precio) || precio < 0) {
-        return alert('Por favor seleccione un producto y cantidades válidas.');
+        Swal.fire({icon: 'warning', title: 'Datos Inválidos', text: 'Por favor seleccione un producto y cantidades válidas.'});
+        return;
     }
 
     const existingItem = itemsVenta.find(i => i.id_producto === idProd);
@@ -37,7 +38,8 @@ function agregarItemVentaNew() {
     }
 
     if (cantidadTotalSolicitada > stockDisponible) {
-        return alert(`❌ Error: No hay suficiente stock. Stock disponible: ${stockDisponible}. Intentas vender: ${cantidadTotalSolicitada}`);
+        Swal.fire({icon: 'error', title: 'Stock Insuficiente', text: `No hay suficiente stock. Stock disponible: ${stockDisponible}. Intentas vender: ${cantidadTotalSolicitada}`});
+        return;
     }
 
     if (existingItem) {
@@ -215,7 +217,7 @@ function renderGridHTML(productos) {
         if (qtyInCart === 0) {
             card.addEventListener('click', () => {
                 if (stock <= 0) {
-                    alert('Este producto no tiene stock disponible.');
+                    Swal.fire({icon: 'warning', title: 'Agotado', text: 'Este producto no tiene stock disponible.'});
                     return;
                 }
                 agregarDesdeCardVenta({
@@ -272,9 +274,27 @@ function decrementarDesdeCard(e, idProducto) {
     if (existingIdx >= 0) {
         const currentQty = itemsVenta[existingIdx].cantidad;
         if (currentQty <= 1) {
-            if (confirm("¿Deseas remover este producto del carrito?")) {
-                itemsVenta.splice(existingIdx, 1);
-            }
+            Swal.fire({
+                title: '¿Remover producto?',
+                text: '¿Deseas remover este producto del carrito?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, remover',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    itemsVenta.splice(existingIdx, 1);
+                    renderizarItemsVentaNew();
+                    const badge = document.getElementById('ventas-cart-badge');
+                    if (badge) {
+                        badge.textContent = itemsVenta.length;
+                        badge.style.display = itemsVenta.length > 0 ? 'inline' : 'none';
+                    }
+                }
+            });
+            return;
         } else {
             itemsVenta[existingIdx].cantidad -= 1;
             itemsVenta[existingIdx].subtotal = itemsVenta[existingIdx].cantidad * (itemsVenta[existingIdx].precio_unitario - itemsVenta[existingIdx].descuento);
@@ -295,7 +315,7 @@ function incrementarDesdeCard(e, idProducto, stock) {
     if (existingIdx >= 0) {
         const currentQty = itemsVenta[existingIdx].cantidad;
         if (currentQty >= stock) {
-            alert(`❌ Error: No hay suficiente stock. Stock disponible: ${stock}.`);
+            Swal.fire({icon: 'error', title: 'Límite de Stock', text: `No hay suficiente stock. Stock disponible: ${stock}.`});
             return;
         }
         itemsVenta[existingIdx].cantidad += 1;
@@ -425,7 +445,10 @@ function guardarVenta() {
         ? (document.getElementById('cliente-ocasional-nombre')?.value?.trim() || 'Cliente Ocasional')
         : null;
 
-    if (!esOcasional && !idCliente) return alert('Seleccione un cliente o elija Cliente Ocasional.');
+    if (!esOcasional && !idCliente) {
+        Swal.fire({icon: 'warning', title: 'Atención', text: 'Seleccione un cliente o elija Cliente Ocasional.'});
+        return;
+    }
 
     let idVendedor = document.getElementById('vendedor-id')?.value;
     if (!idVendedor) {
@@ -436,21 +459,29 @@ function guardarVenta() {
     const fecha = document.getElementById('fecha-venta').value;
     const factura = document.getElementById('factura-input').value;
 
-    if (!idVendedor || !fecha) return alert('Complete los datos de la venta.');
-    if (itemsVenta.length === 0) return alert('Agregue al menos un producto.');
+    if (!idVendedor || !fecha) {
+        Swal.fire({icon: 'warning', title: 'Faltan datos', text: 'Complete los datos de la venta.'});
+        return;
+    }
+    if (itemsVenta.length === 0) {
+        Swal.fire({icon: 'warning', title: 'Carrito vacío', text: 'Agregue al menos un producto.'});
+        return;
+    }
 
     const fechaActual = new Date();
     const fechaActualStr = fechaActual.toISOString().split('T')[0];
 
     if (fecha !== fechaActualStr) {
-        return alert('❌ Error: Solo se pueden realizar ventas en la fecha actual. La fecha debe ser: ' + new Date(fechaActualStr).toLocaleDateString());
+        Swal.fire({icon: 'error', title: 'Fecha Inválida', text: 'Solo se pueden realizar ventas en la fecha actual. La fecha debe ser: ' + new Date(fechaActualStr).toLocaleDateString()});
+        return;
     }
 
     // Validación de > 10,000
     const subtotalVenta = itemsVenta.reduce((acc, it) => acc + it.subtotal, 0);
     const totalVenta = subtotalVenta * 1.15;
     if (totalVenta > 10000 && esOcasional) {
-        return alert("Para ventas mayores a C$ 10,000 debe seleccionar un cliente registrado (que tenga Cédula y Teléfono).");
+        Swal.fire({icon: 'warning', title: 'Límite de venta excedido', text: "Para ventas mayores a C$ 10,000 debe seleccionar un cliente registrado (que tenga Cédula y Teléfono)."});
+        return;
     }
 
     // 1. Fetch available serials for all items before showing modal
@@ -557,7 +588,12 @@ function guardarVenta() {
                     return data;
                 })
                 .then(data => {
-                    alert('✅ Venta registrada con éxito ID: ' + data.id_venta);
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Venta completada!',
+                        text: 'Venta registrada con éxito ID: ' + data.id_venta,
+                        confirmButtonText: 'Genial'
+                    });
                     itemsVenta = [];
                     document.getElementById('sale-form').reset();
                     const fecha = new Date();
@@ -571,15 +607,18 @@ function guardarVenta() {
                     if (wrapper) wrapper.style.display = 'none';
                     renderizarItemsVentaNew();
                     cargarVentas();
+                    if (typeof window.renderVentasPOSGrid === 'function') {
+                        window.renderVentasPOSGrid(true);
+                    }
                 })
                 .catch(err => {
                     console.error(err);
-                    alert('❌ Error: ' + err.message);
+                    Swal.fire({icon: 'error', title: 'Error al procesar', text: err.message});
                 });
         };
     }).catch(err => {
         console.error("Error fetching series", err);
-        alert("Ocurrió un error al preparar el registro de series.");
+        Swal.fire({icon: 'error', title: 'Error', text: "Ocurrió un error al preparar el registro de series."});
     });
 }
 
@@ -607,40 +646,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+window._allVentas = [];
+window._filteredVentas = [];
+window._ventasCurrentPage = 1;
+window._ventasPerPage = 15;
+
 // Función para cargar el historial de ventas
 function cargarVentas() {
     fetch(`${API_BASE}/ventas`)
         .then(res => res.json())
         .then(ventas => {
-            const tbody = document.getElementById("sales-record-table");
-            if (!tbody) return;
-            tbody.innerHTML = "";
-
-            if (ventas.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center">No hay ventas registradas.</td></tr>`;
-                return;
-            }
-
-            ventas.forEach(venta => {
-                const fila = document.createElement("tr");
-                const fechaFormateada = new Date(venta.FECHA).toLocaleDateString();
-                const total = parseFloat(venta.TOTAL).toFixed(2);
-
-                fila.innerHTML = `
-                    <td class="font-medium primary-color">#${venta.ID_VENTA}</td>
-                    <td>${venta.FACTURA}</td>
-                    <td>${fechaFormateada}</td>
-                    <td>${venta.NOMBRE_CLIENTE}</td>
-                    <td>${venta.NOMBRE_VENDEDOR}</td>
-                    <td class="text-right font-bold text-green-600">$${total}</td>
-                    <td class="text-center">
-                        <button type="button" class="btn-icon btn-view" style="width: auto; padding: 0 12px; font-weight: 500;" title="Ver Factura" onclick="window.open('views/factura_venta.html?id=${venta.ID_VENTA}', '_blank')">
-                            Ver Factura
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(fila);
-            });
+            window._allVentas = ventas;
+            window._filteredVentas = ventas;
+            renderVentasPaginated();
         })
         .catch(err => {
             console.error('Error al cargar ventas:', err);
@@ -648,6 +666,96 @@ function cargarVentas() {
             if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500">Error de conexión: ${err.message}</td></tr>`;
         });
 }
+
+function renderVentasPaginated() {
+    const tbody = document.getElementById("sales-record-table");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    if (window._filteredVentas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center">No hay ventas registradas.</td></tr>`;
+        renderVentasPaginationControls(0);
+        return;
+    }
+
+    const startIndex = (window._ventasCurrentPage - 1) * window._ventasPerPage;
+    const endIndex = startIndex + window._ventasPerPage;
+    const paginatedData = window._filteredVentas.slice(startIndex, endIndex);
+
+    paginatedData.forEach(venta => {
+        const fila = document.createElement("tr");
+        const fechaFormateada = new Date(venta.FECHA).toLocaleDateString();
+        const total = parseFloat(venta.TOTAL).toFixed(2);
+
+        fila.innerHTML = `
+            <td class="font-medium primary-color">#${venta.ID_VENTA}</td>
+            <td>${venta.FACTURA}</td>
+            <td>${fechaFormateada}</td>
+            <td>${venta.NOMBRE_CLIENTE}</td>
+            <td>${venta.NOMBRE_VENDEDOR}</td>
+            <td class="text-right font-bold text-green-600">$${total}</td>
+            <td class="text-center">
+                <button type="button" class="btn-icon btn-view" style="width: auto; padding: 0 12px; font-weight: 500;" title="Ver Factura" onclick="window.open('views/factura_venta.html?id=${venta.ID_VENTA}', '_blank')">
+                    Ver Factura
+                </button>
+            </td>
+        `;
+        tbody.appendChild(fila);
+    });
+
+    renderVentasPaginationControls(window._filteredVentas.length);
+}
+
+function renderVentasPaginationControls(totalItems) {
+    const controlsContainer = document.getElementById('ventas-pagination');
+    if (!controlsContainer) return;
+    
+    const totalPages = Math.ceil(totalItems / window._ventasPerPage);
+    let html = '';
+    
+    if (totalPages > 1) {
+        html += `<button onclick="window.changeVentasPage(${window._ventasCurrentPage - 1})" ${window._ventasCurrentPage === 1 ? 'disabled' : ''} class="btn-card-detail" style="margin-right: 10px;">&laquo; Anterior</button>`;
+        html += `<span style="margin: 0 10px; font-weight: bold;">Página ${window._ventasCurrentPage} de ${totalPages}</span>`;
+        html += `<button onclick="window.changeVentasPage(${window._ventasCurrentPage + 1})" ${window._ventasCurrentPage === totalPages ? 'disabled' : ''} class="btn-card-detail" style="margin-left: 10px;">Siguiente &raquo;</button>`;
+    } else if (totalItems > 0) {
+        html += `<span style="margin: 0 10px; color: #666;">Mostrando todas las ${totalItems} ventas</span>`;
+    }
+    controlsContainer.innerHTML = html;
+}
+
+window.changeVentasPage = function(page) {
+    window._ventasCurrentPage = page;
+    renderVentasPaginated();
+};
+
+function initVentasSearch() {
+    const searchInput = document.getElementById('buscar_venta');
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        window._ventasCurrentPage = 1;
+        
+        if (!term) {
+            window._filteredVentas = [...window._allVentas];
+        } else {
+            window._filteredVentas = window._allVentas.filter(venta => {
+                const searchStr = `${venta.FACTURA || ''} ${venta.NOMBRE_CLIENTE || ''} ${venta.ID_VENTA || ''}`.toLowerCase();
+                return searchStr.includes(term);
+            });
+        }
+        renderVentasPaginated();
+    });
+}
+
+function clearVentasFilters() {
+    const searchInput = document.getElementById('buscar_venta');
+    if (searchInput) searchInput.value = '';
+    window._filteredVentas = [...window._allVentas];
+    window._ventasCurrentPage = 1;
+    renderVentasPaginated();
+}
+window.clearVentasFilters = clearVentasFilters;
 
 // ========================================================================================================
 // POBLAR SELECTS VENTAS
