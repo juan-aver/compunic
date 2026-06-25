@@ -28,7 +28,7 @@ const Pedidos = {
           SELECT 
             (
               COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = ?), 0) - 
-              COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp WHERE vp.ID_PRODUCTO = ?), 0)
+              COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp JOIN VENTAS v ON vp.ID_VENTA = v.ID_VENTA WHERE vp.ID_PRODUCTO = ? AND v.ESTADO != 'Rechazado'), 0)
             ) AS stock_disponible
         `, [item.id_producto, item.id_producto]);
 
@@ -162,7 +162,7 @@ const Pedidos = {
                     SELECT 
                         (
                             COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = ?), 0) - 
-                            COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp WHERE vp.ID_PRODUCTO = ?), 0)
+                            COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp JOIN VENTAS v ON vp.ID_VENTA = v.ID_VENTA WHERE vp.ID_PRODUCTO = ? AND v.ESTADO != 'Rechazado'), 0)
                         ) AS stock_resultante
                 `, [item.id_producto, item.id_producto]);
 
@@ -285,7 +285,7 @@ const Pedidos = {
         SELECT 
           (
             COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = ?), 0) - 
-            COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp WHERE vp.ID_PRODUCTO = ?), 0)
+            COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp JOIN VENTAS v ON vp.ID_VENTA = v.ID_VENTA WHERE vp.ID_PRODUCTO = ? AND v.ESTADO != 'Rechazado'), 0)
           ) AS stock_disponible
       `, [idProducto, idProducto]);
 

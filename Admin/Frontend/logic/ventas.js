@@ -686,10 +686,19 @@ function renderVentasPaginated() {
         const fila = document.createElement("tr");
         const fechaFormateada = new Date(venta.FECHA).toLocaleDateString();
         const total = parseFloat(venta.TOTAL).toFixed(2);
+        
+        let facturaDisplay = venta.FACTURA;
+        if (!facturaDisplay) {
+            if (venta.ESTADO === 'Rechazado') {
+                facturaDisplay = '<span style="color: #ef4444; font-weight: 600;">Rechazada</span>';
+            } else {
+                facturaDisplay = '<span style="color: #f59e0b; font-weight: 600;">Pendiente</span>';
+            }
+        }
 
         fila.innerHTML = `
             <td class="font-medium primary-color">#${venta.ID_VENTA}</td>
-            <td>${venta.FACTURA}</td>
+            <td>${facturaDisplay}</td>
             <td>${fechaFormateada}</td>
             <td>${venta.NOMBRE_CLIENTE}</td>
             <td>${venta.NOMBRE_VENDEDOR}</td>

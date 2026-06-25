@@ -16,7 +16,7 @@ const movimientosStockModel = {
 
   // 2. OBTENER EL HISTORIAL (Para la Tabla del Frontend)
   obtenerHistorial: async () => {
-    const sql = `SELECT * FROM MOVIMIENTOS_STOCK ORDER BY FECHA_MOVIMIENTO DESC`;
+    const sql = `SELECT * FROM MOVIMIENTOS_STOCK ORDER BY FECHA_MOVIMIENTO DESC, ID_MOVIMIENTO DESC`;
     const [rows] = await pool.query(sql);
     return rows;
   },
@@ -56,6 +56,7 @@ const movimientosStockModel = {
           vp.cantidad_neta as CANTIDAD, 
           v.FECHA, 
           v.FACTURA as REF, 
+          v.ESTADO,
           'salida' as TIPO
         FROM VENTAS_PRODUCTOS vp
         JOIN VENTAS v ON vp.ID_VENTA = v.ID_VENTA
@@ -63,8 +64,48 @@ const movimientosStockModel = {
       `;
       const [ventas] = await pool.query(sqlVentas);
 
+      // C2. Generar Entradas para las Ventas Rechazadas
+      const rechazos = ventas
+        .filter(v => v.ESTADO === 'Rechazado')
+        .map(v => ({
+            ...v,
+            TIPO: 'entrada',
+            // Añadimos un pequeño retraso a la fecha para que la entrada suceda después de la salida
+            FECHA: new Date(new Date(v.FECHA).getTime() + 1000).toISOString() 
+        }));
+
+      // C3. Generar Entradas por Reingresos de Garantías/Devoluciones
+      const sqlReingresos = `
+        SELECT 
+          d.ID_PRODUCTO_SEMINUEVO as ID_PRODUCTO, 
+          p.NOMBRE_PRODUCTO, 
+          d.CANTIDAD, 
+          d.FECHA_DEVOLUCION as FECHA, 
+          CONCAT('Dev: ', d.ID_DEVOLUCION) as REF, 
+          'entrada' as TIPO
+        FROM DEVOLUCIONES d
+        JOIN PRODUCTOS p ON d.ID_PRODUCTO_SEMINUEVO = p.ID_PRODUCTO
+        WHERE d.ACCION = 'reingreso' AND d.REINGRESO_CONFIRMADO = 1
+      `;
+      const [reingresos] = await pool.query(sqlReingresos);
+
+      // C4. Generar Salidas por Reemplazos de Garantías
+      const sqlReemplazos = `
+        SELECT 
+          d.ID_PRODUCTO_REEMPLAZO as ID_PRODUCTO, 
+          p.NOMBRE_PRODUCTO, 
+          d.CANTIDAD, 
+          d.FECHA_DEVOLUCION as FECHA, 
+          CONCAT('Dev: ', d.ID_DEVOLUCION) as REF, 
+          'salida' as TIPO
+        FROM DEVOLUCIONES d
+        JOIN PRODUCTOS p ON d.ID_PRODUCTO_REEMPLAZO = p.ID_PRODUCTO
+        WHERE d.ID_PRODUCTO_REEMPLAZO IS NOT NULL
+      `;
+      const [reemplazos] = await pool.query(sqlReemplazos);
+
       // D. Unir y Ordenar Cronológicamente
-      let movimientos = [...compras, ...ventas];
+      let movimientos = [...compras, ...ventas, ...rechazos, ...reingresos, ...reemplazos];
       // Ordenamos por fecha (del más viejo al más nuevo)
       movimientos.sort((a, b) => new Date(a.FECHA) - new Date(b.FECHA));
 
@@ -86,9 +127,15 @@ const movimientosStockModel = {
         }
 
         // Definir el texto del motivo
-        let motivo = mov.TIPO === 'entrada'
-          ? `Compra Factura: ${mov.REF}`
-          : `Venta Factura: ${mov.REF}`;
+        let motivo = '';
+        if (mov.TIPO === 'entrada') {
+          if (mov.REF.startsWith('Dev:')) motivo = `Reingreso por Devolución: ${mov.REF}`;
+          else if (mov.ESTADO === 'Rechazado') motivo = `Venta Rechazada: ${mov.REF}`;
+          else motivo = `Compra Factura: ${mov.REF}`;
+        } else {
+          if (mov.REF.startsWith('Dev:')) motivo = `Reemplazo entregado por Devolución: ${mov.REF}`;
+          else motivo = `Venta Factura: ${mov.REF}`;
+        }
 
         // Guardar para insertar
         inserts.push([

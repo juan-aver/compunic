@@ -60,7 +60,7 @@ exports.create = async (req, res) => {
         });
     }
 
-    const { id_venta, id_producto, cantidad, motivo, accion, numero_serie } = req.body;
+    const { id_venta, id_producto, cantidad, motivo, accion, numero_serie, id_producto_reemplazo, series_reemplazo } = req.body;
 
     // Validar que la acción sea válida
     const accionesValidas = ['reingreso', 'desecho', 'garantia'];
@@ -74,6 +74,12 @@ exports.create = async (req, res) => {
     if (cantidad <= 0) {
         return res.status(400).send({
             message: 'La cantidad debe ser mayor a 0'
+        });
+    }
+
+    if (!id_producto_reemplazo) {
+        return res.status(400).send({
+            message: 'Debe especificar el ID del producto de reemplazo a entregar.'
         });
     }
 
@@ -96,7 +102,9 @@ exports.create = async (req, res) => {
             cantidad: parseInt(cantidad),
             motivo: motivo || '',
             accion: accion,
-            numero_serie: numero_serie || ''
+            numero_serie: numero_serie || '',
+            id_producto_reemplazo: parseInt(id_producto_reemplazo),
+            series_reemplazo: series_reemplazo || ''
         };
 
         const idDevolucion = await Devoluciones.crear(devolucion);

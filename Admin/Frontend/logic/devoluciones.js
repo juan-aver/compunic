@@ -246,6 +246,88 @@ function poblarSelectVentas() {
 }
 
 // -------------------------------------------------------
+// FORMULARIO - CARGAR PRODUCTOS DE REEMPLAZO
+// -------------------------------------------------------
+function poblarSelectProductosReemplazo() {
+    fetch(`${API_BASE}/productos`)
+        .then(res => res.json())
+        .then(productos => {
+            const select = document.getElementById('producto-reemplazo-select');
+            if (!select) return;
+
+            select.innerHTML = '<option value="" disabled selected>Seleccione Equipo de Reemplazo</option>';
+
+            productos.forEach(prod => {
+                const option = document.createElement('option');
+                option.value = prod.id_producto;
+                // Si el stock actual es mayor a 0, mostramos el stock
+                const stock = parseInt(prod.stock || 0);
+                if (stock > 0) {
+                    option.textContent = `${prod.nombre} (Stock: ${stock})`;
+                    select.appendChild(option);
+                }
+            });
+            
+            // Listener para cargar series cuando se selecciona un producto de reemplazo
+            select.addEventListener('change', function() {
+                cargarSeriesDeReemplazo(this.value);
+            });
+        })
+        .catch(err => console.error('Error al cargar productos de reemplazo:', err));
+}
+
+function cargarSeriesDeReemplazo(idProducto) {
+    const container = document.getElementById('series-reemplazo-list');
+    if (!container) return;
+
+    container.innerHTML = '<span class="text-muted text-sm">Cargando series...</span>';
+
+    fetch(`${API_BASE}/series/${idProducto}/disponibles`)
+        .then(res => res.json())
+        .then(series => {
+            if (!series || series.length === 0) {
+                container.innerHTML = '<span class="text-muted text-sm">El producto seleccionado no tiene series en stock (no requiere serie).</span>';
+                return;
+            }
+
+            let html = '';
+            series.forEach(s => {
+                const condicionStyle = s.CONDICION === 'Nuevo' ? 'color: #27ae60;' : 'color: #e67e22;';
+                html += `<label style="display: block; margin-bottom: 5px; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" value="${s.NUMERO_SERIE}" class="cb-serie-reemplazo" onchange="verificarSeleccionSeriesReemplazo()">
+                            ${s.NUMERO_SERIE} <span style="font-size: 11px; ${condicionStyle}">(${s.CONDICION})</span>
+                         </label>`;
+            });
+            container.innerHTML = html;
+            verificarSeleccionSeriesReemplazo(); // Ejecutar para inicializar validaciones
+        })
+        .catch(err => {
+            console.error('Error al cargar series de reemplazo:', err);
+            container.innerHTML = '<span class="text-muted text-sm" style="color:red;">Error al cargar series.</span>';
+        });
+}
+
+function verificarSeleccionSeriesReemplazo() {
+    const cantInput = document.getElementById('cantidad-devolucion');
+    const requeridas = cantInput ? parseInt(cantInput.value || 1) : 1;
+    
+    // Actualizar el texto del span
+    const spanReq = document.getElementById('cant-req-reemplazo');
+    if (spanReq) spanReq.textContent = requeridas;
+
+    const checkboxes = document.querySelectorAll('.cb-serie-reemplazo');
+    const marcadas = document.querySelectorAll('.cb-serie-reemplazo:checked').length;
+
+    checkboxes.forEach(cb => {
+        if (!cb.checked && marcadas >= requeridas) {
+            cb.disabled = true;
+        } else {
+            cb.disabled = false;
+        }
+    });
+}
+
+// -------------------------------------------------------
 // FORMULARIO - CARGAR PRODUCTOS DE UNA VENTA
 // -------------------------------------------------------
 function cargarProductosDeVenta(idVenta) {
@@ -315,6 +397,18 @@ function cargarProductosDeVenta(idVenta) {
                 if (cantidadInput && cantidadDisponible) {
                     cantidadInput.max = cantidadDisponible;
                     cantidadInput.value = Math.min(1, parseInt(cantidadDisponible));
+                    verificarSeleccionSeriesReemplazo();
+                }
+                
+                // Pre-seleccionar automáticamente el mismo producto en "Equipo de Reemplazo"
+                const reemplazoSelect = document.getElementById('producto-reemplazo-select');
+                if (reemplazoSelect) {
+                    const idProd = this.value;
+                    const exists = Array.from(reemplazoSelect.options).some(opt => opt.value === idProd);
+                    if (exists) {
+                        reemplazoSelect.value = idProd;
+                        cargarSeriesDeReemplazo(idProd);
+                    }
                 }
             };
             productoSelect.addEventListener('change', productoSelect._changeHandler);
@@ -355,6 +449,22 @@ function agregarDevolucion(event) {
         return alert('Debe seleccionar una acción');
     }
 
+    // Datos del producto de reemplazo
+    const idProductoReemplazo = document.getElementById('producto-reemplazo-select').value;
+    if (!idProductoReemplazo) {
+        return alert('Debe seleccionar un equipo de reemplazo.');
+    }
+
+    const cbSeries = document.querySelectorAll('.cb-serie-reemplazo');
+    const seriesReemplazoArray = Array.from(document.querySelectorAll('.cb-serie-reemplazo:checked')).map(cb => cb.value);
+    
+    // Si el producto seleccionado tiene series disponibles (la lista de checkboxes no está vacía)
+    if (cbSeries.length > 0) {
+        if (seriesReemplazoArray.length !== cantidad) {
+            return alert(`Debe seleccionar exactamente ${cantidad} serie(s) del equipo de reemplazo.`);
+        }
+    }
+
     // Deshabilitar botón mientras procesa
     const submitBtn = document.querySelector('#devolution-form button[type="submit"]');
     if (submitBtn) {
@@ -368,7 +478,9 @@ function agregarDevolucion(event) {
         cantidad: cantidad,
         motivo: motivo,
         accion: accion,
-        numero_serie: serie
+        numero_serie: serie,
+        id_producto_reemplazo: parseInt(idProductoReemplazo),
+        series_reemplazo: seriesReemplazoArray.join(',')
     };
 
     fetch(`${API_BASE}/devoluciones`, {
@@ -442,5 +554,27 @@ function limpiarFormularioDevolucion() {
             infoText.textContent = '';
             infoText.style.color = '';
         }
+        
+        // Limpiar sección de reemplazo
+        const reemplazoSelect = document.getElementById('producto-reemplazo-select');
+        if (reemplazoSelect) reemplazoSelect.value = "";
+        
+        const seriesList = document.getElementById('series-reemplazo-list');
+        if (seriesList) seriesList.innerHTML = '<span class="text-muted text-sm">Seleccione un producto para ver sus series disponibles...</span>';
     }
 }
+
+// -------------------------------------------------------
+// EVENT LISTENERS DE INICIO
+// -------------------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    cargarDevoluciones();
+    poblarSelectVentas();
+    poblarSelectProductosReemplazo();
+
+    // Actualizar span de cantidad requerida cuando cambie el input
+    const cantInput = document.getElementById('cantidad-devolucion');
+    if (cantInput) {
+        cantInput.addEventListener('input', verificarSeleccionSeriesReemplazo);
+    }
+});

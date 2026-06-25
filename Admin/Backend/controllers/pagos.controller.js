@@ -228,10 +228,66 @@ const pagosController = {
                 return res.status(404).json({ success: false, error: 'Pedido no encontrado' });
             }
 
+            if (pedido.ESTADO === 'Rechazado') {
+                return res.status(400).json({ success: false, error: 'Este pedido ya fue rechazado anteriormente' });
+            }
+            if (pedido.ESTADO === 'Aprobado') {
+                return res.status(400).json({ success: false, error: 'No se puede rechazar un pedido que ya fue aprobado' });
+            }
+
             await db.query(
                 "UPDATE VENTAS SET ESTADO = 'Rechazado' WHERE ID_VENTA = ?",
                 [id]
             );
+
+            // Revertir inventario (registrar ingresos en el historial)
+            const [productos] = await db.query(
+                "SELECT vp.ID_PRODUCTO, vp.cantidad_neta, vp.sub_total, p.NOMBRE_PRODUCTO FROM VENTAS_PRODUCTOS vp JOIN PRODUCTOS p ON vp.ID_PRODUCTO = p.ID_PRODUCTO WHERE vp.ID_VENTA = ?",
+                [id]
+            );
+
+            const movimientosStockModel = require('../models/movimientos_stock.model');
+            const facturaNum = pedido.FACTURA || `WEB-${String(id).padStart(6, '0')}`;
+            let subtotalCompra = 0;
+
+            for (const item of productos) {
+                subtotalCompra += Number(item.sub_total);
+
+                if (item.cantidad_neta > 0) {
+                    const [stockResult] = await db.query(`
+                        SELECT 
+                            (
+                                COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = ?), 0) - 
+                                COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp JOIN VENTAS v ON vp.ID_VENTA = v.ID_VENTA WHERE vp.ID_PRODUCTO = ? AND v.ESTADO != 'Rechazado'), 0)
+                            ) AS stock_resultante
+                    `, [item.ID_PRODUCTO, item.ID_PRODUCTO]);
+                    
+                    await movimientosStockModel.registrarMovimiento(
+                        item.ID_PRODUCTO,
+                        item.NOMBRE_PRODUCTO,
+                        'entrada',
+                        `Venta Rechazada: ${facturaNum}`,
+                        item.cantidad_neta,
+                        stockResult[0].stock_resultante
+                    );
+                }
+            }
+
+            // Reembolsar puntos usados y revertir puntos ganados
+            if (pedido.ID_CLIENTE) {
+                const totalPagado = Number(pedido.TOTAL);
+                const descuentoPuntos = Math.max(0, subtotalCompra - totalPagado);
+                const puntosUsados = Math.round(descuentoPuntos / 0.10);
+                const puntosGanados = Math.floor(totalPagado / 10);
+                const deltaPuntos = puntosUsados - puntosGanados;
+
+                if (deltaPuntos !== 0) {
+                    await db.query(
+                        "UPDATE CLIENTES SET PUNTOS = GREATEST(0, PUNTOS + ?) WHERE ID_CLIENTE = ?",
+                        [deltaPuntos, pedido.ID_CLIENTE]
+                    );
+                }
+            }
 
             // Registrar auditoría
             AuditoriaModel.registrar({

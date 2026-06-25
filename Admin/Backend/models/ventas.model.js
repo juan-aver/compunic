@@ -12,6 +12,7 @@ const Ventas = {
                 v.FACTURA,
                 v.FECHA, 
                 v.TOTAL,
+                v.ESTADO,
                 COALESCE(CONCAT(c.NOMBRE, ' ', c.APELLIDO), v.NOMBRE_CLIENTE_OCASIONAL, 'Cliente Ocasional') AS NOMBRE_CLIENTE,
                 CONCAT(e.NOMBRE, ' ', e.APELLIDO) AS NOMBRE_VENDEDOR
             FROM VENTAS v

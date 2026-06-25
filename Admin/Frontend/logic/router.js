@@ -310,6 +310,19 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                             });
                         }
 
+                        // Inicializar reemplazos
+                        if (typeof poblarSelectProductosReemplazo === 'function') {
+                            poblarSelectProductosReemplazo();
+                        }
+                        const cantInput = document.getElementById('cantidad-devolucion');
+                        if (cantInput) {
+                            cantInput.addEventListener('input', function() {
+                                if (typeof verificarSeleccionSeriesReemplazo === 'function') {
+                                    verificarSeleccionSeriesReemplazo();
+                                }
+                            });
+                        }
+
                         // Event listener para submit del formulario
                         const devolutionForm = document.getElementById('devolution-form');
                         if (devolutionForm) {

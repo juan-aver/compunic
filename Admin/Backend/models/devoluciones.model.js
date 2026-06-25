@@ -122,7 +122,7 @@ const Devoluciones = {
         try {
             await connection.beginTransaction();
 
-            const { id_venta, id_producto, cantidad, motivo, accion, numero_serie } = datos;
+            const { id_venta, id_producto, cantidad, motivo, accion, numero_serie, id_producto_reemplazo, series_reemplazo } = datos;
 
             // 0. Validar números de serie ingresados
             if (numero_serie) {
@@ -146,8 +146,8 @@ const Devoluciones = {
 
             // 1. Insertar la devolución
             const sqlInsert = `
-        INSERT INTO DEVOLUCIONES(ID_VENTA, ID_PRODUCTO, CANTIDAD, MOTIVO, ACCION, NUMERO_SERIE)
-            VALUES(?, ?, ?, ?, ?, ?)
+        INSERT INTO DEVOLUCIONES(ID_VENTA, ID_PRODUCTO, CANTIDAD, MOTIVO, ACCION, NUMERO_SERIE, ID_PRODUCTO_REEMPLAZO, SERIES_REEMPLAZO)
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?)
       `;
             const [result] = await connection.query(sqlInsert, [
                 id_venta,
@@ -155,12 +155,14 @@ const Devoluciones = {
                 cantidad,
                 motivo,
                 accion,
-                numero_serie || null
+                numero_serie || null,
+                id_producto_reemplazo,
+                series_reemplazo || null
             ]);
 
             const idDevolucion = result.insertId;
 
-            // 1.5 Actualizar PRODUCTO_SERIES si se proporcionó un número de serie
+            // 1.5 Actualizar PRODUCTO_SERIES del equipo devuelto si se proporcionó un número de serie
             if (numero_serie) {
                 const seriesArray = numero_serie.split(',').map(s => s.trim()).filter(s => s);
                 if (seriesArray.length > 0) {
@@ -174,40 +176,58 @@ const Devoluciones = {
                 }
             }
 
-            // 2. Obtener información del producto para el registro
+            // 1.8 Actualizar PRODUCTO_SERIES del equipo de reemplazo entregado
+            if (series_reemplazo) {
+                const sReemplazoArray = series_reemplazo.split(',').map(s => s.trim()).filter(s => s);
+                if (sReemplazoArray.length > 0) {
+                    const placeholdersR = sReemplazoArray.map(() => '?').join(',');
+                    await connection.query(
+                        `UPDATE PRODUCTO_SERIES 
+                         SET ESTADO = 'vendido', ID_VENTA = ?, NOTAS = CONCAT(COALESCE(NOTAS, ''), ' | Entregado como reemplazo de garantía') 
+                         WHERE ID_PRODUCTO = ? AND NUMERO_SERIE IN (${placeholdersR})`,
+                        [id_venta, id_producto_reemplazo, ...sReemplazoArray]
+                    );
+                }
+            }
+
+            // 2. Obtener información del producto de reemplazo para el registro
             const [prodInfo] = await connection.query(
                 'SELECT NOMBRE_PRODUCTO FROM PRODUCTOS WHERE ID_PRODUCTO = ?',
-                [id_producto]
+                [id_producto_reemplazo]
             );
-            const nombreProducto = prodInfo[0]?.NOMBRE_PRODUCTO || 'Producto';
+            const nombreProductoReemplazo = prodInfo[0]?.NOMBRE_PRODUCTO || 'Producto de Reemplazo';
 
-            // 3. Obtener factura de la venta (usando la columna FACTURA almacenada para evitar truncamiento)
+            // 3. Obtener factura de la venta
             const [ventaInfo] = await connection.query(
                 "SELECT FACTURA FROM VENTAS WHERE ID_VENTA = ?",
                 [id_venta]
             );
             const factura = ventaInfo[0]?.FACTURA || `FAC-V${String(id_venta).padStart(3, '0')}`;
 
-            // 4. Obtener stock actual del producto (calculado)
+            // 4. Obtener stock actual del producto de reemplazo (calculado)
             const [stockInfo] = await connection.query(
                 `SELECT (
                     COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = ?), 0) - 
-                    COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp WHERE vp.ID_PRODUCTO = ?), 0)
+                    COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp JOIN VENTAS v ON vp.ID_VENTA = v.ID_VENTA WHERE vp.ID_PRODUCTO = ? AND v.ESTADO != 'Rechazado'), 0) -
+                    COALESCE((SELECT SUM(d.CANTIDAD) FROM DEVOLUCIONES d WHERE d.ID_PRODUCTO_REEMPLAZO = ?), 0)
                 ) AS stock_actual`,
-                [id_producto, id_producto]
+                [id_producto_reemplazo, id_producto_reemplazo, id_producto_reemplazo]
             );
             const stockActual = stockInfo[0]?.stock_actual || 0;
 
             // 5. Registrar movimiento de salida (producto de reemplazo)
-            const stockDespuesSalida = stockActual - cantidad;
+            const stockDespuesSalida = stockActual; // Ya está descontado por la consulta dinámica anterior si asume el INSERT previo, PERO espera, la consulta anterior se ejecuta DESPUES del insert?
+            // El INSERT a DEVOLUCIONES ya ocurrió, así que la suma de devoluciones ya incluye esta cantidad.
+            // Por lo tanto, stock_actual YA TIENE la resta hecha!
+            
             await connection.query(
                 `INSERT INTO MOVIMIENTOS_STOCK 
          (ID_PRODUCTO, NOMBRE_PRODUCTO, TIPO_MOVIMIENTO, MOTIVO, CANTIDAD, STOCK_RESULTANTE)
          VALUES (?, ?, 'salida', ?, ?, ?)`,
                 [
-                    id_producto,
-                    nombreProducto,
-                    `Devolución ${factura} - Producto de reemplazo. Motivo: ${motivo}`,
+                    id_producto_reemplazo,
+                    nombreProductoReemplazo,
+                    `Devolución ${factura} - Equipo de reemplazo entregado al cliente`,
                     cantidad,
                     stockDespuesSalida
                 ]
@@ -334,7 +354,7 @@ const Devoluciones = {
             const [stockInfo] = await connection.query(
                 `SELECT (
                     COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = ?), 0) -
-                    COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp WHERE vp.ID_PRODUCTO = ?), 0) +
+                    COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp JOIN VENTAS v ON vp.ID_VENTA = v.ID_VENTA WHERE vp.ID_PRODUCTO = ? AND v.ESTADO != 'Rechazado'), 0) +
                     COALESCE((SELECT SUM(d2.CANTIDAD) FROM DEVOLUCIONES d2 WHERE d2.ID_PRODUCTO = ? AND d2.ACCION = 'reingreso' AND d2.REINGRESO_CONFIRMADO = 1), 0) +
                     COALESCE((SELECT SUM(CANTIDAD) FROM MOVIMIENTOS_STOCK ms WHERE ms.ID_PRODUCTO = ? AND TIPO_MOVIMIENTO='entrada'), 0) -
                     COALESCE((SELECT SUM(CANTIDAD) FROM MOVIMIENTOS_STOCK ms WHERE ms.ID_PRODUCTO = ? AND TIPO_MOVIMIENTO='salida'), 0)
