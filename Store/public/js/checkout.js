@@ -171,7 +171,7 @@ window.copyAccount   = copyAccount;
 // ============================================
 
 function formatPrice(price) {
-    return `C$${parseFloat(price).toFixed(2)}`;
+    return 'C$' + parseFloat(price).toFixed(2);
 }
 
 function updateCartCount() {
@@ -206,14 +206,15 @@ function renderSummary() {
     `).join('');
 
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const total    = Math.max(0, subtotal - pointsUsed);
+    const discount = pointsUsed * 0.10;
+    const total    = Math.max(0, subtotal - discount);
 
     document.getElementById('subtotal').textContent = formatPrice(subtotal);
     document.getElementById('total').textContent    = formatPrice(total);
 
     if (pointsUsed > 0) {
         document.getElementById('discountRow').style.display = 'flex';
-        document.getElementById('discountAmount').textContent = `-${formatPrice(pointsUsed)}`;
+        document.getElementById('discountAmount').textContent = `-${formatPrice(discount)}`;
     } else {
         document.getElementById('discountRow').style.display = 'none';
     }
@@ -230,16 +231,26 @@ async function loadUserData() {
                 document.getElementById('email').value    = data.cliente.EMAIL;
                 document.getElementById('telefono').value = data.cliente.TELEFONO;
 
+                // Actualizar datos locales para asegurar que tenemos la cédula
+                safeSetItem('compunic_store_user', JSON.stringify({
+                    id: data.cliente.ID_CLIENTE,
+                    nombre: data.cliente.NOMBRE,
+                    apellido: data.cliente.APELLIDO,
+                    email: data.cliente.EMAIL,
+                    cedula: data.cliente.CEDULA,
+                    puntos: data.cliente.PUNTOS
+                }));
+
                 maxPoints = parseInt(data.cliente.PUNTOS) || 0;
                 if (maxPoints > 0) {
                     document.getElementById('pointsSection').style.display = 'block';
                     document.getElementById('availablePoints').textContent      = maxPoints;
-                    document.getElementById('availablePointsMoney').textContent  = maxPoints;
+                    document.getElementById('availablePointsMoney').textContent  = (maxPoints * 0.10).toFixed(2);
 
                     document.getElementById('usePoints').addEventListener('change', e => {
                         if (e.target.checked) {
                             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                            pointsUsed = Math.min(maxPoints, subtotal);
+                            pointsUsed = Math.min(maxPoints, subtotal * 10);
                         } else {
                             pointsUsed = 0;
                         }
@@ -374,11 +385,14 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async e => {
         e.preventDefault();
 
+        const user = typeof StoreAuth !== 'undefined' ? StoreAuth.getUser() : null;
+
         const datosCliente = {
             nombre:    document.getElementById('nombre').value.trim(),
             email:     document.getElementById('email').value.trim(),
             telefono:  document.getElementById('telefono').value.trim(),
-            direccion: document.getElementById('direccion').value.trim()
+            direccion: document.getElementById('direccion').value.trim(),
+            cedula:    user ? user.cedula : null
         };
 
         const errors = validateForm(datosCliente);

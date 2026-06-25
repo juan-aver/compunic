@@ -112,31 +112,68 @@ const pagosController = {
      */
     aprobarPago: async (req, res) => {
         const { id } = req.params;
-        const { notas } = req.body;
+        const { notas, series } = req.body;
+
+        const connection = await db.getConnection();
 
         try {
+            await connection.beginTransaction();
+
             // Obtener datos del pedido
-            const [[pedido]] = await db.query(`
+            const [[pedido]] = await connection.query(`
                 SELECT v.*, CONCAT(c.NOMBRE,' ',COALESCE(c.APELLIDO,'')) AS nombre_cliente, c.EMAIL
                 FROM VENTAS v INNER JOIN CLIENTES c ON v.ID_CLIENTE = c.ID_CLIENTE
                 WHERE v.ID_VENTA = ? AND (v.FACTURA IS NULL OR v.FACTURA LIKE 'WEB-%')
             `, [id]);
 
             if (!pedido) {
+                await connection.rollback();
+                connection.release();
                 return res.status(404).json({ success: false, error: 'Pedido no encontrado' });
             }
 
             if (pedido.ESTADO === 'Aprobado') {
+                await connection.rollback();
+                connection.release();
                 return res.status(400).json({ success: false, error: 'El pedido ya está confirmado' });
             }
 
             const nFactura = `WEB-${String(id).padStart(6, '0')}`;
 
-            // Actualizar estado
-            await db.query(
+            // 1. Procesar series si vienen en el body
+            if (series && typeof series === 'object') {
+                for (const idProducto of Object.keys(series)) {
+                    const seriesStr = series[idProducto]; // Ejemplo: "S1,S2"
+                    if (seriesStr) {
+                        // Actualizar la tabla VENTAS_PRODUCTOS
+                        await connection.query(
+                            'UPDATE VENTAS_PRODUCTOS SET numeros_serie = ? WHERE ID_VENTA = ? AND ID_PRODUCTO = ?',
+                            [seriesStr, id, idProducto]
+                        );
+
+                        // Actualizar el estado de las series a 'vendido'
+                        const seriesArray = seriesStr.split(',').map(s => s.trim()).filter(s => s);
+                        if (seriesArray.length > 0) {
+                            const placeholders = seriesArray.map(() => '?').join(',');
+                            await connection.query(
+                                `UPDATE PRODUCTO_SERIES 
+                                 SET ESTADO = 'vendido', ID_VENTA = ? 
+                                 WHERE ID_PRODUCTO = ? AND NUMERO_SERIE IN (${placeholders})`,
+                                [id, idProducto, ...seriesArray]
+                            );
+                        }
+                    }
+                }
+            }
+
+            // 2. Actualizar estado
+            await connection.query(
                 "UPDATE VENTAS SET ESTADO = 'Aprobado', FACTURA = ? WHERE ID_VENTA = ?",
                 [nFactura, id]
             );
+
+            await connection.commit();
+            connection.release();
 
             // Registrar auditoría
             AuditoriaModel.registrar({

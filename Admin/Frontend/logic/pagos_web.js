@@ -218,19 +218,130 @@
     // -------------------------------------------------------
     // Aprobar pago (transferencia / general)
     // -------------------------------------------------------
+    window.checkMaxSeriesWeb = function(checkbox, maxAllowed, index) {
+        const checkedBoxes = document.querySelectorAll(`.cb-serie-web-${index}:checked`);
+        if (checkedBoxes.length > maxAllowed) {
+            checkbox.checked = false;
+            Swal.showValidationMessage(`Solo puede seleccionar ${maxAllowed} serie(s) para este producto`);
+            setTimeout(() => Swal.resetValidationMessage(), 3000);
+        }
+    };
+
     window.aprobarPago = async function(id) {
-        if (!confirm('¿Confirmar aprobación del pago? Se notificará al cliente por email.')) return;
         try {
-            const res  = await fetch(`${API}/api/admin/pagos/${id}/aprobar`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+            // 1. Fetch venta items
+            const ventaRes = await fetch(`${API}/api/ventas/${id}`);
+            const ventaData = await ventaRes.json();
+            if (!ventaRes.ok || !ventaData.items) throw new Error("No se pudo obtener detalles del pedido");
+
+            const itemsVenta = ventaData.items;
+
+            // 2. Fetch available series for each item
+            const seriesResults = await Promise.all(itemsVenta.map(item => 
+                fetch(`${API}/api/series/${item.ID_PRODUCTO}/disponibles`, {
+                    headers: { 'x-user-id': localStorage.getItem('compunic_admin_id') }
+                }).then(r => r.json()).catch(() => [])
+            ));
+
+            // 3. Build modal HTML
+            let formHtml = '<div style="max-height: 400px; overflow-y: auto; padding-right: 10px; text-align: left;">';
+            let requiereSeries = false;
+
+            itemsVenta.forEach((item, idx) => {
+                const seriesDisponibles = seriesResults[idx];
+                if (seriesDisponibles && seriesDisponibles.length > 0) {
+                    requiereSeries = true;
+                    let selectHtml = `<div style="font-size: 11px; margin-bottom: 5px;">Seleccione hasta ${item.CANTIDAD} serie(s):</div>`;
+                    selectHtml += `<div class="series-checkbox-list" id="series_list_web_${idx}" style="max-height: 100px; overflow-y: auto; border: 1px solid var(--border-color, #ddd); padding: 5px; border-radius: 4px; margin-bottom: 5px; background: var(--bg-input, #fff);">`;
+                    
+                    seriesDisponibles.forEach(s => {
+                        const condicionStyle = s.CONDICION === 'Nuevo' ? 'color: #27ae60;' : 'color: #e67e22;';
+                        selectHtml += `<label style="display: block; margin-bottom: 3px; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" value="${s.NUMERO_SERIE}" class="cb-serie-web-${idx}" onchange="checkMaxSeriesWeb(this, ${item.CANTIDAD}, ${idx})">
+                            ${s.NUMERO_SERIE} <span style="font-size: 10px; ${condicionStyle}">(${s.CONDICION})</span>
+                        </label>`;
+                    });
+                    selectHtml += `</div>`;
+                    
+                    formHtml += `<div style="margin-bottom: 15px; padding: 10px; background: var(--bg-card-alt, #f8f9fa); border-radius: 5px;">
+                        <label style="font-size:13px; display:block; margin-bottom:5px; font-weight: bold; color: var(--text-color, #333);">
+                            ${item.NOMBRE_PRODUCTO} <span style="color: #666; font-weight: normal;">(Cant: ${item.CANTIDAD})</span>
+                        </label>
+                        ${selectHtml}
+                    </div>`;
+                }
+            });
+            formHtml += '</div>';
+
+            if (requiereSeries) {
+                Swal.fire({
+                    title: 'Asignar Series y Aprobar',
+                    html: formHtml,
+                    showCancelButton: true,
+                    confirmButtonText: 'Aprobar Venta',
+                    cancelButtonText: 'Cancelar',
+                    customClass: { confirmButton: 'btn btn-primary', cancelButton: 'btn btn-outline' },
+                    preConfirm: () => {
+                        const seriesData = {};
+                        for (let idx = 0; idx < itemsVenta.length; idx++) {
+                            const item = itemsVenta[idx];
+                            const seriesDisponibles = seriesResults[idx];
+                            if (seriesDisponibles && seriesDisponibles.length > 0) {
+                                const checked = document.querySelectorAll(`.cb-serie-web-${idx}:checked`);
+                                if (checked.length !== item.CANTIDAD) {
+                                    Swal.showValidationMessage(`Debe seleccionar exactamente ${item.CANTIDAD} serie(s) para ${item.NOMBRE_PRODUCTO}`);
+                                    return false;
+                                }
+                                seriesData[item.ID_PRODUCTO] = Array.from(checked).map(cb => cb.value).join(',');
+                            }
+                        }
+                        return seriesData;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        enviarAprobacion(id, result.value);
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: '¿Confirmar aprobación?',
+                    text: 'Se notificará al cliente por email.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Aprobar Venta',
+                    cancelButtonText: 'Cancelar',
+                    customClass: { confirmButton: 'btn btn-primary', cancelButton: 'btn btn-outline' }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        enviarAprobacion(id, null);
+                    }
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            showToast('Error al verificar detalles del pedido', 'error');
+        }
+    };
+
+    async function enviarAprobacion(id, seriesData) {
+        try {
+            const bodyData = seriesData ? { series: seriesData } : {};
+            const res  = await fetch(`${API}/api/admin/pagos/${id}/aprobar`, { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body: JSON.stringify(bodyData) 
+            });
             const data = await res.json();
             if (data.success) {
-                showToast('✅ Pago aprobado. Cliente notificado.', 'success');
+                Swal.fire({icon: 'success', title: 'Aprobado', text: 'Pago aprobado. Cliente notificado.', timer: 2000, showConfirmButton: false});
                 window.recargarPagos();
             } else {
-                showToast(data.error || 'Error al aprobar', 'error');
+                Swal.fire({icon: 'error', title: 'Error', text: data.error || 'Error al aprobar'});
             }
-        } catch(e) { showToast('Error de conexión', 'error'); }
-    };
+        } catch(e) { 
+            Swal.fire({icon: 'error', title: 'Error', text: 'Error de conexión'});
+        }
+    }
 
     // -------------------------------------------------------
     // Marcar en verificación (solo transferencias)

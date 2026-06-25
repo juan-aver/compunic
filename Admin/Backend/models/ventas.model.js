@@ -171,6 +171,7 @@ const Ventas = {
     // Obtener los productos de la venta con seriales y garantías
     const queryProductos = `
       SELECT 
+        vp.ID_PRODUCTO,
         vp.cantidad_neta AS CANTIDAD,
         p.NOMBRE_PRODUCTO,
         vp.precio_venta AS PRECIO_UNITARIO,

@@ -44,6 +44,7 @@ const storeAuthController = {
                     id: result.insertId,
                     nombre,
                     email,
+                    cedula,
                     puntos: 0
                 }
             });

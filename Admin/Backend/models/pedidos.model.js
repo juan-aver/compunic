@@ -100,7 +100,8 @@ const Pedidos = {
 
             // 4. Calcular total y manejar puntos
             const subtotalCompra = productos.reduce((sum, item) => sum + (item.precio_unitario * item.cantidad), 0);
-            const total = Math.max(0, subtotalCompra - puntosUsados);
+            const descuentoPuntos = puntosUsados * 0.10;
+            const total = Math.max(0, subtotalCompra - descuentoPuntos);
 
             // Validar que el cliente tenga suficientes puntos si está usando
             if (puntosUsados > 0) {

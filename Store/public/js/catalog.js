@@ -33,7 +33,7 @@ function getGradientForProduct(id) {
     return gradients[id % gradients.length];
 }
 
-function formatPrice(price) { return `$${parseFloat(price).toFixed(2)}`; }
+function formatPrice(price) { return `C$${parseFloat(price).toFixed(2)}`; }
 
 function getStockStatus(stock) {
     if (stock === 0) return { text: 'Agotado', class: 'out-of-stock', icon: 'times-circle', color: '#ef4444' };
@@ -194,7 +194,7 @@ function initPriceRange() {
 function updatePriceLabel(val, max) {
     const label = document.getElementById('priceRangeLabel');
     if (!label) return;
-    label.textContent = val >= max ? 'Todos' : `$${parseFloat(val).toFixed(0)}`;
+    label.textContent = val >= max ? 'Todos' : `C$${parseFloat(val).toFixed(0)}`;
 }
 
 // ============================================
@@ -264,10 +264,16 @@ function renderProducts(products) {
         const imageContent = product.imageUrl
             ? `<img src="http://localhost:3001/${product.imageUrl}" alt="${product.name}" loading="lazy" />`
             : `<div style="font-size: 4rem; color: rgba(255,255,255,0.2);"><i class="fas fa-laptop"></i></div>`;
+            
+        const isSeminuevo = product.name.toLowerCase().includes('(seminuevo)') || (product.categories && product.categories.toLowerCase().includes('seminuevo'));
+        const seminuevoBadge = isSeminuevo 
+            ? `<div class="product-card-seminuevo" style="position: absolute; top: 10px; right: 10px; background: rgba(243, 156, 18, 0.95); color: white; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; z-index: 10; backdrop-filter: blur(4px); box-shadow: 0 4px 6px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); letter-spacing: 0.5px;"><i class="fas fa-recycle"></i> Seminuevo</div>` 
+            : '';
 
         return `
             <div class="product-card animate-fade-in-up" data-product-id="${product.id}" onclick="openProductModal(${product.id})">
-                <div class="product-card-image" style="background: ${product.imageUrl ? 'rgba(255,255,255,0.05)' : gradient};">
+                <div class="product-card-image" style="background: ${product.imageUrl ? 'rgba(255,255,255,0.05)' : gradient}; position: relative;">
+                    ${seminuevoBadge}
                     ${imageContent}
                     <div class="product-card-stock ${stockStatus.class}">
                         <i class="fas fa-${stockStatus.icon}"></i>
@@ -310,7 +316,11 @@ function openProductModal(productId) {
     if (!product) return;
     const stockStatus = getStockStatus(product.stock);
 
-    document.getElementById('modalCategory').textContent = product.categories || 'General';
+    const isSeminuevo = product.name.toLowerCase().includes('(seminuevo)') || (product.categories && product.categories.toLowerCase().includes('seminuevo'));
+    
+    document.getElementById('modalCategory').innerHTML = (product.categories || 'General') + 
+        (isSeminuevo ? ' <span style="background: rgba(243, 156, 18, 0.95); color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-left: 8px; vertical-align: middle; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><i class="fas fa-recycle"></i> Seminuevo</span>' : '');
+    
     document.getElementById('modalTitle').textContent = product.name;
     document.getElementById('modalModel').textContent = `Modelo: ${product.model}`;
     document.getElementById('modalPrice').textContent = formatPrice(product.price);
