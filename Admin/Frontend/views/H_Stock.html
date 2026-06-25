@@ -26,6 +26,19 @@
         <h3><i class="fas fa-history"></i> Registro de Movimientos de Inventario</h3>
         <p>Bitácora completa de entradas, salidas y ajustes de stock.</p>
 
+        <!-- Controles de Tabla -->
+        <div class="table-controls" style="margin-bottom: 20px;">
+            <div class="search-enhanced-container" style="width: 100%;">
+                <div class="search-input-wrapper" style="display: flex; gap: 15px; align-items: center; width: 100%;">
+                    <input type="text" id="buscar_stock" class="filter-search"
+                        placeholder="Buscar por producto o motivo..." style="flex: 1; padding: 10px 15px; border-radius: 8px; border: 1px solid #ccc;">
+                    <button class="btn-clear-filters" onclick="clearStockFilters()" style="white-space: nowrap; padding: 10px 15px; border-radius: 8px; cursor: pointer;">
+                        <i class="fas fa-times"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <table id="tabla-historial">
           <thead>
             <tr>
@@ -42,6 +55,9 @@
             <!-- Se llena dinámicamente -->
           </tbody>
         </table>
+        
+        <!-- Pagination Controls -->
+        <div id="stock-pagination-container" class="pagination-controls" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px; align-items: center;"></div>
       </div>
     </div>
   </div>

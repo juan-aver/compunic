@@ -8,39 +8,24 @@
  */
 let itemsCompra = [];
 
+window._allCompras = [];
+window._filteredCompras = [];
+window._comprasCurrentPage = 1;
+window._comprasPerPage = 15;
+
 function cargarCompras() {
     fetch(`${API_BASE}/compras`)
         .then(r => r.json())
         .then(compras => {
-            const tbody = document.getElementById('tablaCompras');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+            window._allCompras = compras;
+            window._filteredCompras = [...window._allCompras];
+            window._comprasCurrentPage = 1;
+            renderComprasPaginated();
 
-            compras.forEach(c => {
-                const fila = document.createElement('tr');
-                fila.innerHTML = `
-                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); color: black; font-weight: bold;">${c.ID_COMPRA}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span style="color: black; font-weight: bold;">${c.NUMERO_FACTURA_PROVEEDOR}</span>
-                    </td>
-                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: bold;">${c.proveedor}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span style="padding: 3px 8px; border-radius: 4px; background-color: ${c.meses_garantia > 0 ? 'rgba(40, 167, 69, 0.2)' : 'rgba(108, 117, 125, 0.2)'}; color: ${c.meses_garantia > 0 ? '#28a745' : '#6c757d'}; font-weight: bold;">
-                            ${c.meses_garantia > 0 ? c.meses_garantia + ' Meses' : 'Sin Garantía'}
-                        </span>
-                    </td>
-                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">${new Date(c.FECHA_COMPRA).toLocaleDateString()}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">${c.items_count}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); color: black; font-weight: bold;">C$${parseFloat(c.TOTAL_COMPRA).toFixed(2)}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <button class="btn btn-sm" style="background-color: rgba(23, 162, 184, 0.8); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; backdrop-filter: blur(4px); margin-right: 5px;" onclick="verDetalleCompra(${c.ID_COMPRA})">Ver Detalle</button>
-                    </td>
-                    <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <button class="btn btn-sm" style="background-color: rgba(40, 167, 69, 0.8); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; backdrop-filter: blur(4px);" onclick="verFactura(${c.ID_COMPRA})">Ver Factura</button>
-                    </td>
-                `;
-                tbody.appendChild(fila);
-            });
+            if (!window._comprasSearchInitialized) {
+                initComprasSearch();
+                window._comprasSearchInitialized = true;
+            }
 
             if (document.getElementById('proveedor_compra')) {
                 poblarSelectProveedoresCompra();
@@ -50,6 +35,124 @@ function cargarCompras() {
         })
         .catch(err => console.error('Error al cargar compras:', err));
 }
+
+function renderComprasPaginated() {
+    const tbody = document.getElementById('tablaCompras');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const start = (window._comprasCurrentPage - 1) * window._comprasPerPage;
+    const end = start + window._comprasPerPage;
+    const pageData = window._filteredCompras.slice(start, end);
+
+    if (pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:20px; font-weight:bold; color:black;">No se encontraron compras.</td></tr>';
+    } else {
+        pageData.forEach(c => {
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+                <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); color: black; font-weight: bold;">${c.ID_COMPRA}</td>
+                <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <span style="color: black; font-weight: bold;">${c.NUMERO_FACTURA_PROVEEDOR}</span>
+                </td>
+                <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: bold;">${c.proveedor}</td>
+                <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <span style="padding: 3px 8px; border-radius: 4px; background-color: ${c.meses_garantia > 0 ? 'rgba(40, 167, 69, 0.2)' : 'rgba(108, 117, 125, 0.2)'}; color: ${c.meses_garantia > 0 ? '#28a745' : '#6c757d'}; font-weight: bold;">
+                        ${c.meses_garantia > 0 ? c.meses_garantia + ' Meses' : 'Sin Garantía'}
+                    </span>
+                </td>
+                <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">${new Date(c.FECHA_COMPRA).toLocaleDateString()}</td>
+                <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">${c.items_count}</td>
+                <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); color: black; font-weight: bold;">C$${parseFloat(c.TOTAL_COMPRA).toFixed(2)}</td>
+                <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <button class="btn btn-sm" style="background-color: rgba(23, 162, 184, 0.8); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; backdrop-filter: blur(4px); margin-right: 5px;" onclick="verDetalleCompra(${c.ID_COMPRA})">Ver Detalle</button>
+                </td>
+                <td style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <button class="btn btn-sm" style="background-color: rgba(40, 167, 69, 0.8); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; backdrop-filter: blur(4px);" onclick="verFactura(${c.ID_COMPRA})">Ver Factura</button>
+                </td>
+            `;
+            tbody.appendChild(fila);
+        });
+    }
+
+    renderComprasPaginationControls();
+}
+
+function renderComprasPaginationControls() {
+    const controlsContainer = document.getElementById('compras-pagination-container');
+    if (!controlsContainer) return;
+
+    const totalPages = Math.ceil(window._filteredCompras.length / window._comprasPerPage);
+    if (totalPages <= 1) {
+        controlsContainer.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+    
+    // Previous Button
+    if (window._comprasCurrentPage > 1) {
+        html += `<button class="pagination-btn" onclick="changeComprasPage(${window._comprasCurrentPage - 1})"><i class="fas fa-chevron-left"></i> Anterior</button>`;
+    } else {
+        html += `<button class="pagination-btn disabled" disabled><i class="fas fa-chevron-left"></i> Anterior</button>`;
+    }
+
+    // Page Numbers
+    for (let i = 1; i <= totalPages; i++) {
+        // Show limited pages (first, last, current, and adjacent)
+        if (i === 1 || i === totalPages || (i >= window._comprasCurrentPage - 2 && i <= window._comprasCurrentPage + 2)) {
+            if (i === window._comprasCurrentPage) {
+                html += `<button class="pagination-btn active" onclick="changeComprasPage(${i})">${i}</button>`;
+            } else {
+                html += `<button class="pagination-btn" onclick="changeComprasPage(${i})">${i}</button>`;
+            }
+        } else if (i === window._comprasCurrentPage - 3 || i === window._comprasCurrentPage + 3) {
+            html += `<span class="pagination-ellipsis">...</span>`;
+        }
+    }
+
+    // Next Button
+    if (window._comprasCurrentPage < totalPages) {
+        html += `<button class="pagination-btn" onclick="changeComprasPage(${window._comprasCurrentPage + 1})">Siguiente <i class="fas fa-chevron-right"></i></button>`;
+    } else {
+        html += `<button class="pagination-btn disabled" disabled>Siguiente <i class="fas fa-chevron-right"></i></button>`;
+    }
+
+    controlsContainer.innerHTML = html;
+}
+
+window.changeComprasPage = function(page) {
+    window._comprasCurrentPage = page;
+    renderComprasPaginated();
+};
+
+function initComprasSearch() {
+    const searchInput = document.getElementById('buscar_compra');
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        if (!query) {
+            window._filteredCompras = [...window._allCompras];
+        } else {
+            window._filteredCompras = window._allCompras.filter(c => {
+                const factura = (c.NUMERO_FACTURA_PROVEEDOR || '').toLowerCase();
+                const proveedor = (c.proveedor || '').toLowerCase();
+                return factura.includes(query) || proveedor.includes(query);
+            });
+        }
+        window._comprasCurrentPage = 1;
+        renderComprasPaginated();
+    });
+}
+
+window.clearComprasFilters = function() {
+    const searchInput = document.getElementById('buscar_compra');
+    if (searchInput) searchInput.value = '';
+    window._filteredCompras = [...window._allCompras];
+    window._comprasCurrentPage = 1;
+    renderComprasPaginated();
+};
 
 function poblarSelectProveedoresCompra() {
     fetch(`${API_BASE}/proveedores`)

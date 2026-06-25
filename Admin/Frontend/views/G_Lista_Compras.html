@@ -11,7 +11,7 @@
 <!-- Table Enhancements -->
 <link rel="stylesheet" href="css/views/table-enhancements.css">
 <script src="js/table-enhancements.js" defer></script>
-<script src="js/search/compras-table-init.js" defer></script>
+
 
 <div class="container-fluid">
     <div class="row">
@@ -26,26 +26,19 @@
             <h2 class="section-title-light">Historial de Compras</h2>
 
             <!-- Controles de Tabla -->
-            <div class="table-controls">
-                <div class="table-filters">
-                    <input type="text" id="buscar_compra" class="filter-search"
-                        placeholder="Buscar por factura o proveedor...">
-                    <button class="btn-clear-filters" onclick="clearComprasFilters()">
-                        <i class="fas fa-times"></i> Limpiar
+            <div class="table-controls" style="margin-bottom: 20px;">
+                <div class="search-enhanced-container" style="width: 100%;">
+                    <div class="search-icon-wrapper">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <input type="text" id="buscar_compra" class="search-input-enhanced" placeholder="Buscar por factura o proveedor..." autocomplete="off">
+                    <button class="btn-clear-search" onclick="clearComprasFilters()" title="Limpiar búsqueda">
+                        <i class="fas fa-times"></i>
                     </button>
-                </div>
-                <div class="table-per-page">
-                    <label>Mostrar:</label>
-                    <select class="per-page-select" id="compras-per-page">
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
                 </div>
             </div>
 
-            <div class="table-responsive">
+            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                 <table class="table-main" id="tabla-compras-enhanced">
                     <thead class="table-main-header">
                         <tr>
@@ -65,6 +58,9 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Contenedor de Paginación -->
+            <div id="compras-pagination-container" class="pagination-container" style="display: flex; justify-content: center; margin-top: 15px;"></div>
         </section>
     </div>
 </div>
