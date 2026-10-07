@@ -66,7 +66,7 @@ const CajaModel = {
 
         // 3. Ventas realizadas durante el turno (por método de pago)
         const [ventas] = await db.query(
-            `SELECT v.ID_VENTA, v.FACTURA, v.FECHA, v.TOTAL, v.METODO_PAGO_TEXT,
+            `SELECT v.ID_VENTA, v.FACTURA, v.FECHA, v.TOTAL, v.METODO_PAGO_TEXT, v.REFERENCIA_BANCARIA,
                     COALESCE(CONCAT(c.NOMBRE, ' ', c.APELLIDO), v.NOMBRE_CLIENTE_OCASIONAL, 'Cliente Ocasional') AS CLIENTE,
                     CONCAT(e.NOMBRE, ' ', e.APELLIDO) AS VENDEDOR
              FROM VENTAS v
@@ -82,24 +82,37 @@ const CajaModel = {
         let totalVentasTarjeta = 0;
         let totalVentasTransferencia = 0;
         let totalVentasGeneral = 0;
+        let cantidadTransferencias = 0;
+        let cantidadEfectivo = 0;
+        let cantidadTarjeta = 0;
 
         for (const v of ventas) {
             const total = parseFloat(v.TOTAL) || 0;
             totalVentasGeneral += total;
             const metodo = (v.METODO_PAGO_TEXT || '').toLowerCase();
-            if (metodo.includes('tarjeta')) {
-                totalVentasTarjeta += total;
-            } else if (metodo.includes('transferencia')) {
+            const tieneRef = v.REFERENCIA_BANCARIA && v.REFERENCIA_BANCARIA.trim() !== '';
+
+            if (metodo.includes('transferencia') || tieneRef) {
                 totalVentasTransferencia += total;
+                cantidadTransferencias++;
+                if (!v.METODO_PAGO_TEXT) v.METODO_PAGO_TEXT = 'Transferencia';
+            } else if (metodo.includes('tarjeta')) {
+                totalVentasTarjeta += total;
+                cantidadTarjeta++;
+                if (!v.METODO_PAGO_TEXT) v.METODO_PAGO_TEXT = 'Tarjeta';
             } else {
                 // Por defecto contado/efectivo
                 totalVentasEfectivo += total;
+                cantidadEfectivo++;
+                if (!v.METODO_PAGO_TEXT) v.METODO_PAGO_TEXT = 'Efectivo';
             }
         }
 
         const montoInicial = parseFloat(sesion.MONTO_INICIAL) || 0;
         // Saldo teórico que debe haber físicamente en efectivo en la gaveta
         const saldoEsperadoEfectivo = montoInicial + totalVentasEfectivo + totalIngresosManuales - totalEgresosManuales;
+        // Total global de ingresos administrados en el turno (Efectivo físico en gaveta + Transferencias bancarias)
+        const totalEsperadoTurno = saldoEsperadoEfectivo + totalVentasTransferencia;
 
         return {
             monto_inicial: montoInicial,
@@ -110,7 +123,11 @@ const CajaModel = {
             total_ventas_transferencia: totalVentasTransferencia,
             total_ventas_general: totalVentasGeneral,
             saldo_esperado_efectivo: saldoEsperadoEfectivo,
+            total_esperado_turno: totalEsperadoTurno,
             cantidad_ventas: ventas.length,
+            cantidad_transferencias: cantidadTransferencias,
+            cantidad_efectivo: cantidadEfectivo,
+            cantidad_tarjeta: cantidadTarjeta,
             movimientos,
             ventas
         };
@@ -250,6 +267,8 @@ const CajaModel = {
             total_ventas_efectivo: resumen.total_ventas_efectivo,
             total_ventas_tarjeta: resumen.total_ventas_tarjeta,
             total_ventas_transferencia: resumen.total_ventas_transferencia,
+            total_esperado_turno: resumen.total_esperado_turno,
+            cantidad_transferencias: resumen.cantidad_transferencias,
             total_ingresos_manuales: resumen.total_ingresos_manuales,
             total_egresos_manuales: resumen.total_egresos_manuales,
             monto_esperado: montoEsperado,

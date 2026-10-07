@@ -19,7 +19,7 @@ exports.findAll = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { id_cliente, nombre_cliente_ocasional, id_empleado, items } = req.body;
+  const { id_cliente, nombre_cliente_ocasional, id_empleado, items, metodo_pago, referencia_bancaria } = req.body;
 
   // Se requiere o id_cliente (registrado) o nombre_cliente_ocasional (ocasional)
   if (!id_empleado || !items || items.length === 0) {
@@ -30,11 +30,14 @@ exports.create = async (req, res) => {
   }
 
   const venta = {
-    fecha: req.body.fecha || new Date(),
+    fecha: new Date(),
     id_cliente: id_cliente || null,
     nombre_cliente_ocasional: nombre_cliente_ocasional || null,
     id_empleado: id_empleado,
-    items: items
+    items: items,
+    metodo_pago: metodo_pago || 'Efectivo',
+    referencia_bancaria: referencia_bancaria || null,
+    estado: 'Completado'
   };
 
   try {

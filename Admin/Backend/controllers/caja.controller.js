@@ -125,7 +125,7 @@ const CajaController = {
                 accion: 'CIERRE_CAJA',
                 tabla: 'CAJA_SESIONES',
                 id_registro: id_caja_sesion,
-                detalle: `Cierre de caja. Esperado: C$ ${resultadoCierre.monto_esperado.toFixed(2)}, Contado: C$ ${resultadoCierre.monto_real.toFixed(2)}. ${estadoDiferencia}.`
+                detalle: `Cierre de caja. Efectivo Esperado: C$ ${resultadoCierre.monto_esperado.toFixed(2)}, Contado: C$ ${resultadoCierre.monto_real.toFixed(2)}. ${estadoDiferencia}. Transferencias Bancarias: C$ ${(resultadoCierre.total_ventas_transferencia || 0).toFixed(2)}. Total Global Turno: C$ ${(resultadoCierre.total_esperado_turno || resultadoCierre.monto_esperado).toFixed(2)}.`
             });
 
             res.json({

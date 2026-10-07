@@ -58,6 +58,18 @@
           <input type="text" id="fecha-venta-display" class="form-input" readonly placeholder="Cargando...">
           <input type="hidden" id="fecha-venta">
         </div>
+        <div class="pos-header-field">
+          <label class="form-label-small">Método de Pago</label>
+          <select id="metodo-pago-select" class="form-select" onchange="toggleReferenciaBancaria(this.value)">
+            <option value="Efectivo" selected>💵 Efectivo</option>
+            <option value="Transferencia">🏦 Transferencia Bancaria</option>
+            <option value="Tarjeta">💳 Tarjeta</option>
+          </select>
+        </div>
+        <div class="pos-header-field" id="referencia-bancaria-wrapper" style="display:none;">
+          <label class="form-label-small">Ref. / Voucher</label>
+          <input type="text" id="referencia-bancaria-input" class="form-input" placeholder="Ej: BAC-998811">
+        </div>
       </div>
 
       <form id="sale-form">

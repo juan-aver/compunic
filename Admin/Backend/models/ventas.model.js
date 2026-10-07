@@ -13,6 +13,8 @@ const Ventas = {
                 v.FECHA, 
                 v.TOTAL,
                 v.ESTADO,
+                v.METODO_PAGO_TEXT,
+                v.REFERENCIA_BANCARIA,
                 COALESCE(CONCAT(c.NOMBRE, ' ', c.APELLIDO), v.NOMBRE_CLIENTE_OCASIONAL, 'Cliente Ocasional') AS NOMBRE_CLIENTE,
                 CONCAT(e.NOMBRE, ' ', e.APELLIDO) AS NOMBRE_VENDEDOR
             FROM VENTAS v
@@ -70,19 +72,24 @@ const Ventas = {
 
       // 1. Insertar en VENTAS con FACTURA temporal
       const tempFactura = `TEMP-${Date.now()}`;
+      const metodoPago = venta.metodo_pago || 'Efectivo';
+      const refBancaria = venta.referencia_bancaria || null;
 
-      // Intentar insertar con NOMBRE_CLIENTE_OCASIONAL si existe la columna
+      // Intentar insertar con NOMBRE_CLIENTE_OCASIONAL, METODO_PAGO_TEXT, REFERENCIA_BANCARIA y ESTADO
       let resultVenta;
+      const estadoVenta = venta.estado || 'Completado';
+      const fechaVenta = venta.fecha || new Date();
+
       try {
         [resultVenta] = await connection.query(
-          'INSERT INTO VENTAS (FECHA, ID_CLIENTE, NOMBRE_CLIENTE_OCASIONAL, ID_EMPLEADO, FACTURA) VALUES (?, ?, ?, ?, ?)',
-          [venta.fecha, venta.id_cliente || null, venta.nombre_cliente_ocasional || null, venta.id_empleado, tempFactura]
+          'INSERT INTO VENTAS (FECHA, ID_CLIENTE, NOMBRE_CLIENTE_OCASIONAL, ID_EMPLEADO, FACTURA, METODO_PAGO_TEXT, REFERENCIA_BANCARIA, ESTADO) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          [fechaVenta, venta.id_cliente || null, venta.nombre_cliente_ocasional || null, venta.id_empleado, tempFactura, metodoPago, refBancaria, estadoVenta]
         );
       } catch (colErr) {
-        // Si la columna no existe, insertar sin ella
+        // Fallback si alguna columna no existiera
         [resultVenta] = await connection.query(
-          'INSERT INTO VENTAS (FECHA, ID_CLIENTE, ID_EMPLEADO, FACTURA) VALUES (?, ?, ?, ?)',
-          [venta.fecha, venta.id_cliente || null, venta.id_empleado, tempFactura]
+          'INSERT INTO VENTAS (FECHA, ID_CLIENTE, ID_EMPLEADO, FACTURA, METODO_PAGO_TEXT, ESTADO) VALUES (?, ?, ?, ?, ?, ?)',
+          [fechaVenta, venta.id_cliente || null, venta.id_empleado, tempFactura, metodoPago, estadoVenta]
         );
       }
       const idVenta = resultVenta.insertId;
@@ -154,7 +161,9 @@ const Ventas = {
         c.CEDULA AS CEDULA_CLIENTE,
         c.TELEFONO AS TELEFONO_CLIENTE,
         c.EMAIL AS EMAIL_CLIENTE,
-        c.DIRECCION AS DIRECCION_CLIENTE,
+        COALESCE(v.DIRECCION_ENVIO, '') AS DIRECCION_CLIENTE,
+        v.METODO_PAGO_TEXT,
+        v.REFERENCIA_BANCARIA,
         CONCAT(e.NOMBRE, ' ', e.APELLIDO) AS NOMBRE_VENDEDOR
       FROM VENTAS v
       LEFT JOIN CLIENTES c ON v.ID_CLIENTE = c.ID_CLIENTE

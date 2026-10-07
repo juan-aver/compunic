@@ -562,12 +562,17 @@ function guardarVenta() {
             });
             document.body.removeChild(overlay);
             
+            const metodoPago = document.getElementById('metodo-pago-select')?.value || 'Efectivo';
+            const refBancaria = document.getElementById('referencia-bancaria-input')?.value?.trim() || null;
+
             const payload = {
                 id_cliente: idCliente,
                 nombre_cliente_ocasional: nombreClienteOcasional,
                 id_empleado: idVendedor,
                 fecha: fecha,
                 factura: factura,
+                metodo_pago: metodoPago,
+                referencia_bancaria: refBancaria,
                 items: itemsVenta.map(item => ({
                     idProducto: item.id_producto,
                     cantidad: item.cantidad,
@@ -602,9 +607,16 @@ function guardarVenta() {
                     if (typeof window.inicializarFechaVenta === 'function') {
                         window.inicializarFechaVenta();
                     }
-                    // Reset cliente ocasional
+                    // Reset cliente ocasional y método de pago
                     const wrapper = document.getElementById('cliente-ocasional-wrapper');
                     if (wrapper) wrapper.style.display = 'none';
+                    const selMetodo = document.getElementById('metodo-pago-select');
+                    if (selMetodo) selMetodo.value = 'Efectivo';
+                    const wrapperRef = document.getElementById('referencia-bancaria-wrapper');
+                    if (wrapperRef) wrapperRef.style.display = 'none';
+                    const inputRef = document.getElementById('referencia-bancaria-input');
+                    if (inputRef) inputRef.value = '';
+
                     renderizarItemsVentaNew();
                     cargarVentas();
                     if (typeof window.renderVentasPOSGrid === 'function') {
@@ -790,6 +802,15 @@ function toggleClienteOcasional(valor) {
 }
 window.toggleClienteOcasional = toggleClienteOcasional;
 
+// Mostrar/ocultar campo de referencia para transferencia bancaria
+function toggleReferenciaBancaria(valor) {
+    const wrapper = document.getElementById('referencia-bancaria-wrapper');
+    if (wrapper) {
+        wrapper.style.display = valor === 'Transferencia' ? '' : 'none';
+    }
+}
+window.toggleReferenciaBancaria = toggleReferenciaBancaria;
+
 function poblarSelectClientes() {
     fetch(`${API_BASE}/clientes`)
         .then(res => res.json())
@@ -893,7 +914,7 @@ async function guardarCotizacion() {
         Swal.fire({
             icon: 'warning',
             title: 'Cliente Requerido',
-            text: 'Para emitir una Proforma o Cotización comercial oficial (REQ-FR-20), debe seleccionar un cliente registrado en el sistema. Si es nuevo, regístrelo en el módulo de Clientes.',
+            text: 'Para emitir una Proforma o Cotización comercial oficial, debe seleccionar un cliente registrado en el sistema. Si es nuevo, regístrelo en el módulo de Clientes.',
             confirmButtonColor: '#0284c7'
         });
         return;

@@ -85,6 +85,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 valoresTotal[3].textContent = ``;
             }
 
+            // Mostrar forma de pago en la sección de observaciones de la factura
+            const obsEl = document.querySelector('.seccion-productos div strong');
+            if (obsEl && obsEl.parentElement) {
+                const metodo = venta.METODO_PAGO_TEXT || 'Efectivo';
+                const ref = venta.REFERENCIA_BANCARIA ? ` | Ref: ${venta.REFERENCIA_BANCARIA}` : '';
+                obsEl.parentElement.innerHTML = `<strong>Forma de Pago:</strong> ${metodo}${ref} &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Atendido por:</strong> ${venta.NOMBRE_VENDEDOR || 'Vendedor'}`;
+            }
+
             // Políticas de Garantía
             const politicasDiv = document.createElement('div');
             politicasDiv.style = "margin-top: 15px; font-size: 9px; line-height: 1.2; padding: 10px; border: 1px dashed #ccc; page-break-inside: avoid;";

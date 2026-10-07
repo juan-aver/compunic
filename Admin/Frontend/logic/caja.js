@@ -70,11 +70,35 @@ const CajaApp = {
             // Actualizar KPIs
             document.getElementById('kpi-monto-inicial').textContent = `C$ ${parseFloat(sesion.monto_inicial || 0).toFixed(2)}`;
             document.getElementById('kpi-ventas-efectivo').textContent = `C$ ${parseFloat(sesion.total_ventas_efectivo || 0).toFixed(2)}`;
+            if (document.getElementById('kpi-count-efectivo')) {
+                document.getElementById('kpi-count-efectivo').textContent = `${sesion.cantidad_efectivo || 0} ventas`;
+            }
+            if (document.getElementById('kpi-ventas-transferencia')) {
+                document.getElementById('kpi-ventas-transferencia').textContent = `C$ ${parseFloat(sesion.total_ventas_transferencia || 0).toFixed(2)}`;
+            }
+            if (document.getElementById('kpi-count-transferencias')) {
+                document.getElementById('kpi-count-transferencias').textContent = `${sesion.cantidad_transferencias || 0} transferencias`;
+            }
             document.getElementById('kpi-otros-ingresos').textContent = `C$ ${parseFloat(sesion.total_ingresos_manuales || 0).toFixed(2)}`;
             document.getElementById('kpi-salidas-gastos').textContent = `C$ ${parseFloat(sesion.total_egresos_manuales || 0).toFixed(2)}`;
             document.getElementById('kpi-saldo-teorico').textContent = `C$ ${parseFloat(sesion.saldo_esperado_efectivo || 0).toFixed(2)}`;
+            if (document.getElementById('kpi-total-global-turno')) {
+                const totalGlobal = parseFloat(sesion.total_esperado_turno !== undefined ? sesion.total_esperado_turno : (parseFloat(sesion.saldo_esperado_efectivo || 0) + parseFloat(sesion.total_ventas_transferencia || 0)));
+                document.getElementById('kpi-total-global-turno').textContent = `C$ ${totalGlobal.toFixed(2)}`;
+            }
 
-            // Actualizar contadores
+            // Actualizar contadores en botones de filtro
+            if (document.getElementById('pill-count-todas')) {
+                document.getElementById('pill-count-todas').textContent = (sesion.ventas || []).length;
+            }
+            if (document.getElementById('pill-count-efectivo')) {
+                document.getElementById('pill-count-efectivo').textContent = sesion.cantidad_efectivo || 0;
+            }
+            if (document.getElementById('pill-count-transferencia')) {
+                document.getElementById('pill-count-transferencia').textContent = sesion.cantidad_transferencias || 0;
+            }
+
+            // Actualizar contadores pestañas
             document.getElementById('count-movimientos').textContent = (sesion.movimientos || []).length;
             document.getElementById('count-ventas').textContent = (sesion.ventas || []).length;
 
@@ -105,6 +129,33 @@ const CajaApp = {
                 this.cargarHistorial();
             }
         }
+    },
+
+    /**
+     * Filtra las ventas del turno actual por método de pago
+     */
+    filtrarVentasTurno: function(tipo, btn) {
+        document.querySelectorAll('.caja-filter-pill').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        if (!this.sesionActual || !this.sesionActual.ventas) return;
+        const ventas = this.sesionActual.ventas;
+
+        let filtradas = ventas;
+        if (tipo === 'EFECTIVO') {
+            filtradas = ventas.filter(v => {
+                const m = (v.METODO_PAGO_TEXT || '').toLowerCase();
+                const tieneRef = v.REFERENCIA_BANCARIA && v.REFERENCIA_BANCARIA.trim() !== '';
+                return !m.includes('transferencia') && !tieneRef && !m.includes('tarjeta');
+            });
+        } else if (tipo === 'TRANSFERENCIA') {
+            filtradas = ventas.filter(v => {
+                const m = (v.METODO_PAGO_TEXT || '').toLowerCase();
+                const tieneRef = v.REFERENCIA_BANCARIA && v.REFERENCIA_BANCARIA.trim() !== '';
+                return m.includes('transferencia') || tieneRef;
+            });
+        }
+        this.renderizarVentas(filtradas);
     },
 
     /**
@@ -146,18 +197,31 @@ const CajaApp = {
         if (!tbody) return;
 
         if (ventas.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 24px;">No hay ventas registradas durante el turno actual.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 24px;">No hay ventas registradas con el filtro seleccionado.</td></tr>`;
             return;
         }
 
         tbody.innerHTML = ventas.map(v => {
             const fecha = new Date(v.FECHA).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const metodoLower = (v.METODO_PAGO_TEXT || '').toLowerCase();
+            const tieneRef = v.REFERENCIA_BANCARIA && v.REFERENCIA_BANCARIA.trim() !== '';
+            let badgeHtml = '';
+
+            if (metodoLower.includes('transferencia') || tieneRef) {
+                const refText = v.REFERENCIA_BANCARIA ? ` <span style="font-weight: 600; opacity: 0.9;">(${v.REFERENCIA_BANCARIA})</span>` : '';
+                badgeHtml = `<span class="badge-tipo badge-transferencia" title="Cobrado por Transferencia Bancaria"><i class="fas fa-university"></i> Transferencia${refText}</span>`;
+            } else if (metodoLower.includes('tarjeta')) {
+                badgeHtml = `<span class="badge-tipo badge-tarjeta"><i class="fas fa-credit-card"></i> Tarjeta</span>`;
+            } else {
+                badgeHtml = `<span class="badge-tipo badge-efectivo"><i class="fas fa-money-bill-wave"></i> Efectivo</span>`;
+            }
+
             return `
                 <tr>
                     <td><strong style="color: #0284c7;">${v.FACTURA}</strong></td>
                     <td>${fecha}</td>
                     <td>${v.CLIENTE}</td>
-                    <td><span class="badge-tipo badge-ingreso">${v.METODO_PAGO_TEXT || 'Efectivo'}</span></td>
+                    <td>${badgeHtml}</td>
                     <td>${v.VENDEDOR}</td>
                     <td style="font-weight: 800; color: #0f172a;">C$ ${parseFloat(v.TOTAL).toFixed(2)}</td>
                 </tr>
@@ -176,7 +240,7 @@ const CajaApp = {
         }
 
         const { value: formValues } = await Swal.fire({
-            title: '💵 Apertura de Turno de Caja (CU-27)',
+            title: '💵 Apertura de Turno de Caja',
             html: `
                 <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 16px;">
                     Declara el fondo inicial en efectivo (caja chica / cambio) que tienes en la gaveta física:
@@ -340,22 +404,48 @@ const CajaApp = {
         }
 
         const sesion = this.sesionActual;
-        const esperado = parseFloat(sesion.saldo_esperado_efectivo || 0);
+        const esperadoEfectivo = parseFloat(sesion.saldo_esperado_efectivo || 0);
+        const totalTransferencias = parseFloat(sesion.total_ventas_transferencia || 0);
+        const cantTransferencias = parseInt(sesion.cantidad_transferencias || 0);
+        const totalTurno = parseFloat(sesion.total_esperado_turno !== undefined ? sesion.total_esperado_turno : (esperadoEfectivo + totalTransferencias));
+        const montoInicial = parseFloat(sesion.monto_inicial || 0);
+        const totalVentasEfectivo = parseFloat(sesion.total_ventas_efectivo || 0);
+        const totalIngresosManuales = parseFloat(sesion.total_ingresos_manuales || 0);
+        const totalEgresosManuales = parseFloat(sesion.total_egresos_manuales || 0);
 
         const { value: formValues } = await Swal.fire({
-            title: '🔒 Arqueo y Cierre de Caja (CU-29)',
-            width: '650px',
+            title: '🔒 Arqueo y Cierre de Caja',
+            width: '680px',
             html: `
                 <div style="text-align: left;">
                     <!-- RESUMEN DEL SISTEMA -->
                     <div class="arqueo-summary-box">
-                        <div class="arqueo-row"><span>(+) Fondo Inicial de Turno:</span> <strong>C$ ${parseFloat(sesion.monto_inicial || 0).toFixed(2)}</strong></div>
-                        <div class="arqueo-row"><span>(+) Ventas en Efectivo:</span> <strong style="color: #16a34a;">C$ ${parseFloat(sesion.total_ventas_efectivo || 0).toFixed(2)}</strong></div>
-                        <div class="arqueo-row"><span>(+) Entradas de Efectivo Manuales:</span> <strong>C$ ${parseFloat(sesion.total_ingresos_manuales || 0).toFixed(2)}</strong></div>
-                        <div class="arqueo-row"><span>(-) Salidas / Retiros de Efectivo:</span> <strong style="color: #dc2626;">C$ ${parseFloat(sesion.total_egresos_manuales || 0).toFixed(2)}</strong></div>
+                        <!-- SECCIÓN 1: EFECTIVO FÍSICO (GAVETA) -->
+                        <div style="font-weight: 800; font-size: 0.85rem; color: #059669; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+                            <i class="fas fa-vault"></i> 1. Control de Efectivo Físico (Gaveta)
+                        </div>
+                        <div class="arqueo-row"><span>(+) Fondo Inicial de Turno:</span> <strong>C$ ${montoInicial.toFixed(2)}</strong></div>
+                        <div class="arqueo-row"><span>(+) Ventas Cobradas en Efectivo:</span> <strong style="color: #16a34a;">C$ ${totalVentasEfectivo.toFixed(2)}</strong></div>
+                        <div class="arqueo-row"><span>(+) Entradas Directas de Efectivo:</span> <strong>C$ ${totalIngresosManuales.toFixed(2)}</strong></div>
+                        <div class="arqueo-row"><span>(-) Salidas / Retiros de Efectivo:</span> <strong style="color: #dc2626;">C$ ${totalEgresosManuales.toFixed(2)}</strong></div>
                         <div class="arqueo-row highlight">
-                            <span>(=) Saldo Teórico en Efectivo:</span>
-                            <span style="color: #059669;" id="modal-saldo-teorico">C$ ${esperado.toFixed(2)}</span>
+                            <span>(=) Efectivo Teórico a Cuadrar en Gaveta:</span>
+                            <span style="color: #059669;" id="modal-saldo-teorico">C$ ${esperadoEfectivo.toFixed(2)}</span>
+                        </div>
+
+                        <!-- SECCIÓN 2: TRANSFERENCIAS BANCARIAS -->
+                        <div style="font-weight: 800; font-size: 0.85rem; color: #1d4ed8; margin: 16px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+                            <i class="fas fa-university"></i> 2. Ventas por Transferencia (Bancos)
+                        </div>
+                        <div class="arqueo-row">
+                            <span>(+) Total Transferencias Bancarias:</span>
+                            <strong style="color: #1d4ed8;">C$ ${totalTransferencias.toFixed(2)} (${cantTransferencias} transacciones)</strong>
+                        </div>
+
+                        <!-- SECCIÓN 3: TOTAL GENERAL DEL TURNO -->
+                        <div class="arqueo-row" style="background: #f1f5f9; padding: 10px; border-radius: 8px; margin-top: 10px; font-weight: 800; color: #0f172a;">
+                            <span><i class="fas fa-chart-pie" style="color: #7c3aed;"></i> Total Global del Turno (Efectivo + Bancos):</span>
+                            <strong style="color: #7c3aed; font-size: 1.15rem;">C$ ${totalTurno.toFixed(2)}</strong>
                         </div>
                     </div>
 
@@ -364,12 +454,12 @@ const CajaApp = {
                         <label style="font-weight: 700; font-size: 0.95rem; color: #0f172a; display: block;">
                             1. Digite el Efectivo Físico Contado en la Gaveta (C$):
                         </label>
-                        <input id="swal-arqueo-contado" type="number" step="0.50" min="0" value="${esperado.toFixed(2)}" class="swal2-input" style="width: 100%; margin: 8px 0;" placeholder="0.00">
+                        <input id="swal-arqueo-contado" type="number" step="0.50" min="0" value="${esperadoEfectivo.toFixed(2)}" class="swal2-input" style="width: 100%; margin: 8px 0;" placeholder="0.00">
                     </div>
 
                     <!-- INDICADOR DE DIFERENCIA (CUADRE / FALTANTE / SOBRANTE) -->
                     <div id="swal-arqueo-diferencia-box" class="diferencia-box diferencia-cuadre">
-                        <i class="fas fa-check-circle"></i> Cuadre Exacto: C$ 0.00
+                        <i class="fas fa-check-circle"></i> Cuadre Exacto de Efectivo: C$ 0.00
                     </div>
 
                     <!-- OBSERVACIONES O JUSTIFICACIÓN -->
@@ -377,7 +467,7 @@ const CajaApp = {
                         <label style="font-weight: 700; font-size: 0.9rem; color: #334155; display: block;">
                             Observaciones de Cierre / Justificación de Descuadre:
                         </label>
-                        <textarea id="swal-arqueo-obs" class="swal2-textarea" style="width: 100%; margin: 6px 0; height: 70px;" placeholder="Ej: Arqueo conforme / Justificación en caso de diferencia..."></textarea>
+                        <textarea id="swal-arqueo-obs" class="swal2-textarea" style="width: 100%; margin: 6px 0; height: 70px;" placeholder="Ej: Arqueo conforme / Comprobantes bancarios verificados..."></textarea>
                     </div>
                 </div>
             `,
@@ -387,17 +477,17 @@ const CajaApp = {
 
                 const actualizarDiferencia = () => {
                     const contado = parseFloat(inputContado.value) || 0;
-                    const diff = contado - esperado;
+                    const diff = contado - esperadoEfectivo;
 
                     if (Math.abs(diff) < 0.01) {
                         diffBox.className = 'diferencia-box diferencia-cuadre';
-                        diffBox.innerHTML = '<i class="fas fa-check-circle"></i> Cuadre Perfecto: C$ 0.00';
+                        diffBox.innerHTML = '<i class="fas fa-check-circle"></i> Cuadre Perfecto de Efectivo: C$ 0.00';
                     } else if (diff < 0) {
                         diffBox.className = 'diferencia-box diferencia-faltante';
-                        diffBox.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Faltante en Caja: C$ ${Math.abs(diff).toFixed(2)}`;
+                        diffBox.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Faltante en Gaveta: C$ ${Math.abs(diff).toFixed(2)}`;
                     } else {
                         diffBox.className = 'diferencia-box diferencia-sobrante';
-                        diffBox.innerHTML = `<i class="fas fa-info-circle"></i> Sobrante en Caja: +C$ ${diff.toFixed(2)}`;
+                        diffBox.innerHTML = `<i class="fas fa-info-circle"></i> Sobrante en Gaveta: +C$ ${diff.toFixed(2)}`;
                     }
                 };
 
@@ -417,9 +507,9 @@ const CajaApp = {
                     return false;
                 }
 
-                const diff = contado - esperado;
+                const diff = contado - esperadoEfectivo;
                 if (Math.abs(diff) >= 0.01 && !observaciones) {
-                    Swal.showValidationMessage(`Hay una diferencia de C$ ${diff.toFixed(2)}. Debe ingresar una justificación u observación obligatoria.`);
+                    Swal.showValidationMessage(`Hay una diferencia en efectivo de C$ ${diff.toFixed(2)}. Debe ingresar una justificación u observación obligatoria.`);
                     return false;
                 }
 
@@ -454,9 +544,11 @@ const CajaApp = {
                         <div style="text-align: left; font-size: 0.95rem;">
                             <p><strong>Turno #${cierre.id_caja_sesion}</strong> finalizado con éxito.</p>
                             <hr style="margin: 10px 0;">
-                            <div>Saldo Esperado: <strong>C$ ${cierre.monto_esperado.toFixed(2)}</strong></div>
-                            <div>Efectivo Contado: <strong>C$ ${cierre.monto_real.toFixed(2)}</strong></div>
-                            <div>Diferencia: <strong style="color: ${cierre.diferencia === 0 ? '#16a34a' : (cierre.diferencia < 0 ? '#dc2626' : '#d97706')};">C$ ${cierre.diferencia.toFixed(2)}</strong></div>
+                            <div>Efectivo Esperado (Gaveta): <strong>C$ ${parseFloat(cierre.monto_esperado).toFixed(2)}</strong></div>
+                            <div>Efectivo Físico Contado: <strong>C$ ${parseFloat(cierre.monto_real).toFixed(2)}</strong></div>
+                            <div>Diferencia en Gaveta: <strong style="color: ${cierre.diferencia === 0 ? '#16a34a' : (cierre.diferencia < 0 ? '#dc2626' : '#d97706')};">C$ ${parseFloat(cierre.diferencia).toFixed(2)}</strong></div>
+                            <div style="margin-top: 6px;">Transferencias en Banco: <strong style="color: #1d4ed8;">C$ ${parseFloat(cierre.total_ventas_transferencia || totalTransferencias).toFixed(2)} (${cierre.cantidad_transferencias || cantTransferencias} comprobantes)</strong></div>
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1;">Total Global del Turno: <strong style="color: #7c3aed; font-size: 1.05rem;">C$ ${parseFloat(cierre.total_esperado_turno || totalTurno).toFixed(2)}</strong></div>
                             ${cierre.observaciones ? `<p style="margin-top: 8px; font-style: italic; color: #64748b;">"${cierre.observaciones}"</p>` : ''}
                         </div>
                     `,
