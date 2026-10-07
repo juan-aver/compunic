@@ -4,6 +4,8 @@ package-lock.json
 
 # Variables de entorno (IMPORTANTE: nunca subir a GitHub)
 .env
+.env.*
+!.env.example
 
 # Logs
 *.log

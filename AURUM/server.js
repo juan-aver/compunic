@@ -1,4 +1,6 @@
+const path = require('path');
 require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../Admin/Backend/.env') });
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch'); // <-- Añadido para hacer peticiones al backend C#
