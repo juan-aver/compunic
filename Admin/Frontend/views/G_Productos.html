@@ -210,12 +210,88 @@
   </div>
 </div>
 
+<!-- Modal de Registro de Merma / Pérdida de Inventario (REQ-FR-05) -->
+<div id="modalMermaForm" class="producto-form-modal" style="display: none;">
+  <div class="producto-form-modal-overlay" onclick="cerrarModalMerma()"></div>
+  <div class="producto-form-modal-content" style="max-width: 550px;">
+    <div class="producto-form-modal-header" style="background: #c0392b; color: white;">
+      <h3><i class="fas fa-exclamation-triangle"></i> Registrar Pérdida / Merma de Inventario</h3>
+      <button class="producto-form-modal-close" style="color: white;" onclick="cerrarModalMerma()">&times;</button>
+    </div>
+    <div class="producto-form-modal-body">
+      <form id="formularioMerma" onsubmit="guardarMerma(event)">
+        <div style="margin-bottom: 15px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Producto:</label>
+          <select id="merma_producto_select" required style="width: 100%; padding: 8px;" onchange="alCambiarProductoMerma()">
+            <option value="" disabled selected>Seleccione un producto...</option>
+          </select>
+          <div id="merma_stock_info" style="margin-top: 6px; font-size: 0.9em; color: #555; display: none;">
+            Stock disponible: <strong id="merma_stock_disponible">0</strong> | Costo unitario: <strong id="merma_costo_unitario">C$0.00</strong>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+          <div>
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Cantidad a descontar:</label>
+            <input id="merma_cantidad" type="number" min="1" step="1" value="1" required style="width: 100%; padding: 8px;" oninput="calcularCostoTotalMerma()" />
+          </div>
+          <div>
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Motivo:</label>
+            <select id="merma_motivo" required style="width: 100%; padding: 8px;">
+              <option value="Dañado">Dañado (Golpes/Rotura)</option>
+              <option value="Defectuoso">Defectuoso de Fábrica</option>
+              <option value="Vencido">Vencido / Deteriorado</option>
+              <option value="Extraviado">Extraviado / Pérdida</option>
+              <option value="Obsolescencia">Obsolescencia / Descarte</option>
+              <option value="Otro">Otro Motivo</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Contenedor para selección de series si el producto las usa -->
+        <div id="merma_series_container" style="margin-bottom: 15px; display: none; background: #fff3cd; padding: 10px; border-radius: 6px; border: 1px solid #ffeeba;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px; color: #856404;">
+            <i class="fas fa-barcode"></i> Seleccione las series a desechar (<span id="merma_series_count">0</span> seleccionadas):
+          </label>
+          <div id="merma_series_list" style="max-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px;">
+            <!-- Renderizado por JS -->
+          </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px;">
+            Justificación obligatoria <span style="color: red;">*</span>:
+          </label>
+          <textarea id="merma_justificacion" required rows="3" placeholder="Explique detalladamente el motivo de la pérdida o merma..." style="width: 100%; padding: 8px; font-family: inherit; resize: vertical;"></textarea>
+        </div>
+
+        <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; display: flex; justify-content: space-between;">
+          <span>Impacto Económico Total:</span>
+          <span id="merma_costo_total">C$0.00</span>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn-cancelar" onclick="cerrarModalMerma()" style="padding: 8px 16px; border-radius: 5px; border: 1px solid #ccc; background: #f8f9fa;">Cancelar</button>
+          <button type="submit" class="btn-guardar" style="background: #c0392b; color: white; padding: 8px 16px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer;">
+            <i class="fas fa-check"></i> Confirmar y Descontar Stock
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <section class="tabla" id="seccion-tabla">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
     <h2 style="margin: 0;">Inventario de Productos</h2>
-    <button class="btn-nuevo-producto" onclick="abrirModalProducto()">
-      <i class="fas fa-plus"></i> Nuevo Producto
-    </button>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn-nuevo-producto" style="background: #e74c3c;" onclick="abrirModalMerma()">
+        <i class="fas fa-exclamation-triangle"></i> Registrar Merma
+      </button>
+      <button class="btn-nuevo-producto" onclick="abrirModalProducto()">
+        <i class="fas fa-plus"></i> Nuevo Producto
+      </button>
+    </div>
   </div>
 
   <!-- Controles de Tabla Mejorados -->

@@ -104,8 +104,37 @@ const movimientosStockModel = {
       `;
       const [reemplazos] = await pool.query(sqlReemplazos);
 
+      // C5. Generar Salidas por Mermas
+      const sqlMermas = `
+        SELECT 
+          m.ID_PRODUCTO,
+          p.NOMBRE_PRODUCTO,
+          m.CANTIDAD,
+          m.FECHA_REGISTRO as FECHA,
+          CONCAT('Merma #', m.ID_MERMA, ' (', m.MOTIVO, '): ', m.JUSTIFICACION) as REF,
+          'salida' as TIPO
+        FROM MERMAS m
+        JOIN PRODUCTOS p ON m.ID_PRODUCTO = p.ID_PRODUCTO
+      `;
+      const [mermas] = await pool.query(sqlMermas);
+
+      // C6. Generar Salidas por Devoluciones a Proveedores
+      const sqlDevProv = `
+        SELECT 
+          dp.ID_PRODUCTO,
+          p.NOMBRE_PRODUCTO,
+          dp.CANTIDAD,
+          dp.FECHA,
+          CONCAT('Dev. Proveedor #', dp.ID_DEVOLUCION_PROV, ': ', dp.MOTIVO) as REF,
+          'salida' as TIPO
+        FROM DEVOLUCIONES_PROVEEDORES dp
+        JOIN PRODUCTOS p ON dp.ID_PRODUCTO = p.ID_PRODUCTO
+        WHERE dp.ESTADO = 'Aprobada'
+      `;
+      const [devProv] = await pool.query(sqlDevProv);
+
       // D. Unir y Ordenar Cronológicamente
-      let movimientos = [...compras, ...ventas, ...rechazos, ...reingresos, ...reemplazos];
+      let movimientos = [...compras, ...ventas, ...rechazos, ...reingresos, ...reemplazos, ...mermas, ...devProv];
       // Ordenamos por fecha (del más viejo al más nuevo)
       movimientos.sort((a, b) => new Date(a.FECHA) - new Date(b.FECHA));
 
@@ -128,13 +157,14 @@ const movimientosStockModel = {
 
         // Definir el texto del motivo
         let motivo = '';
+        const refStr = mov.REF || '';
         if (mov.TIPO === 'entrada') {
-          if (mov.REF.startsWith('Dev:')) motivo = `Reingreso por Devolución: ${mov.REF}`;
-          else if (mov.ESTADO === 'Rechazado') motivo = `Venta Rechazada: ${mov.REF}`;
-          else motivo = `Compra Factura: ${mov.REF}`;
+          if (refStr.startsWith('Dev:')) motivo = `Reingreso por Devolución: ${refStr}`;
+          else if (mov.ESTADO === 'Rechazado') motivo = `Venta Rechazada: ${refStr}`;
+          else motivo = `Compra Factura: ${refStr}`;
         } else {
-          if (mov.REF.startsWith('Dev:')) motivo = `Reemplazo entregado por Devolución: ${mov.REF}`;
-          else motivo = `Venta Factura: ${mov.REF}`;
+          if (refStr.startsWith('Dev:')) motivo = `Reemplazo entregado por Devolución: ${refStr}`;
+          else motivo = `Venta Factura: ${refStr}`;
         }
 
         // Guardar para insertar

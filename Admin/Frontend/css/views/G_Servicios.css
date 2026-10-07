@@ -3,8 +3,8 @@
 /* ========================================= */
 
 /* Importar sistema de diseño */
-@import url('./variables.css');
-@import url('./components.css');
+@import url('../variables.css');
+@import url('../components.css');
 
 /* ========================================= */
 /* =========================================
@@ -1027,3 +1027,118 @@ select.error {
   background: linear-gradient(135deg, #dc3545, #c82333) !important;
   color: white !important;
 }
+
+/* =========================================
+   STAR RATING WIDGET
+   ========================================= */
+.star-rating-widget {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.star-rating-widget .star-item,
+.star-rating-widget .quick-star {
+  font-size: 1.35rem;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.star-rating-widget.large .star-item,
+.star-rating-widget.large .quick-star {
+  font-size: 2rem;
+  gap: 8px;
+}
+
+.star-rating-widget .star-item:hover,
+.star-rating-widget .quick-star:hover {
+  transform: scale(1.25);
+}
+
+.star-rating-widget .star-item.active,
+.star-rating-widget .quick-star.active {
+  color: #f59e0b;
+}
+
+/* =========================================
+   EVIDENCIA FOTOGRÁFICA Y THUMBNAILS
+   ========================================= */
+.evidencia-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.evidencia-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  border-color: #3b82f6;
+}
+
+.evidencia-empty {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-style: italic;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* =========================================
+   BADGES Y ESTILOS DE CALIFICACIÓN
+   ========================================= */
+.rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.82rem;
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rating-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 5px rgba(245, 158, 11, 0.3);
+}
+
+.rating-badge-none {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px dashed #cbd5e1;
+  cursor: pointer;
+}
+
+.rating-badge-none:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.badge-tecnico {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1px solid #dbeafe;
+}

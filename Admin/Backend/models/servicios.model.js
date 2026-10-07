@@ -15,14 +15,21 @@ const Servicio = {
           s.ID_GARANTIA,
           s.ID_SERVICIO_TIPO,
           s.ID_SERVICIO_ESTADO,
+          s.EVIDENCIA_URL,
+          s.NOTAS_TECNICAS,
+          s.CALIFICACION,
+          s.OPINION_CLIENTE,
+          s.FECHA_CALIFICACION,
           c.NOMBRE AS NOMBRE_CLIENTE,
           c.APELLIDO AS APELLIDO_CLIENTE,
+          CONCAT(emp.NOMBRE, ' ', emp.APELLIDO) AS NOMBRE_TECNICO,
           st.TIPO AS TIPO_SERVICIO,
           se.ESTADO AS ESTADO_SERVICIO,
           gt.TIPO AS NOMBRE_GARANTIA,
           g.DURACION_MESES
         FROM SERVICIOS s
         LEFT JOIN CLIENTES c ON s.ID_CLIENTE = c.ID_CLIENTE
+        LEFT JOIN EMPLEADOS emp ON s.ID_EMPLEADO = emp.ID_EMPLEADO
         LEFT JOIN SERVICIO_TIPOS st ON s.ID_SERVICIO_TIPO = st.ID_SERVICIO_TIPO
         LEFT JOIN SERVICIO_ESTADOS se ON s.ID_SERVICIO_ESTADO = se.ID_SERVICIO_ESTADO
         LEFT JOIN GARANTIAS g ON s.ID_GARANTIA = g.ID_GARANTIA
@@ -38,7 +45,21 @@ const Servicio = {
 
     obtenerPorId: async (id) => {
         try {
-            const sql = `SELECT * FROM SERVICIOS WHERE ID_SERVICIO = ?`;
+            const sql = `
+                SELECT 
+                    s.*,
+                    c.NOMBRE AS NOMBRE_CLIENTE,
+                    c.APELLIDO AS APELLIDO_CLIENTE,
+                    CONCAT(emp.NOMBRE, ' ', emp.APELLIDO) AS NOMBRE_TECNICO,
+                    st.TIPO AS TIPO_SERVICIO,
+                    se.ESTADO AS ESTADO_SERVICIO
+                FROM SERVICIOS s
+                LEFT JOIN CLIENTES c ON s.ID_CLIENTE = c.ID_CLIENTE
+                LEFT JOIN EMPLEADOS emp ON s.ID_EMPLEADO = emp.ID_EMPLEADO
+                LEFT JOIN SERVICIO_TIPOS st ON s.ID_SERVICIO_TIPO = st.ID_SERVICIO_TIPO
+                LEFT JOIN SERVICIO_ESTADOS se ON s.ID_SERVICIO_ESTADO = se.ID_SERVICIO_ESTADO
+                WHERE s.ID_SERVICIO = ?
+            `;
             const [rows] = await db.query(sql, [id]);
             return rows[0];
         } catch (err) {
@@ -48,10 +69,15 @@ const Servicio = {
 
     agregar: async (datos) => {
         try {
-            // datos: [descripcion, fecha_solicitud, fecha_ejecucion, costo, id_empleado, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado]
+            // datos: [descripcion, fecha_solicitud, fecha_ejecucion, costo, id_empleado, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado, evidencia_url, notas_tecnicas, calificacion, opinion_cliente]
             const sql = `
-        INSERT INTO SERVICIOS (DESCRIPCION, FECHA_SOLICITUD, FECHA_EJECUCION, COSTO, ID_EMPLEADO, ID_CLIENTE, ID_GARANTIA, ID_SERVICIO_TIPO, ID_SERVICIO_ESTADO)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO SERVICIOS (
+            DESCRIPCION, FECHA_SOLICITUD, FECHA_EJECUCION, COSTO, 
+            ID_EMPLEADO, ID_CLIENTE, ID_GARANTIA, ID_SERVICIO_TIPO, 
+            ID_SERVICIO_ESTADO, EVIDENCIA_URL, NOTAS_TECNICAS, 
+            CALIFICACION, OPINION_CLIENTE, FECHA_CALIFICACION
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
             const [result] = await db.query(sql, datos);
             return result;
@@ -64,10 +90,12 @@ const Servicio = {
         try {
             const sql = `
         UPDATE SERVICIOS 
-        SET DESCRIPCION = ?, FECHA_SOLICITUD = ?, FECHA_EJECUCION = ?, COSTO = ?, ID_EMPLEADO = ?, ID_CLIENTE = ?, ID_GARANTIA = ?, ID_SERVICIO_TIPO = ?, ID_SERVICIO_ESTADO = ?
+        SET DESCRIPCION = ?, FECHA_SOLICITUD = ?, FECHA_EJECUCION = ?, COSTO = ?, 
+            ID_EMPLEADO = ?, ID_CLIENTE = ?, ID_GARANTIA = ?, ID_SERVICIO_TIPO = ?, 
+            ID_SERVICIO_ESTADO = ?, EVIDENCIA_URL = ?, NOTAS_TECNICAS = ?, 
+            CALIFICACION = ?, OPINION_CLIENTE = ?
         WHERE ID_SERVICIO = ?
       `;
-            // datos debe incluir los campos en orden y al final el ID
             const [result] = await db.query(sql, [...datos, id]);
             return result;
         } catch (err) {
@@ -75,13 +103,45 @@ const Servicio = {
         }
     },
 
-    actualizarEstado: async (id, idEstado) => {
+    actualizarEstado: async (id, idEstado, fechaEjecucion = null) => {
         try {
-            const sql = `UPDATE SERVICIOS SET ID_SERVICIO_ESTADO = ? WHERE ID_SERVICIO = ?`;
-            const [result] = await db.query(sql, [idEstado, id]);
+            let sql = `UPDATE SERVICIOS SET ID_SERVICIO_ESTADO = ?`;
+            let params = [idEstado];
+            if (fechaEjecucion) {
+                sql += `, FECHA_EJECUCION = ?`;
+                params.push(fechaEjecucion);
+            }
+            sql += ` WHERE ID_SERVICIO = ?`;
+            params.push(id);
+
+            const [result] = await db.query(sql, params);
             return result;
         } catch (err) {
             throw new Error('Error al actualizar estado del servicio: ' + err.message);
+        }
+    },
+
+    actualizarEvidencia: async (id, evidenciaUrl) => {
+        try {
+            const sql = `UPDATE SERVICIOS SET EVIDENCIA_URL = ? WHERE ID_SERVICIO = ?`;
+            const [result] = await db.query(sql, [evidenciaUrl, id]);
+            return result;
+        } catch (err) {
+            throw new Error('Error al actualizar evidencia del servicio: ' + err.message);
+        }
+    },
+
+    registrarCalificacion: async (id, calificacion, opinion) => {
+        try {
+            const sql = `
+                UPDATE SERVICIOS 
+                SET CALIFICACION = ?, OPINION_CLIENTE = ?, FECHA_CALIFICACION = NOW() 
+                WHERE ID_SERVICIO = ?
+            `;
+            const [result] = await db.query(sql, [calificacion, opinion, id]);
+            return result;
+        } catch (err) {
+            throw new Error('Error al registrar calificación: ' + err.message);
         }
     },
 

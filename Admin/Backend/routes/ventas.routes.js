@@ -21,4 +21,8 @@ router.get('/vendedor/:id', ventasController.findByVendedor);
 // Ruta para crear una nueva venta
 router.post('/', ventasController.create);
 
+// Ruta para enviar factura por correo electrónico (REQ-FR-51)
+// POST http://localhost:3001/api/ventas/:id/enviar-email
+router.post('/:id/enviar-email', ventasController.enviarFacturaEmail);
+
 module.exports = router;

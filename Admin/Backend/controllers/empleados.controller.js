@@ -38,6 +38,22 @@ const EmpleadosController = {
             res.status(500).send(error.message);
         }
     },
+    obtenerCajeros: async (req, res) => {
+        try {
+            const resultados = await Empleado.obtenerTodos('CAJERO');
+            res.json(resultados);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
+    obtenerTecnicos: async (req, res) => {
+        try {
+            const resultados = await Empleado.obtenerTodos('TECNICO');
+            res.json(resultados);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
 
     // ---- BUSCAR ----
     buscarTodos: async (req, res) => {
@@ -76,18 +92,37 @@ const EmpleadosController = {
             res.status(500).send(error.message);
         }
     },
+    buscarCajeros: async (req, res) => {
+        try {
+            const termino = req.params.termino;
+            const resultados = await Empleado.buscar(termino, 'CAJERO');
+            res.json(resultados);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
+    buscarTecnicos: async (req, res) => {
+        try {
+            const termino = req.params.termino;
+            const resultados = await Empleado.buscar(termino, 'TECNICO');
+            res.json(resultados);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
 
     // ---- AGREGAR ----
     agregarEmpleado: async (req, res) => {
         try {
             const { nombre, apellido, telefono, email, direccion, sexo, f_nacimiento, area, horario, username, rol } = req.body;
             
-            // Validar ROL obligatorio
-            if (!rol || !['ADMIN', 'VENDEDOR', 'TEMPORAL'].includes(rol)) {
+            // Validar ROL obligatorio (ADMIN, VENDEDOR, CAJERO, TECNICO, TEMPORAL)
+            const rolesValidos = ['ADMIN', 'VENDEDOR', 'CAJERO', 'TECNICO', 'TEMPORAL'];
+            if (!rol || !rolesValidos.includes(rol)) {
                 return res.status(400).send('Rol inválido o faltante');
             }
 
-            // ADMIN y VENDEDOR inician como ESTADO=0 (inactivo) hasta que creen su contraseña
+            // Los usuarios con acceso al sistema (ADMIN, VENDEDOR, CAJERO, TECNICO) inician con ESTADO=0 hasta que creen contraseña
             // TEMPORAL inicia como ESTADO=1 (activo) porque no tiene acceso al sistema
             const estadoInicial = (rol === 'TEMPORAL') ? 1 : 0;
 
@@ -109,8 +144,9 @@ const EmpleadosController = {
             const result = await Empleado.agregar(datos);
             const nuevoId = result.insertId;
 
-            // Si es ADMIN o VENDEDOR, enviar correo para crear contraseña
-            if ((rol === 'ADMIN' || rol === 'VENDEDOR') && email) {
+            // Si es ADMIN, VENDEDOR, CAJERO o TECNICO, enviar correo para crear contraseña
+            const rolesConAcceso = ['ADMIN', 'VENDEDOR', 'CAJERO', 'TECNICO'];
+            if (rolesConAcceso.includes(rol) && email) {
                 try {
                     // Crear token de bienvenida (2 horas de expiración)
                     const tokenResult = await AuthModel.createWelcomePasswordToken(email);
@@ -123,7 +159,7 @@ const EmpleadosController = {
                             nombreCompleto,
                             rol
                         );
-                        console.log(`📧 Correo de bienvenida enviado a ${email}`);
+                        console.log(`📧 Correo de bienvenida enviado a ${email} (${rol})`);
                         
                         return res.status(201).json({ 
                             id: nuevoId, 
@@ -167,7 +203,8 @@ const EmpleadosController = {
             const id = req.params.id;
             const { nombre, apellido, telefono, email, direccion, sexo, f_nacimiento, area, horario, username, rol } = req.body;
             
-            if (!rol || !['ADMIN', 'VENDEDOR', 'TEMPORAL'].includes(rol)) {
+            const rolesValidos = ['ADMIN', 'VENDEDOR', 'CAJERO', 'TECNICO', 'TEMPORAL'];
+            if (!rol || !rolesValidos.includes(rol)) {
                 return res.status(400).send('Rol inválido o faltante');
             }
 

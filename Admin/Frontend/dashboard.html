@@ -39,60 +39,136 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- ApexCharts -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <!-- SheetJS / XLSX -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
   <script>
     // Proteger la ruta
     Auth.checkAuth();
 
-    // Mostrar usuario logueado y aplicar roles
-    document.addEventListener('DOMContentLoaded', () => {
+    // Función para aplicar permisos y configurar la interfaz según el rol
+    function aplicarConfiguracionRol() {
       const user = Auth.getUser();
-      const role = Auth.getRole();
+      const role = (Auth.getRole() || '').toLowerCase();
       const userDisplay = document.getElementById('user-display');
 
       if (user && userDisplay) {
-        userDisplay.textContent = `Usuario: ${user}`;
+        const rolTexto = role.toUpperCase();
+        userDisplay.innerHTML = `Usuario: <strong>${user}</strong><div style="margin-top: 4px;"><span class="badge-rol ${role}">${rolTexto}</span></div>`;
       }
 
-      // Lógica de Roles
+      // Bloquear acceso para temporales
       if (role === 'temporal') {
         alert('Acceso no autorizado para empleados temporales.');
         Auth.logout();
         return;
       }
 
-      if (role === 'vendedor') {
-        // Ocultar módulos no permitidos
-        const modulosProhibidos = ['nav-inventario', 'nav-compras', 'nav-administracion'];
-        modulosProhibidos.forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.style.display = 'none';
-        });
+      // Ocultar por defecto todos los bloques de roles específicos
+      document.querySelectorAll('.admin-only, .vendedor-only, .cajero-only, .tecnico-only').forEach(el => {
+        el.style.display = 'none';
+      });
 
-        // Configuración visual del Dashboard para Vendedor
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.vendedor-only').forEach(el => el.style.display = 'block');
-        
-        // Asignar nombre
-        const greetingName = document.getElementById('vendedor-nombre-greeting');
-        if(greetingName && user) {
-            greetingName.textContent = user.split(' ')[0] || user;
+      // Referencias a elementos del menú principal
+      const navInventario = document.getElementById('nav-inventario');
+      const navServicios = document.getElementById('nav-servicios');
+      const navCompras = document.getElementById('nav-compras');
+      const navAdmin = document.getElementById('nav-administracion');
+
+      const subProductos = document.getElementById('nav-sub-productos');
+      const subCategorias = document.getElementById('nav-sub-categorias');
+      const subHistorialStock = document.getElementById('nav-sub-historial-stock');
+      const subGarantias = document.getElementById('nav-sub-garantias');
+      const subServicios = document.getElementById('nav-sub-servicios');
+      const subVentas = document.getElementById('nav-sub-ventas');
+      const subListaVentas = document.getElementById('nav-sub-lista-ventas');
+      const subDevoluciones = document.getElementById('nav-sub-devoluciones');
+      const subEmpleados = document.getElementById('nav-sub-empleados');
+      const subClientes = document.getElementById('nav-sub-clientes');
+      const subPagosWeb = document.getElementById('nav-sub-pagos-web');
+      const subAuditoria = document.getElementById('nav-sub-auditoria');
+
+      if (role === 'admin') {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+      } else if (role === 'vendedor') {
+        if (navInventario) navInventario.style.display = 'none';
+        if (navCompras) navCompras.style.display = 'none';
+        if (navAdmin) {
+          if (subEmpleados) subEmpleados.style.display = 'none';
+          if (subPagosWeb) subPagosWeb.style.display = 'none';
+          if (subAuditoria) subAuditoria.style.display = 'none';
         }
+        if (subServicios) subServicios.style.display = 'none';
+
+        document.querySelectorAll('.vendedor-only').forEach(el => el.style.display = '');
+        const greetingName = document.getElementById('vendedor-nombre-greeting');
+        if (greetingName && user) greetingName.textContent = user.split(' ')[0] || user;
+      } else if (role === 'cajero') {
+        if (navInventario) navInventario.style.display = 'none';
+        if (navCompras) navCompras.style.display = 'none';
+        if (navAdmin) {
+          if (subEmpleados) subEmpleados.style.display = 'none';
+          if (subAuditoria) subAuditoria.style.display = 'none';
+        }
+        if (subServicios) subServicios.style.display = 'none';
+        if (subGarantias) subGarantias.style.display = 'none';
+
+        document.querySelectorAll('.cajero-only').forEach(el => el.style.display = '');
+        const greetingName = document.getElementById('cajero-nombre-greeting');
+        if (greetingName && user) greetingName.textContent = user.split(' ')[0] || user;
+      } else if (role === 'tecnico') {
+        if (navCompras) navCompras.style.display = 'none';
+        if (navAdmin) navAdmin.style.display = 'none';
+        if (navInventario) {
+          if (subProductos) subProductos.style.display = 'none';
+          if (subCategorias) subCategorias.style.display = 'none';
+        }
+        if (navServicios) {
+          if (subVentas) subVentas.style.display = 'none';
+          if (subListaVentas) subListaVentas.style.display = 'none';
+          if (subDevoluciones) subDevoluciones.style.display = 'none';
+        }
+
+        document.querySelectorAll('.tecnico-only').forEach(el => el.style.display = '');
+        const greetingName = document.getElementById('tecnico-nombre-greeting');
+        if (greetingName && user) greetingName.textContent = user.split(' ')[0] || user;
       }
+
+      // Filtrar menú móvil
+      const permitidas = (typeof window.obtenerVistasPermitidasPorRol === 'function') 
+        ? window.obtenerVistasPermitidasPorRol(role) 
+        : ['*'];
+
+      document.querySelectorAll('.mobile-menu-item').forEach(item => {
+        const vista = item.dataset.vista;
+        if (vista && vista !== 'inicio' && vista !== 'aurum-tutorial') {
+          if (!permitidas.includes('*') && !permitidas.includes(vista)) {
+            item.style.display = 'none';
+          }
+        }
+      });
+    }
+
+    // Mostrar usuario logueado y aplicar roles
+    document.addEventListener('DOMContentLoaded', () => {
+      aplicarConfiguracionRol();
 
       // Cargar estadísticas del dashboard
       cargarEstadisticasDashboard();
 
-      // Auto-iniciar el tutorial interactivo de AURUM si no se ha completado
-      setTimeout(() => {
-        if (typeof AurumTutorial !== 'undefined') {
-          if (sessionStorage.getItem('aurum_tutorial_start_on_load') === 'true') {
-            sessionStorage.removeItem('aurum_tutorial_start_on_load');
-            AurumTutorial.start(false);
-          } else {
-            AurumTutorial.start(true);
+      // Auto-iniciar el tutorial interactivo de AURUM si no se ha completado (solo admins)
+      const role = (Auth.getRole() || '').toLowerCase();
+      if (role === 'admin') {
+        setTimeout(() => {
+          if (typeof AurumTutorial !== 'undefined') {
+            if (sessionStorage.getItem('aurum_tutorial_start_on_load') === 'true') {
+              sessionStorage.removeItem('aurum_tutorial_start_on_load');
+              AurumTutorial.start(false);
+            } else {
+              AurumTutorial.start(true);
+            }
           }
-        }
-      }, 1000);
+        }, 1000);
+      }
     });
   </script>
   <!-- ===== Módulos de Lógica (reemplazan app_logic.js) ===== -->
@@ -108,6 +184,7 @@
   <script src="logic/clientes.js"></script>
   <script src="logic/garantias.js"></script>
   <script src="logic/servicios.js"></script>
+  <script src="logic/reportes.js"></script>
   <script src="logic/empleados_temporales.js"></script>
   <script src="logic/pagos_web.js"></script>
   <script src="logic/auditorias.js"></script>
@@ -146,36 +223,37 @@
         <li class="nav-item-dropdown" id="nav-inventario">
           <a href="#" class="nav-link">Inventario</a>
           <ul class="dropdown-menu glass">
-            <li><a href="#" onclick="cargarVista('gestion-productos', false)"> Producto</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-categorias')"> Categorias</a></li>
-            <li><a href="#" onclick="cargarVista('historial-stock')">Historial de stock</a></li>
+            <li id="nav-sub-productos"><a href="#" onclick="cargarVista('gestion-productos', false)"> Producto</a></li>
+            <li id="nav-sub-categorias"><a href="#" onclick="cargarVista('gestion-categorias')"> Categorias</a></li>
+            <li id="nav-sub-historial-stock"><a href="#" onclick="cargarVista('historial-stock')">Historial de stock</a></li>
           </ul>
         </li>
         <li class="nav-item-dropdown" id="nav-servicios">
           <a href="#" class="nav-link">Servicios</a>
           <ul class="dropdown-menu glass">
-            <li><a href="#" onclick="cargarVista('gestion-garantias')">Garantías</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-servicios')">Servicios</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-ventas')">Generar Venta</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-lista-ventas')">Listado de Ventas</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-devoluciones')">Devoluciones</a></li>
+            <li id="nav-sub-garantias"><a href="#" onclick="cargarVista('gestion-garantias')">Garantías</a></li>
+            <li id="nav-sub-servicios"><a href="#" onclick="cargarVista('gestion-servicios')">Servicios</a></li>
+            <li id="nav-sub-ventas"><a href="#" onclick="cargarVista('gestion-ventas')">Generar Venta</a></li>
+            <li id="nav-sub-lista-ventas"><a href="#" onclick="cargarVista('gestion-lista-ventas')">Listado de Ventas</a></li>
+            <li id="nav-sub-devoluciones"><a href="#" onclick="cargarVista('gestion-devoluciones')">Devoluciones</a></li>
           </ul>
         </li>
         <li class="nav-item-dropdown" id="nav-compras">
           <a href="#" class="nav-link">Compras</a>
           <ul class="dropdown-menu glass">
-            <li><a href="#" onclick="cargarVista('gestion-compra')">Nueva compra</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-lista-compras')">Listado de compras</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-proveedores')">Proveedores</a></li>
+            <li id="nav-sub-nueva-compra"><a href="#" onclick="cargarVista('gestion-compra')">Nueva compra</a></li>
+            <li id="nav-sub-lista-compras"><a href="#" onclick="cargarVista('gestion-lista-compras')">Listado de compras</a></li>
+            <li id="nav-sub-proveedores"><a href="#" onclick="cargarVista('gestion-proveedores')">Proveedores</a></li>
           </ul>
         </li>
         <li class="nav-item-dropdown" id="nav-administracion">
           <a href="#" class="nav-link">Administración</a>
           <ul class="dropdown-menu glass">
-            <li><a href="#" onclick="cargarVista('gestion-empleados')">Personal / Empleados</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-clientes')">Clientes</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-pagos-web')" style="color:#f97316; font-weight:700;">💳 Pagos Tienda Web</a></li>
-            <li><a href="#" onclick="cargarVista('gestion-auditoria')" style="color:#3498db; font-weight:700;"><i class="fas fa-history"></i> Auditoría del Sistema</a></li>
+            <li id="nav-sub-reportes"><a href="#" onclick="cargarVista('gestion-reportes')" style="color:#10b981; font-weight:700;"><i class="fas fa-chart-line"></i> Reportes y Estadísticas</a></li>
+            <li id="nav-sub-empleados"><a href="#" onclick="cargarVista('gestion-empleados')">Personal / Empleados</a></li>
+            <li id="nav-sub-clientes"><a href="#" onclick="cargarVista('gestion-clientes')">Clientes</a></li>
+            <li id="nav-sub-pagos-web"><a href="#" onclick="cargarVista('gestion-pagos-web')" style="color:#f97316; font-weight:700;">💳 Pagos Tienda Web</a></li>
+            <li id="nav-sub-auditoria"><a href="#" onclick="cargarVista('gestion-auditoria')" style="color:#3498db; font-weight:700;"><i class="fas fa-history"></i> Auditoría del Sistema</a></li>
           </ul>
         </li>
       </ul>
@@ -209,79 +287,103 @@
 
     <nav class="mobile-menu">
       <ul class="mobile-menu-items">
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="inicio">
           <a href="#" class="mobile-menu-link" onclick="location.reload()">
             <span class="mobile-menu-icon">🏠</span>
             Inicio
           </a>
         </li>
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="gestion-productos">
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-productos', false)">
             <span class="mobile-menu-icon">📦</span>
             Productos
           </a>
         </li>
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="gestion-categorias">
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-categorias')">
             <span class="mobile-menu-icon">📚</span>
             Categorías
           </a>
         </li>
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="historial-stock">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('historial-stock')">
+            <span class="mobile-menu-icon">📊</span>
+            Historial de stock
+          </a>
+        </li>
+        <li class="mobile-menu-item" data-vista="gestion-garantias">
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-garantias')">
             <span class="mobile-menu-icon">🛡️</span>
             Garantías
           </a>
         </li>
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="gestion-servicios">
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-servicios')">
             <span class="mobile-menu-icon">🔧</span>
             Servicios
           </a>
         </li>
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="gestion-ventas">
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-ventas')">
             <span class="mobile-menu-icon">💰</span>
             Generar Venta
           </a>
         </li>
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="gestion-lista-ventas">
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-lista-ventas')">
             <span class="mobile-menu-icon">📋</span>
             Lista Ventas
           </a>
         </li>
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="gestion-compra">
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-compra')">
             <span class="mobile-menu-icon">🛒</span>
             Generar Compra
           </a>
         </li>
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="gestion-lista-compras">
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-lista-compras')">
             <span class="mobile-menu-icon">📋</span>
             Lista Compras
           </a>
         </li>
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="gestion-proveedores">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-proveedores')">
+            <span class="mobile-menu-icon">🚚</span>
+            Proveedores
+          </a>
+        </li>
+        <li class="mobile-menu-item" data-vista="gestion-empleados">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-empleados')">
+            <span class="mobile-menu-icon">👥</span>
+            Personal / Empleados
+          </a>
+        </li>
+        <li class="mobile-menu-item" data-vista="gestion-clientes">
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-clientes')">
             <span class="mobile-menu-icon">👥</span>
             Clientes
           </a>
         </li>
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="gestion-pagos-web">
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-pagos-web')">
             <span class="mobile-menu-icon">💳</span>
             Pagos Web
           </a>
         </li>
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="gestion-auditoria">
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-auditoria')">
             <span class="mobile-menu-icon">📜</span>
             Auditoría
           </a>
         </li>
-        <li class="mobile-menu-item">
+        <li class="mobile-menu-item" data-vista="gestion-reportes">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-reportes')">
+            <span class="mobile-menu-icon">📊</span>
+            Reportes y Estadísticas
+          </a>
+        </li>
+        <li class="mobile-menu-item" data-vista="aurum-tutorial">
           <a href="#" class="mobile-menu-link" onclick="AurumTutorial.start(false); document.querySelector('.mobile-menu-toggle').click();">
             <span class="mobile-menu-icon">✨</span>
             Guía Aurum
@@ -389,10 +491,148 @@
           </div>
         </div>
 
-        <!-- Sección Exclusiva para Vendedor -->
-        <div class="vendedor-only dashboard-greeting" style="display: none;">
-          <h2>¡Hola, <span id="vendedor-nombre-greeting">Vendedor</span>! 👋</h2>
-          <p>Aquí tienes un resumen de tu rendimiento y las tareas pendientes.</p>
+        <!-- ========================================== -->
+        <!-- SECCIÓN EXCLUSIVA PARA VENDEDOR            -->
+        <!-- ========================================== -->
+        <div class="vendedor-only" style="display: none; margin-top: 1.5rem;">
+          <div class="dashboard-greeting" style="background: linear-gradient(135deg, rgba(86, 165, 221, 0.15) 0%, rgba(102, 126, 234, 0.15) 100%); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(86, 165, 221, 0.3); margin-bottom: 1.5rem;">
+            <h2 style="margin: 0 0 0.5rem 0; color: var(--primary-color);">¡Hola, <span id="vendedor-nombre-greeting">Vendedor</span>! 💼</h2>
+            <p style="margin: 0; color: var(--text-muted);">Aquí tienes tus accesos directos para agilizar la atención y el cierre de ventas.</p>
+          </div>
+
+          <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <div class="stat-card stat-card-blue stagger-item" onclick="cargarVista('gestion-ventas')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-cash-register" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Punto de Venta</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Generar Venta</h3>
+                <p class="stat-detail">Facturación inmediata a clientes</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-green stagger-item" onclick="cargarVista('gestion-lista-ventas')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-receipt" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Historial</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Mis Ventas</h3>
+                <p class="stat-detail">Consultar comprobantes emitidos</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-yellow stagger-item" onclick="cargarVista('gestion-clientes')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-user-plus" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Directorio</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Clientes</h3>
+                <p class="stat-detail">Registrar y buscar clientes</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-red stagger-item" onclick="cargarVista('gestion-garantias')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-shield-alt" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Postventa</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Garantías</h3>
+                <p class="stat-detail">Consultar coberturas activas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN EXCLUSIVA PARA CAJERO              -->
+        <!-- ========================================== -->
+        <div class="cajero-only" style="display: none; margin-top: 1.5rem;">
+          <div class="dashboard-greeting" style="background: linear-gradient(135deg, rgba(40, 167, 69, 0.15) 0%, rgba(32, 201, 151, 0.15) 100%); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(40, 167, 69, 0.3); margin-bottom: 1.5rem;">
+            <h2 style="margin: 0 0 0.5rem 0; color: #28a745;">¡Hola, <span id="cajero-nombre-greeting">Cajero</span>! 💵</h2>
+            <p style="margin: 0; color: var(--text-muted);">Módulo de caja, cobros rápidos y validación de pagos en línea.</p>
+          </div>
+
+          <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <div class="stat-card stat-card-green stagger-item" onclick="cargarVista('gestion-ventas')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-cash-register" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Caja & Cobro</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Cobrar / POS</h3>
+                <p class="stat-detail">Procesar pagos y facturación</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-yellow stagger-item" onclick="cargarVista('gestion-pagos-web')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-credit-card" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Comprobantes Web</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Pagos Online</h3>
+                <p class="stat-detail">Validar transferencias web</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-blue stagger-item" onclick="cargarVista('gestion-lista-ventas')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-file-invoice-dollar" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Arqueo y Ventas</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Facturas del Día</h3>
+                <p class="stat-detail">Revisar ventas registradas</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-red stagger-item" onclick="cargarVista('gestion-devoluciones')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-undo-alt" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Operaciones Especiales</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Devoluciones</h3>
+                <p class="stat-detail">Notas de crédito y cambios</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN EXCLUSIVA PARA TÉCNICO             -->
+        <!-- ========================================== -->
+        <div class="tecnico-only" style="display: none; margin-top: 1.5rem;">
+          <div class="dashboard-greeting" style="background: linear-gradient(135deg, rgba(155, 89, 182, 0.15) 0%, rgba(142, 68, 173, 0.15) 100%); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(155, 89, 182, 0.3); margin-bottom: 1.5rem;">
+            <h2 style="margin: 0 0 0.5rem 0; color: #9b59b6;">¡Hola, <span id="tecnico-nombre-greeting">Técnico</span>! 🛠️</h2>
+            <p style="margin: 0; color: var(--text-muted);">Mesa de trabajo de diagnósticos, soporte técnico y garantías de taller.</p>
+          </div>
+
+          <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <div class="stat-card stat-card-red stagger-item" onclick="cargarVista('gestion-servicios')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-tools" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Taller & Reparaciones</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Tickets de Servicio</h3>
+                <p class="stat-detail">Diagnósticos y mantenimiento</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-yellow stagger-item" onclick="cargarVista('gestion-garantias')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-shield-alt" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Garantías</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Reclamos y Pólizas</h3>
+                <p class="stat-detail">Comprobación de garantías</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-blue stagger-item" onclick="cargarVista('historial-stock')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-microchip" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Repuestos y Series</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Consultar Stock</h3>
+                <p class="stat-detail">Disponibilidad de componentes</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-green stagger-item" onclick="abrirModalServiciosPendientes()" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-exclamation-triangle" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Prioridades</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Urgencias</h3>
+                <p class="stat-detail">Equipos en espera y diagnóstico</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Gráficos (Solo Admin) -->

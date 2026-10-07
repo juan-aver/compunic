@@ -53,8 +53,66 @@ function inicializarVendedorAutomatico() {
 window.inicializarVendedorAutomatico = inicializarVendedorAutomatico;
 
 
+// ========================
+// CONTROL DE PERMISOS POR ROL
+// ========================
+
+/**
+ * Retorna las vistas permitidas según el rol del usuario
+ * @param {string} role - 'admin', 'vendedor', 'cajero', 'tecnico'
+ * @returns {Array<string>} Lista de identificadores de vistas permitidas
+ */
+function obtenerVistasPermitidasPorRol(role) {
+    const rolNormalizado = (role || '').toLowerCase();
+    const matrizPermisos = {
+        'admin': ['*'],
+        'vendedor': [
+            'gestion-ventas',
+            'gestion-lista-ventas',
+            'gestion-clientes',
+            'gestion-garantias',
+            'gestion-devoluciones'
+        ],
+        'cajero': [
+            'gestion-ventas',
+            'gestion-lista-ventas',
+            'gestion-devoluciones',
+            'gestion-pagos-web',
+            'gestion-clientes'
+        ],
+        'tecnico': [
+            'gestion-servicios',
+            'gestion-garantias',
+            'historial-stock',
+            'gestion-productos'
+        ]
+    };
+    return matrizPermisos[rolNormalizado] || [];
+}
+
+window.obtenerVistasPermitidasPorRol = obtenerVistasPermitidasPorRol;
+
 // 🧭 Esta función inyecta el HTML de la vista y carga el módulo JS correspondiente en el momento exacto
 function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedores = false, Lista_de_usuario = false) {
+
+    // Validar permisos del rol actual
+    const currentRole = (typeof Auth !== 'undefined' && typeof Auth.getRole === 'function') ? Auth.getRole() : 'admin';
+    const permitidas = obtenerVistasPermitidasPorRol(currentRole);
+    
+    if (!permitidas.includes('*') && !permitidas.includes(nombreVista)) {
+        console.warn(`⛔ Acceso denegado a la vista "${nombreVista}" para el rol "${currentRole}".`);
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Acceso Restringido',
+                text: `El rol de ${(currentRole || '').toUpperCase()} no tiene permisos para acceder a esta sección.`,
+                confirmButtonColor: '#3085d6'
+            });
+        } else {
+            alert(`Acceso no autorizado para el rol ${currentRole}.`);
+        }
+        return;
+    }
 
     const rutas = {
         'gestion-productos': { html: 'views/G_Productos.html', css: 'css/views/G_Productos.css' },
@@ -71,10 +129,9 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
         'gestion-servicios': { html: 'views/G_Servicios.html', css: 'css/views/G_Servicios.css' },
         'gestion-devoluciones': { html: 'views/G_Devoluciones.html', css: 'css/views/G_Devoluciones.css' },
         'gestion-pagos-web':     { html: 'views/G_Pagos_Web.html',  css: '' },
-        'gestion-auditoria':     { html: 'views/G_Auditorias.html', css: 'css/views/G_Auditorias.css' }
+        'gestion-auditoria':     { html: 'views/G_Auditorias.html', css: 'css/views/G_Auditorias.css' },
+        'gestion-reportes':      { html: 'views/G_Reportes.html',   css: 'css/views/G_Reportes.css' }
     };
-
-
 
     const vista = rutas[nombreVista];
 
@@ -197,23 +254,19 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         if (btnSearch) btnSearch.onclick = buscarEmpleado;
 
                     }/*cargar vista servicios*/else if (nombreVista === 'gestion-servicios') {
-                        // Ensure they are visible
                         const searchSection = document.getElementById('seccion-busqueda');
                         if (searchSection) searchSection.style.display = '';
 
-                        // 1. Cargar el Historial (Tabla principal)
+                        // 1. Cargar el Historial y Servicios Activos
                         if (typeof cargarServicios === 'function') cargarServicios();
 
-                        // 2. Llenar los selects del formulario modal
+                        // 2. Llenar los selects del formulario modal (clientes, técnicos, garantías, etc.)
                         if (typeof poblarSelectsServicios === 'function') poblarSelectsServicios();
 
-                        // SEARCH LOGIC FOR SERVICES
-                        if (typeof filtrarTabla === 'function') {
-                            filtrarTabla('buscar_servicio', 'tabla-servicios', [1, 2, 3]);
-                        }
-
-                        // 3. Exponer funciones inline globalmente
-                        window.editarServicioPorFila = editarServicioPorFila;
+                        // 3. Inicializar listener de imagen de evidencia
+                        if (typeof setupEvidenciaInput === 'function') setupEvidenciaInput();
+                    } else if (nombreVista === 'gestion-reportes') {
+                        if (typeof cargarModuloReportes === 'function') cargarModuloReportes();
                     } /*ventas pos*/else if (nombreVista === 'gestion-ventas') {
                         console.log('📋 Cargando vista de Ventas (POS)...');
 

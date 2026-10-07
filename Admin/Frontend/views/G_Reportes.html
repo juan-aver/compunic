@@ -1,0 +1,389 @@
+<!--
+  Módulo: Reportes y Estadísticas Ejecutivas - Compunic
+  Secciones: Financiero, Ventas, Stock e Inventario, Servicios Técnicos y Exportación Excel/PDF.
+-->
+<div class="main-container reportes-container">
+    <header class="reportes-header">
+        <div class="header-title-container">
+            <h1><i class="fas fa-chart-line"></i> Reportes y Estadísticas Ejecutivas</h1>
+            <p class="subtitle">Análisis financiero, volumen de ventas, valoración de stock y rendimiento de taller en tiempo real.</p>
+        </div>
+
+        <div class="header-actions-bar">
+            <!-- Selector Rápido de Rango de Fechas -->
+            <div class="date-filter-group">
+                <button type="button" class="btn-date-preset active" data-range="mes" onclick="aplicarRangoPreset('mes')">Este Mes</button>
+                <button type="button" class="btn-date-preset" data-range="7d" onclick="aplicarRangoPreset('7d')">Últimos 7 Días</button>
+                <button type="button" class="btn-date-preset" data-range="hoy" onclick="aplicarRangoPreset('hoy')">Hoy</button>
+                <button type="button" class="btn-date-preset" data-range="anio" onclick="aplicarRangoPreset('anio')">Este Año</button>
+                <button type="button" class="btn-date-preset" data-range="custom" onclick="toggleCustomDates()">Personalizado <i class="fas fa-calendar-alt"></i></button>
+            </div>
+
+            <!-- Botones de Exportación Universal -->
+            <div class="export-actions-group">
+                <button type="button" class="btn-export btn-export-excel" onclick="exportarReporteActual('excel')">
+                    <i class="fas fa-file-excel"></i> Exportar Excel
+                </button>
+                <button type="button" class="btn-export btn-export-pdf" onclick="exportarReporteActual('pdf')">
+                    <i class="fas fa-file-pdf"></i> Exportar PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Panel Desplegable de Fechas Personalizadas -->
+        <div id="custom-date-panel" class="custom-date-panel" style="display: none;">
+            <div class="custom-date-inputs">
+                <div>
+                    <label><i class="fas fa-calendar-minus"></i> Desde:</label>
+                    <input type="date" id="reporte_fecha_inicio" class="form-control">
+                </div>
+                <div>
+                    <label><i class="fas fa-calendar-plus"></i> Hasta:</label>
+                    <input type="date" id="reporte_fecha_fin" class="form-control">
+                </div>
+                <button type="button" class="btn-apply-filter" onclick="consultarReportes()">
+                    <i class="fas fa-search"></i> Aplicar Filtro
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+
+        <!-- Barra de Navegación por Pestañas -->
+        <nav class="reportes-tabs-nav">
+            <button class="tab-btn active" data-tab="financiero" onclick="cambiarPestanaReporte('financiero')">
+                <i class="fas fa-coins"></i> Financiero y Rentabilidad
+            </button>
+            <button class="tab-btn" data-tab="ventas" onclick="cambiarPestanaReporte('ventas')">
+                <i class="fas fa-shopping-bag"></i> Ventas y Canales
+            </button>
+            <button class="tab-btn" data-tab="stock" onclick="cambiarPestanaReporte('stock')">
+                <i class="fas fa-boxes"></i> Inventario y Stock
+            </button>
+            <button class="tab-btn" data-tab="servicios" onclick="cambiarPestanaReporte('servicios')">
+                <i class="fas fa-tools"></i> Servicios Técnicos
+            </button>
+        </nav>
+
+        <!-- ==================================================================== -->
+        <!-- PESTAÑA 1: FINANCIERO Y RENTABILIDAD -->
+        <!-- ==================================================================== -->
+        <div id="tab-financiero" class="tab-pane active">
+            <!-- Tarjetas de KPIs Financieros -->
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-ingresos">
+                    <div class="kpi-icon"><i class="fas fa-arrow-circle-up"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Ingresos Totales</span>
+                        <h3 id="kpi-fin-ingresos">C$ 0.00</h3>
+                        <small class="kpi-subtext" id="kpi-fin-ingresos-desglose">Ventas: C$ 0 | Servicios: C$ 0</small>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-egresos">
+                    <div class="kpi-icon"><i class="fas fa-arrow-circle-down"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Egresos (Compras)</span>
+                        <h3 id="kpi-fin-egresos">C$ 0.00</h3>
+                        <small class="kpi-subtext" id="kpi-fin-compras-count">0 órdenes de compra</small>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-ganancia">
+                    <div class="kpi-icon"><i class="fas fa-chart-pie"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Utilidad Bruta Estimada</span>
+                        <h3 id="kpi-fin-ganancia">C$ 0.00</h3>
+                        <small class="kpi-subtext">Ingresos - Costo Mercancía Vendida</small>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-margen">
+                    <div class="kpi-icon"><i class="fas fa-percentage"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Margen de Rentabilidad</span>
+                        <h3 id="kpi-fin-margen">0.0%</h3>
+                        <small class="kpi-subtext">Retorno sobre ingresos totales</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos Financieros -->
+            <div class="charts-grid-2">
+                <div class="chart-card glass-panel">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-area"></i> Flujo Financiero: Ingresos vs. Egresos</h3>
+                    </div>
+                    <div id="chart-flujo-financiero" class="chart-container"></div>
+                </div>
+
+                <div class="chart-card glass-panel">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-pie-chart"></i> Composición de Ingresos</h3>
+                    </div>
+                    <div id="chart-fuentes-ingresos" class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================================================================== -->
+        <!-- PESTAÑA 2: VENTAS Y CANALES -->
+        <!-- ==================================================================== -->
+        <div id="tab-ventas" class="tab-pane" style="display: none;">
+            <!-- Tarjetas KPIs Ventas -->
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-ventas-total">
+                    <div class="kpi-icon"><i class="fas fa-cash-register"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Total Facturado</span>
+                        <h3 id="kpi-vta-total">C$ 0.00</h3>
+                        <small class="kpi-subtext" id="kpi-vta-count">0 transacciones registradas</small>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-ticket">
+                    <div class="kpi-icon"><i class="fas fa-receipt"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Ticket Promedio</span>
+                        <h3 id="kpi-vta-ticket">C$ 0.00</h3>
+                        <small class="kpi-subtext">Promedio de compra por cliente</small>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-canal-pos">
+                    <div class="kpi-icon"><i class="fas fa-store"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Ventas Tienda Física (POS)</span>
+                        <h3 id="kpi-vta-pos">C$ 0.00</h3>
+                        <small class="kpi-subtext" id="kpi-vta-pos-count">0 ventas en mostrador</small>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-canal-web">
+                    <div class="kpi-icon"><i class="fas fa-globe"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Ventas Tienda Web</span>
+                        <h3 id="kpi-vta-web">C$ 0.00</h3>
+                        <small class="kpi-subtext" id="kpi-vta-web-count">0 pedidos en línea</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos de Ventas -->
+            <div class="charts-grid-2">
+                <div class="chart-card glass-panel">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-trophy"></i> Top 10 Productos Más Vendidos</h3>
+                    </div>
+                    <div id="chart-top-productos" class="chart-container"></div>
+                </div>
+
+                <div class="chart-card glass-panel">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-pie"></i> Participación por Canal de Venta</h3>
+                    </div>
+                    <div id="chart-canales-ventas" class="chart-container"></div>
+                </div>
+            </div>
+
+            <!-- Tabla Detallada de Ventas -->
+            <div class="table-container glass-panel" style="margin-top: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <h3><i class="fas fa-list-alt"></i> Registro Detallado de Ventas</h3>
+                    <input type="text" id="buscar_filtro_ventas" placeholder="Buscar en listado de ventas..." class="search-input" style="max-width: 320px;" onkeyup="filtrarTablaVentas()">
+                </div>
+                <div class="table-responsive">
+                    <table id="tabla-reporte-ventas">
+                        <thead>
+                            <tr>
+                                <th>Factura</th>
+                                <th>Fecha</th>
+                                <th>Canal</th>
+                                <th>Cliente</th>
+                                <th>Vendedor</th>
+                                <th>Estado</th>
+                                <th>Monto Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="7" style="text-align: center;">Cargando listado...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================================================================== -->
+        <!-- PESTAÑA 3: INVENTARIO Y STOCK -->
+        <!-- ==================================================================== -->
+        <div id="tab-stock" class="tab-pane" style="display: none;">
+            <!-- Tarjetas KPIs Stock -->
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-stock-costo">
+                    <div class="kpi-icon"><i class="fas fa-warehouse"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Valoración Total al Costo</span>
+                        <h3 id="kpi-stk-costo">C$ 0.00</h3>
+                        <small class="kpi-subtext">Capital invertido en almacén</small>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-stock-venta">
+                    <div class="kpi-icon"><i class="fas fa-tags"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Valor Proyectado de Venta</span>
+                        <h3 id="kpi-stk-venta">C$ 0.00</h3>
+                        <small class="kpi-subtext" id="kpi-stk-unidades">0 unidades totales en stock</small>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-stock-ganancia">
+                    <div class="kpi-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Ganancia Potencial Estimada</span>
+                        <h3 id="kpi-stk-ganancia">C$ 0.00</h3>
+                        <small class="kpi-subtext" id="kpi-stk-margen-potencial">Margen potencial: 0%</small>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-stock-alertas">
+                    <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Alertas de Stock</span>
+                        <h3 id="kpi-stk-alertas">0 Críticos / 0 Agotados</h3>
+                        <small class="kpi-subtext">Productos bajo punto de reorden</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos de Stock -->
+            <div class="charts-grid-2">
+                <div class="chart-card glass-panel">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-layer-group"></i> Valoración y Unidades por Categoría</h3>
+                    </div>
+                    <div id="chart-stock-categorias" class="chart-container"></div>
+                </div>
+
+                <div class="chart-card glass-panel">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-heartbeat"></i> Estado de Salud del Inventario</h3>
+                    </div>
+                    <div id="chart-salud-inventario" class="chart-container"></div>
+                </div>
+            </div>
+
+            <!-- Tabla de Valoración de Productos -->
+            <div class="table-container glass-panel" style="margin-top: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <h3><i class="fas fa-boxes"></i> Valoración Detallada de Inventario</h3>
+                    <input type="text" id="buscar_filtro_stock" placeholder="Buscar producto, marca o categoría..." class="search-input" style="max-width: 320px;" onkeyup="filtrarTablaStock()">
+                </div>
+                <div class="table-responsive">
+                    <table id="tabla-reporte-stock">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Marca</th>
+                                <th>Categoría</th>
+                                <th>Stock</th>
+                                <th>P. Compra</th>
+                                <th>P. Venta</th>
+                                <th>Val. Costo</th>
+                                <th>Val. Venta</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="9" style="text-align: center;">Cargando inventario...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================================================================== -->
+        <!-- PESTAÑA 4: SERVICIOS TÉCNICOS -->
+        <!-- ==================================================================== -->
+        <div id="tab-servicios" class="tab-pane" style="display: none;">
+            <!-- Tarjetas KPIs Servicios -->
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-srv-total">
+                    <div class="kpi-icon"><i class="fas fa-wrench"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Total Órdenes de Servicio</span>
+                        <h3 id="kpi-srv-total">0</h3>
+                        <small class="kpi-subtext" id="kpi-srv-completados">0 completados / 0 pendientes</small>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-srv-recaudado">
+                    <div class="kpi-icon"><i class="fas fa-money-bill-wave"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Recaudación por Servicios</span>
+                        <h3 id="kpi-srv-recaudado">C$ 0.00</h3>
+                        <small class="kpi-subtext">Mano de obra y reparaciones</small>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-srv-satisfaccion">
+                    <div class="kpi-icon"><i class="fas fa-star" style="color: #f59e0b;"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Satisfacción del Cliente</span>
+                        <h3 id="kpi-srv-satisfaccion">0.0 / 5.0 ⭐</h3>
+                        <small class="kpi-subtext" id="kpi-srv-calificados">0 calificaciones recibidas</small>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-srv-efectividad">
+                    <div class="kpi-icon"><i class="fas fa-check-double"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Tasa de Finalización</span>
+                        <h3 id="kpi-srv-tasa">0.0%</h3>
+                        <small class="kpi-subtext">Trabajos resueltos con éxito</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos de Servicios -->
+            <div class="charts-grid-2">
+                <div class="chart-card glass-panel">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-user-cog"></i> Desempeño y Recaudación por Técnico</h3>
+                    </div>
+                    <div id="chart-tecnicos-desempeno" class="chart-container"></div>
+                </div>
+
+                <div class="chart-card glass-panel">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-star-half-alt"></i> Distribución de Calificaciones de Clientes</h3>
+                    </div>
+                    <div id="chart-calificaciones-distribucion" class="chart-container"></div>
+                </div>
+            </div>
+
+            <!-- Tabla de Desempeño por Técnico -->
+            <div class="table-container glass-panel" style="margin-top: 25px;">
+                <h3><i class="fas fa-users-cog"></i> Productividad y Calificación del Equipo Técnico</h3>
+                <div class="table-responsive" style="margin-top: 15px;">
+                    <table id="tabla-reporte-tecnicos">
+                        <thead>
+                            <tr>
+                                <th>Técnico</th>
+                                <th>Trabajos Asignados</th>
+                                <th>Trabajos Completados</th>
+                                <th>Recaudación Generada</th>
+                                <th>Calificación Promedio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="5" style="text-align: center;">Cargando datos de técnicos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

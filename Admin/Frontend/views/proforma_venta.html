@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proforma Comercial - COMPUNIC</title>
+    <link rel="stylesheet" href="../css/factura_venta.css">
+    <!-- Librería para generar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+
+    <!-- Botones de Acción de Proforma -->
+    <div style="text-align: center; padding: 15px; background-color: #f1f5f9; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+        <button id="btn-descargar-pdf" style="
+            background-color: #0284c7;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        " onmouseover="this.style.backgroundColor='#0369a1'" onmouseout="this.style.backgroundColor='#0284c7'">
+            📥 Descargar Proforma PDF
+        </button>
+
+        <button id="btn-enviar-email" style="
+            background-color: #059669;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        " onmouseover="this.style.backgroundColor='#047857'" onmouseout="this.style.backgroundColor='#059669'">
+            📧 Enviar por Correo
+        </button>
+
+        <button onclick="window.print()" style="
+            background-color: #475569;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        " onmouseover="this.style.backgroundColor='#334155'" onmouseout="this.style.backgroundColor='#475569'">
+            🖨️ Imprimir
+        </button>
+    </div>
+
+    <div class="hoja-factura">
+
+        <!-- ENCABEZADO SUPERIOR -->
+        <header class="header-factura">
+            <div class="logo-area">
+                <img src="../assets/img/logo_compu.png" alt="Logo_Compunic" class="img-logo">
+            </div>
+
+            <div class="info-empresa">
+                <h1 class="empresa-nombre">COMPUNIC</h1>
+                <h2 class="empresa-ruc">RUC: 0012705950036G</h2>
+                <div class="empresa-detalles">
+                    <p>Colonia Maestro Gabriel, semáforos del colonial 25 vrs. Oeste, 15 vrs. Sur. Telf: 8568 0614</p>
+                    <p>Distrito IV. Managua, Nicaragua</p>
+                    <p>E-mail: compunicventas@gmail.com</p>
+                    <p class="empresa-slogan">Venta de equipos informáticos y soluciones tecnológicas</p>
+                </div>
+            </div>
+
+            <div class="box-numero-factura" style="border-color: #0284c7;">
+                <div class="box-header" style="background: #0284c7; color: white;">PROFORMA</div>
+                <div class="box-content">
+                    <span class="numero-rojo" style="color: #0284c7; font-size: 14px;">N° &nbsp;&nbsp; </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- SECCIÓN CLIENTE -->
+        <section class="seccion-cliente">
+            <div class="bloque-izq">
+                <div class="barra-amarilla" style="background: #0284c7; color: white;">COTIZADO A</div>
+                <div class="form-grid">
+                    <div class="campo-linea">
+                        <label>Cliente / Razón Social</label>
+                        <div class="linea-input" id="cli-nombre"></div>
+                    </div>
+                    <div class="campo-linea">
+                        <label>Cédula / RUC</label>
+                        <div class="linea-input" id="cli-identificacion"></div>
+                    </div>
+                    <div class="campo-linea">
+                        <label>Teléfono / Contacto</label>
+                        <div class="linea-input" id="cli-contacto"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bloque-der-fecha">
+                <div class="tabla-fecha">
+                    <div class="fecha-header" style="background: #0284c7;">EMISIÓN</div>
+                    <div class="fecha-cols">
+                        <div class="col-f">DIA</div>
+                        <div class="col-f">MES</div>
+                        <div class="col-f">AÑO</div>
+                    </div>
+                    <div class="fecha-inputs" id="fecha-emision-inputs">
+                        <div class="col-i"></div>
+                        <div class="col-i"></div>
+                        <div class="col-i"></div>
+                    </div>
+                </div>
+                <div style="margin-top: 5px; font-size: 10px; text-align: center; color: #e11d48; font-weight: bold;" id="vigencia-display">
+                    Vigencia: ...
+                </div>
+            </div>
+        </section>
+
+        <!-- TABLA DE PRODUCTOS -->
+        <section class="seccion-productos">
+            <table class="tabla-detalle">
+                <thead>
+                    <tr>
+                        <th class="col-cant" style="background: #0284c7;">CANTIDAD</th>
+                        <th class="col-desc" style="background: #0284c7;">DESCRIPCIÓN / PRODUCTO</th>
+                        <th class="col-unit" style="background: #0284c7;">PRECIO UNIT.</th>
+                        <th class="col-imp" style="background: #0284c7;">IMPORTE</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-proforma-body">
+                    <!-- Filas dinámicas -->
+                </tbody>
+            </table>
+
+            <div style="margin-top: 10px; font-size: 11px; padding: 5px; background: #f8fafc; border-radius: 4px;" id="notas-box">
+                <strong>Observaciones / Notas:</strong> <span id="proforma-notas">Precios sujetos a disponibilidad de inventario.</span>
+            </div>
+        </section>
+
+        <!-- PIE DE PÁGINA (TOTALES Y CONDICIONES) -->
+        <section class="seccion-final">
+            <div class="area-firmas">
+                <div class="firma-box">
+                    <div class="linea-firma"></div>
+                    <p>ASESOR DE VENTAS</p>
+                </div>
+                <div class="firma-box">
+                    <div class="linea-firma"></div>
+                    <p>ACEPTACIÓN DEL CLIENTE</p>
+                </div>
+            </div>
+
+            <div class="area-totales">
+                <div class="fila-total">
+                    <div class="label-amarillo" style="background: #0284c7; color: white;">SUBTOTAL</div>
+                    <div class="valor-total" id="tot-subtotal"></div>
+                </div>
+
+                <div class="fila-total">
+                    <div class="label-simple">IVA (15%)</div>
+                    <div class="valor-total" id="tot-iva"></div>
+                </div>
+
+                <div class="fila-total">
+                    <div class="label-simple" style="font-weight: bold; color: #0284c7;">TOTAL C$</div>
+                    <div class="valor-total" id="tot-total" style="font-weight: bold; color: #0284c7;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- POLÍTICAS DE COTIZACIÓN -->
+        <div style="margin-top: 15px; font-size: 9px; line-height: 1.2; padding: 10px; border: 1px dashed #0284c7; background: #f0f9ff;">
+            <strong>CONDICIONES COMERCIALES DE LA COTIZACIÓN</strong><br>
+            1. Los precios indicados incluyen el 15% de Impuesto al Valor Agregado (IVA).<br>
+            2. Esta proforma no reserva stock en bodega; la confirmación definitiva se realiza al momento de la facturación y pago.<br>
+            3. Garantía oficial de COMPUNIC con soporte y repuestos originales.<br>
+            4. Formas de pago aceptadas: Efectivo, Transferencia Bancaria BAC/BANPRO, Tarjeta de Crédito/Débito.<br>
+        </div>
+
+        <!-- FOOTER AZUL -->
+        <footer class="footer-azul" style="margin-top: 15px;">
+            <div class="footer-texto">
+                <p>Colonia Maestro Gabriel, semáforos del colonial 25 vrs. Oeste, 15 vrs. Sur</p>
+                <p>Tel. (505) 8568 0614 - email: compunicventas@gmail.com</p>
+            </div>
+            <div class="footer-logo">
+                COMPU<span class="nic-box">NIC</span>
+                <div class="footer-sub">SOLUCIONES INFORMATICAS</div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="proforma_script.js"></script>
+</body>
+</html>

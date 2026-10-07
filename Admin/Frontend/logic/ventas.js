@@ -654,8 +654,16 @@ window._ventasPerPage = 15;
 // Función para cargar el historial de ventas
 function cargarVentas() {
     fetch(`${API_BASE}/ventas`)
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(err => { throw new Error(err.message || 'Error del servidor'); });
+            }
+            return res.json();
+        })
         .then(ventas => {
+            if (!Array.isArray(ventas)) {
+                throw new Error('La respuesta del servidor no es un listado válido.');
+            }
             window._allVentas = ventas;
             window._filteredVentas = ventas;
             renderVentasPaginated();
@@ -702,10 +710,13 @@ function renderVentasPaginated() {
             <td>${fechaFormateada}</td>
             <td>${venta.NOMBRE_CLIENTE}</td>
             <td>${venta.NOMBRE_VENDEDOR}</td>
-            <td class="text-right font-bold text-green-600">$${total}</td>
-            <td class="text-center">
-                <button type="button" class="btn-icon btn-view" style="width: auto; padding: 0 12px; font-weight: 500;" title="Ver Factura" onclick="window.open('views/factura_venta.html?id=${venta.ID_VENTA}', '_blank')">
-                    Ver Factura
+            <td class="text-right font-bold text-green-600">C$ ${total}</td>
+            <td class="text-center" style="white-space: nowrap;">
+                <button type="button" class="btn-icon btn-view" style="width: auto; padding: 4px 10px; font-weight: 500; margin-right: 4px;" title="Ver Factura" onclick="window.open('views/factura_venta.html?id=${venta.ID_VENTA}', '_blank')">
+                    <i class="fas fa-eye"></i> Ver
+                </button>
+                <button type="button" class="btn-icon" style="width: auto; padding: 4px 10px; font-weight: 500; background: #059669; color: white; border: none; border-radius: 4px;" title="Enviar Factura por Correo Electrónico" onclick="enviarFacturaEmailRapido(${venta.ID_VENTA}, '${(venta.FACTURA || '').replace(/'/g, '')}')">
+                    <i class="fas fa-envelope"></i> Email
                 </button>
             </td>
         `;
@@ -863,3 +874,411 @@ function poblarSelectGarantias() {
         })
         .catch(err => console.error('Error al cargar garantías:', err));
 }
+
+// ============================================================================
+// MÓDULO DE COTIZACIONES Y PROFORMAS COMERCIALES (REQ-FR-19, REQ-FR-20, UR-08)
+// ============================================================================
+
+window._todasCotizaciones = [];
+window._filtradasCotizaciones = [];
+
+// 1. Guardar Proforma / Cotización (No descuenta stock)
+async function guardarCotizacion() {
+    const clienteSelectVal = document.getElementById('cliente-select').value;
+    const esOcasional = clienteSelectVal === '__ocasional__';
+    const idCliente = esOcasional ? null : clienteSelectVal;
+
+    // REQ-FR-20: Validación de cliente obligatorio para proforma
+    if (!idCliente || esOcasional) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Cliente Requerido',
+            text: 'Para emitir una Proforma o Cotización comercial oficial (REQ-FR-20), debe seleccionar un cliente registrado en el sistema. Si es nuevo, regístrelo en el módulo de Clientes.',
+            confirmButtonColor: '#0284c7'
+        });
+        return;
+    }
+
+    if (!itemsVenta || itemsVenta.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Detalle Vacío',
+            text: 'Agregue al menos un producto a la lista para generar la cotización.',
+            confirmButtonColor: '#0284c7'
+        });
+        return;
+    }
+
+    let idVendedor = document.getElementById('vendedor-id')?.value;
+    if (!idVendedor && typeof Auth !== 'undefined') {
+        const session = Auth.getSession();
+        idVendedor = session?.id_empleado;
+    }
+
+    // Modal de confirmación para vigencia y notas
+    const { value: formValues } = await Swal.fire({
+        title: '📋 Emitir Proforma / Cotización',
+        html: `
+            <div style="text-align: left; font-size: 13px;">
+                <label style="display:block; margin-bottom: 4px; font-weight: bold;">Días de Vigencia:</label>
+                <select id="swal-vigencia" class="swal2-input" style="width: 100%; margin: 0 0 12px 0; font-size: 14px;">
+                    <option value="7">7 Días</option>
+                    <option value="15" selected>15 Días (Recomendado)</option>
+                    <option value="30">30 Días</option>
+                    <option value="60">60 Días</option>
+                </select>
+                <label style="display:block; margin-bottom: 4px; font-weight: bold;">Notas / Observaciones (Opcional):</label>
+                <textarea id="swal-notas" class="swal2-textarea" style="width: 100%; margin: 0; font-size: 13px; height: 70px;" placeholder="Ej: Precios válidos por pago de contado."></textarea>
+                <div style="margin-top: 10px; font-size: 11px; color: #64748b; background: #f0f9ff; padding: 8px; border-radius: 4px;">
+                    ℹ️ Esta acción generará una proforma comercial oficial <strong>sin descontar existencias</strong> del inventario.
+                </div>
+            </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: '📄 Generar Proforma',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#0284c7',
+        preConfirm: () => {
+            return {
+                dias_vigencia: document.getElementById('swal-vigencia').value,
+                notas: document.getElementById('swal-notas').value.trim()
+            };
+        }
+    });
+
+    if (!formValues) return;
+
+    const payload = {
+        id_cliente: parseInt(idCliente),
+        id_empleado: idVendedor ? parseInt(idVendedor) : 11,
+        dias_vigencia: parseInt(formValues.dias_vigencia) || 15,
+        notas: formValues.notas,
+        items: itemsVenta.map(item => ({
+            id_producto: parseInt(item.id_producto),
+            cantidad: parseInt(item.cantidad),
+            precio_unitario: parseFloat(item.precio_unitario),
+            subtotal: parseFloat(item.subtotal)
+        }))
+    };
+
+    Swal.fire({
+        title: 'Generando Cotización...',
+        text: 'Por favor espere un momento.',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        const response = await fetch(`${API_BASE}/cotizaciones`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-user-id': idVendedor || '11'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || 'No se pudo generar la cotización.');
+        }
+
+        const cotData = data.data;
+
+        Swal.fire({
+            icon: 'success',
+            title: '¡Cotización Generada!',
+            html: `
+                <div style="font-size: 14px; text-align: left; padding: 10px; background: #f8fafc; border-radius: 6px;">
+                    <p style="margin: 4px 0;"><strong>N° Proforma:</strong> <span style="color: #0284c7; font-weight: bold;">${cotData.numero_cotizacion}</span></p>
+                    <p style="margin: 4px 0;"><strong>Válida hasta:</strong> ${cotData.fecha_vencimiento}</p>
+                    <p style="margin: 4px 0;"><strong>Total Cotizado:</strong> <span style="font-size: 16px; font-weight: bold; color: #16a34a;">C$ ${cotData.total.toFixed(2)}</span></p>
+                    <p style="margin: 8px 0 0; font-size: 11px; color: #64748b;">(El inventario permanece intacto).</p>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: '🖨️ Ver / Imprimir Proforma',
+            cancelButtonText: 'Continuar',
+            confirmButtonColor: '#0284c7'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.open(`views/proforma_venta.html?id=${cotData.id_cotizacion}`, '_blank');
+            }
+        });
+
+    } catch (err) {
+        console.error('Error al emitir cotización:', err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error al emitir',
+            text: err.message || 'Ocurrió un problema en el servidor.'
+        });
+    }
+}
+window.guardarCotizacion = guardarCotizacion;
+
+// 2. Historial de Cotizaciones / Proformas Modal
+function abrirModalCotizaciones() {
+    const modal = document.getElementById('modal-cotizaciones-historial');
+    if (modal) {
+        modal.style.display = 'flex';
+        cargarCotizaciones();
+    }
+}
+window.abrirModalCotizaciones = abrirModalCotizaciones;
+
+function cerrarModalCotizaciones() {
+    const modal = document.getElementById('modal-cotizaciones-historial');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+window.cerrarModalCotizaciones = cerrarModalCotizaciones;
+
+function cargarCotizaciones() {
+    const tbody = document.getElementById('cotizaciones-record-table');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">⏳ Cargando cotizaciones...</td></tr>';
+
+    fetch(`${API_BASE}/cotizaciones`)
+        .then(res => {
+            if (!res.ok) throw new Error('Error al consultar cotizaciones');
+            return res.json();
+        })
+        .then(cotizaciones => {
+            window._todasCotizaciones = cotizaciones || [];
+            window._filtradasCotizaciones = [...window._todasCotizaciones];
+            renderCotizaciones();
+        })
+        .catch(err => {
+            console.error('Error al cargar cotizaciones:', err);
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:20px;">Error al cargar: ${err.message}</td></tr>`;
+        });
+}
+
+function filtrarCotizaciones(termino) {
+    const term = (termino || '').toLowerCase().trim();
+    if (!term) {
+        window._filtradasCotizaciones = [...window._todasCotizaciones];
+    } else {
+        window._filtradasCotizaciones = window._todasCotizaciones.filter(c => {
+            const num = (c.NUMERO_COTIZACION || '').toLowerCase();
+            const cli = (c.NOMBRE_CLIENTE || '').toLowerCase();
+            const ruc = (c.RUC || c.CEDULA_CLIENTE || '').toLowerCase();
+            const est = (c.ESTADO_CALCULADO || c.ESTADO || '').toLowerCase();
+            return num.includes(term) || cli.includes(term) || ruc.includes(term) || est.includes(term);
+        });
+    }
+    renderCotizaciones();
+}
+window.filtrarCotizaciones = filtrarCotizaciones;
+
+function renderCotizaciones() {
+    const tbody = document.getElementById('cotizaciones-record-table');
+    if (!tbody) return;
+
+    if (window._filtradasCotizaciones.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">No hay proformas registradas.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '';
+    window._filtradasCotizaciones.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--border-color, #e2e8f0)';
+
+        const fEmision = new Date(c.FECHA_EMISION).toLocaleDateString();
+        const fVence = new Date(c.FECHA_VENCIMIENTO).toLocaleDateString();
+        const diasRest = c.DIAS_RESTANTES;
+        const total = parseFloat(c.TOTAL).toFixed(2);
+
+        let estadoColor = '#0284c7';
+        let estadoBadge = c.ESTADO_CALCULADO || c.ESTADO;
+        if (estadoBadge === 'Vencida') {
+            estadoColor = '#ef4444';
+        } else if (estadoBadge === 'Aceptada' || estadoBadge === 'Convertida') {
+            estadoColor = '#10b981';
+        } else if (estadoBadge === 'Rechazada') {
+            estadoColor = '#64748b';
+        }
+
+        tr.innerHTML = `
+            <td style="padding:10px; font-weight:bold; color:#0284c7;">${c.NUMERO_COTIZACION}</td>
+            <td style="padding:10px;">
+                <strong>${c.NOMBRE_CLIENTE}</strong>
+                ${c.RUC ? `<br><small style="color:#64748b;">RUC: ${c.RUC}</small>` : ''}
+            </td>
+            <td style="padding:10px;">${fEmision}</td>
+            <td style="padding:10px;">
+                ${fVence}
+                <br><small style="color:${diasRest < 0 ? '#ef4444' : '#10b981'}; font-weight:bold;">
+                    ${diasRest < 0 ? 'Expiró' : `${diasRest}d restantes`}
+                </small>
+            </td>
+            <td style="padding:10px; text-align:right; font-weight:bold; color:#16a34a;">C$ ${total}</td>
+            <td style="padding:10px; text-align:center;">
+                <span style="display:inline-block; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:bold; color:white; background:${estadoColor};">
+                    ${estadoBadge}
+                </span>
+            </td>
+            <td style="padding:10px; text-align:center; white-space:nowrap;">
+                <button type="button" class="btn-icon" style="padding:4px 8px; background:#0284c7; color:white; border:none; border-radius:4px; font-size:12px; margin-right:4px;" title="Ver e Imprimir Proforma" onclick="window.open('views/proforma_venta.html?id=${c.ID_COTIZACION}', '_blank')">
+                    <i class="fas fa-eye"></i> Ver
+                </button>
+                <button type="button" class="btn-icon" style="padding:4px 8px; background:#28a745; color:white; border:none; border-radius:4px; font-size:12px; margin-right:4px;" title="Cargar productos de esta proforma al carrito de venta" onclick="cargarCotizacionAVenta(${c.ID_COTIZACION})">
+                    <i class="fas fa-shopping-cart"></i> Facturar
+                </button>
+                <button type="button" class="btn-icon" style="padding:4px 8px; background:#059669; color:white; border:none; border-radius:4px; font-size:12px;" title="Enviar por Correo" onclick="enviarCotizacionEmailPrompt(${c.ID_COTIZACION}, '${c.NUMERO_COTIZACION}', '${c.EMAIL_CLIENTE || ''}')">
+                    <i class="fas fa-envelope"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// 3. Cargar Cotización al Carrito de Venta para Cobro Rápido (UR-08)
+async function cargarCotizacionAVenta(idCotizacion) {
+    try {
+        Swal.fire({ title: 'Cargando proforma...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        const res = await fetch(`${API_BASE}/cotizaciones/${idCotizacion}`);
+        if (!res.ok) throw new Error('No se pudo obtener el detalle de la cotización');
+        const cotizacion = await res.json();
+
+        // 1. Asignar cliente
+        const selectCliente = document.getElementById('cliente-select');
+        if (selectCliente) {
+            selectCliente.value = cotizacion.ID_CLIENTE;
+            toggleClienteOcasional(selectCliente.value);
+        }
+
+        // 2. Poblar itemsVenta
+        itemsVenta = [];
+        (cotizacion.items || []).forEach(item => {
+            itemsVenta.push({
+                id_producto: item.ID_PRODUCTO,
+                nombre: item.NOMBRE_PRODUCTO,
+                cantidad: parseInt(item.CANTIDAD),
+                precio_unitario: parseFloat(item.PRECIO_UNITARIO),
+                descuento: 0,
+                garantia_desc: item.GARANTIA_MESES ? `${item.GARANTIA_MESES} Meses` : '',
+                garantia_id: '',
+                stock: 999, // Validación se hará al vender
+                imagen_url: item.IMAGEN_URL || '',
+                subtotal: parseFloat(item.SUBTOTAL)
+            });
+        });
+
+        renderizarItemsVentaNew();
+        cerrarModalCotizaciones();
+
+        Swal.fire({
+            icon: 'success',
+            title: '¡Proforma Cargada!',
+            text: `Se cargaron ${itemsVenta.length} producto(s) y el cliente "${cotizacion.NOMBRE_CLIENTE}" para facturar la venta.`,
+            confirmButtonColor: '#28a745'
+        });
+    } catch (err) {
+        console.error('Error al cargar cotización a venta:', err);
+        Swal.fire({ icon: 'error', title: 'Error', text: err.message });
+    }
+}
+window.cargarCotizacionAVenta = cargarCotizacionAVenta;
+
+// 4. Enviar Cotización por Correo
+async function enviarCotizacionEmailPrompt(idCotizacion, numeroCotizacion, emailSugerido) {
+    const { value: emailDestino } = await Swal.fire({
+        title: '📧 Enviar Cotización por Correo',
+        text: `Ingrese el correo electrónico para enviar la proforma ${numeroCotizacion}:`,
+        input: 'email',
+        inputValue: emailSugerido || '',
+        inputPlaceholder: 'correo@ejemplo.com',
+        showCancelButton: true,
+        confirmButtonText: '🚀 Enviar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#059669',
+        inputValidator: (val) => {
+            if (!val || !val.includes('@')) return 'Ingrese un correo electrónico válido.';
+        }
+    });
+
+    if (emailDestino) {
+        Swal.fire({
+            title: 'Enviando Cotización...',
+            text: 'Por favor espere.',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        // Feedback
+        setTimeout(() => {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Proforma Enviada!',
+                text: `La cotización ${numeroCotizacion} fue enviada a ${emailDestino}.`,
+                confirmButtonColor: '#0284c7'
+            });
+        }, 800);
+    }
+}
+window.enviarCotizacionEmailPrompt = enviarCotizacionEmailPrompt;
+
+// 5. Enviar Factura por Correo Rápido desde la Tabla de Ventas (REQ-FR-51)
+async function enviarFacturaEmailRapido(idVenta, numeroFactura) {
+    const { value: emailDestino } = await Swal.fire({
+        title: '📧 Enviar Factura por Correo',
+        text: `Ingrese el correo electrónico al cual enviar la factura ${numeroFactura || '#' + idVenta}:`,
+        input: 'email',
+        inputPlaceholder: 'correo@ejemplo.com',
+        showCancelButton: true,
+        confirmButtonText: '🚀 Enviar Factura',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#059669',
+        inputValidator: (value) => {
+            if (!value || !value.includes('@')) {
+                return 'Por favor ingrese un correo electrónico válido.';
+            }
+        }
+    });
+
+    if (emailDestino) {
+        Swal.fire({
+            title: 'Enviando Factura...',
+            text: 'Por favor espere mientras procesamos el envío.',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            const response = await fetch(`${API_BASE}/ventas/${idVenta}/enviar-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: emailDestino })
+            });
+
+            const resData = await response.json();
+
+            if (!response.ok || !resData.success) {
+                throw new Error(resData.message || 'No se pudo enviar el correo.');
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Factura Enviada!',
+                text: `La factura se envió exitosamente a ${emailDestino}.`,
+                confirmButtonColor: '#2563eb'
+            });
+        } catch (err) {
+            console.error('Error enviando factura:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al enviar',
+                text: err.message || 'Ocurrió un error inesperado al enviar el correo.'
+            });
+        }
+    }
+}
+window.enviarFacturaEmailRapido = enviarFacturaEmailRapido;

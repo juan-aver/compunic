@@ -6,7 +6,7 @@
 // Inicializar eventos del módulo de empleados (llamado por el router al cargar la vista)
 function initEmpleadosEventos() {
     const rolSelect = document.getElementById('ROL');
-    if(rolSelect) {
+    if (rolSelect) {
         rolSelect.addEventListener('change', mostrarCamposPorRol);
     }
 }
@@ -18,7 +18,7 @@ function initEmpleadosEventos() {
 function toggleAcordeon(contenidoId, headerEl) {
     const contenido = document.getElementById(contenidoId);
     const flecha = headerEl.querySelector('.acordeon-flecha');
-    
+
     if (contenido.classList.contains('acordeon-abierto')) {
         contenido.classList.remove('acordeon-abierto');
         if (flecha) flecha.classList.add('cerrado');
@@ -64,9 +64,20 @@ function mostrarCamposPorRol() {
     // Siempre mostrar datos generales
     abrirAcordeon('acordeon-generales', 'contenido-generales');
 
+    const tituloLaboral = document.getElementById('titulo-acordeon-laboral');
+
     if (rol === 'ADMIN') {
         abrirAcordeon('acordeon-acceso', 'contenido-acceso');
     } else if (rol === 'VENDEDOR') {
+        if (tituloLaboral) tituloLaboral.textContent = '🏬 Datos del Vendedor (Área y Horario)';
+        abrirAcordeon('acordeon-acceso', 'contenido-acceso');
+        abrirAcordeon('acordeon-vendedor', 'contenido-vendedor');
+    } else if (rol === 'CAJERO') {
+        if (tituloLaboral) tituloLaboral.textContent = '💵 Datos del Cajero (Caja y Turno)';
+        abrirAcordeon('acordeon-acceso', 'contenido-acceso');
+        abrirAcordeon('acordeon-vendedor', 'contenido-vendedor');
+    } else if (rol === 'TECNICO') {
+        if (tituloLaboral) tituloLaboral.textContent = '🛠️ Datos del Técnico (Especialidad y Horario)';
         abrirAcordeon('acordeon-acceso', 'contenido-acceso');
         abrirAcordeon('acordeon-vendedor', 'contenido-vendedor');
     } else if (rol === 'TEMPORAL') {
@@ -80,10 +91,10 @@ function mostrarCamposPorRol() {
 
 function renderFilaEmpleado(e) {
     const tr = document.createElement('tr');
-    
+
     // Clicking row selects employee (except when clicking the toggle)
     tr.onclick = (event) => {
-        if(event.target.tagName !== 'INPUT' && !event.target.classList.contains('slider') && !event.target.classList.contains('estado-texto')) {
+        if (event.target.tagName !== 'INPUT' && !event.target.classList.contains('slider') && !event.target.classList.contains('estado-texto')) {
             seleccionarEmpleado(e);
         }
     };
@@ -92,11 +103,13 @@ function renderFilaEmpleado(e) {
     const isChecked = e.ESTADO === 1 ? 'checked' : '';
     const estadoTexto = e.ESTADO === 1 ? 'Activo' : 'Inactivo';
     const estadoClase = e.ESTADO === 1 ? 'activo' : 'inactivo';
-    
+
     // Determinar la clase del badge según el rol
     let badgeClase = 'temporal';
     if (e.ROL === 'ADMIN') badgeClase = 'admin';
     else if (e.ROL === 'VENDEDOR') badgeClase = 'vendedor';
+    else if (e.ROL === 'CAJERO') badgeClase = 'cajero';
+    else if (e.ROL === 'TECNICO') badgeClase = 'tecnico';
 
     // Sexo legible
     let sexoTexto = '';
@@ -154,17 +167,21 @@ function cambiarEstadoEmpleado(id, isActivo) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: nuevoEstado })
     })
-    .then(res => {
-        if(!res.ok) throw new Error("Error al cambiar estado");
-        console.log(`Estado de empleado ${id} actualizado a ${nuevoEstado}`);
-        // Actualizar solo el texto del toggle sin recargar todo
-        cargarEmpleados();
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Hubo un error al actualizar el estado del empleado.");
-        cargarEmpleados(); // Reload to reset toggle visual state
-    });
+        .then(res => {
+            if (!res.ok) throw new Error("Error al cambiar estado");
+            console.log(`Estado de empleado ${id} actualizado a ${nuevoEstado}`);
+            // Actualizar solo el texto del toggle sin recargar todo
+            cargarEmpleados();
+        })
+        .catch(err => {
+            console.error(err);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Hubo un error al actualizar el estado del empleado.' });
+            } else {
+                alert("Hubo un error al actualizar el estado del empleado.");
+            }
+            cargarEmpleados(); // Reload to reset toggle visual state
+        });
 }
 
 // ============================================
@@ -202,7 +219,7 @@ function seleccionarEmpleado(e) {
     document.getElementById('TELEFONO').value = e.TELEFONO || '';
     document.getElementById('EMAIL').value = e.EMAIL || '';
     document.getElementById('SEXO').value = e.SEXO || '';
-    
+
     if (e.F_NACIMIENTO) {
         document.getElementById('F_NACIMIENTO').value = new Date(e.F_NACIMIENTO).toISOString().split('T')[0];
     } else {
@@ -210,10 +227,10 @@ function seleccionarEmpleado(e) {
     }
 
     // Populate specific fields
-    if(document.getElementById('USERNAME')) document.getElementById('USERNAME').value = e.USERNAME || '';
-    if(document.getElementById('AREA')) document.getElementById('AREA').value = e.AREA || '';
-    if(document.getElementById('HORARIO')) document.getElementById('HORARIO').value = e.HORARIO || '';
-    if(document.getElementById('DIRECCION')) document.getElementById('DIRECCION').value = e.DIRECCION || '';
+    if (document.getElementById('USERNAME')) document.getElementById('USERNAME').value = e.USERNAME || '';
+    if (document.getElementById('AREA')) document.getElementById('AREA').value = e.AREA || '';
+    if (document.getElementById('HORARIO')) document.getElementById('HORARIO').value = e.HORARIO || '';
+    if (document.getElementById('DIRECCION')) document.getElementById('DIRECCION').value = e.DIRECCION || '';
 
     const form = document.getElementById('formulario-empleados');
     form.dataset.idEmpleado = e.ID_EMPLEADO;
@@ -256,17 +273,30 @@ function buscarEmpleado() {
 
 function agregarEmpleado() {
     const datos = recolectarDatosEmpleado();
-    if (!datos.rol) return alert("Debe seleccionar un Rol");
-    if (!datos.nombre || !datos.apellido) return alert("Nombre y Apellido son obligatorios");
-
-    // Validar email obligatorio para ADMIN/VENDEDOR
-    if ((datos.rol === 'ADMIN' || datos.rol === 'VENDEDOR') && !datos.email) {
-        return alert("El Email es obligatorio para Administradores y Vendedores (se enviará el correo de activación).");
+    if (!datos.rol) {
+        return (typeof Swal !== 'undefined')
+            ? Swal.fire({ icon: 'warning', title: 'Rol Requerido', text: 'Debe seleccionar un Rol para el empleado.' })
+            : alert("Debe seleccionar un Rol");
+    }
+    if (!datos.nombre || !datos.apellido) {
+        return (typeof Swal !== 'undefined')
+            ? Swal.fire({ icon: 'warning', title: 'Campos Incompletos', text: 'Nombre y Apellido son obligatorios.' })
+            : alert("Nombre y Apellido son obligatorios");
     }
 
-    // Validar username obligatorio para ADMIN/VENDEDOR
-    if ((datos.rol === 'ADMIN' || datos.rol === 'VENDEDOR') && !datos.username) {
-        return alert("El Nombre de Usuario es obligatorio para Administradores y Vendedores.");
+    // Validar email obligatorio para roles con acceso al sistema
+    const rolesConAcceso = ['ADMIN', 'VENDEDOR', 'CAJERO', 'TECNICO'];
+    if (rolesConAcceso.includes(datos.rol) && !datos.email) {
+        return (typeof Swal !== 'undefined')
+            ? Swal.fire({ icon: 'warning', title: 'Email Requerido', text: 'El Email es obligatorio para este rol (se enviará el correo de activación de credenciales).' })
+            : alert("El Email es obligatorio para este rol (se enviará el correo de activación de credenciales).");
+    }
+
+    // Validar username obligatorio para roles con acceso al sistema
+    if (rolesConAcceso.includes(datos.rol) && !datos.username) {
+        return (typeof Swal !== 'undefined')
+            ? Swal.fire({ icon: 'warning', title: 'Usuario Requerido', text: 'El Nombre de Usuario es obligatorio para los roles con acceso al sistema.' })
+            : alert("El Nombre de Usuario es obligatorio para los roles con acceso al sistema.");
     }
 
     fetch(`${API_BASE}/empleados`, {
@@ -276,19 +306,42 @@ function agregarEmpleado() {
     })
         .then(res => res.json())
         .then(data => {
-            if (data.correoEnviado) {
-                alert(`✅ ${data.mensaje}`);
-            } else if (datos.rol === 'TEMPORAL') {
-                alert('✅ Empleado temporal agregado correctamente.');
+            if (typeof Swal !== 'undefined') {
+                if (data.correoEnviado) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Empleado Agregado!',
+                        text: data.mensaje || 'Se envió un correo al empleado para que cree su contraseña.',
+                        confirmButtonColor: '#3085d6'
+                    });
+                } else if (datos.rol === 'TEMPORAL') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Empleado Agregado!',
+                        text: 'Empleado temporal agregado correctamente.',
+                        confirmButtonColor: '#3085d6'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Información',
+                        text: data.mensaje || 'Empleado agregado.',
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
             } else {
-                alert(`⚠️ ${data.mensaje}`);
+                alert(data.mensaje || 'Empleado agregado correctamente');
             }
             limpiarFormularioEmpleado();
             cargarEmpleados();
         })
         .catch(err => {
             console.error(err);
-            alert('Error al agregar empleado.');
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Ocurrió un error al agregar el empleado.' });
+            } else {
+                alert('Error al agregar empleado.');
+            }
         });
 }
 
@@ -299,7 +352,11 @@ function agregarEmpleado() {
 function modificarEmpleado() {
     const form = document.getElementById('formulario-empleados');
     const id = form.dataset.idEmpleado;
-    if (!id) return alert("Selecciona un empleado de la tabla");
+    if (!id) {
+        return (typeof Swal !== 'undefined')
+            ? Swal.fire({ icon: 'info', title: 'Atención', text: 'Selecciona un empleado de la tabla para editar sus datos.' })
+            : alert("Selecciona un empleado de la tabla");
+    }
 
     const datos = recolectarDatosEmpleado();
 
@@ -310,11 +367,20 @@ function modificarEmpleado() {
     })
         .then(res => res.text())
         .then(() => {
-            alert('Empleado actualizado');
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'success', title: '¡Actualizado!', text: 'Empleado actualizado correctamente.' });
+            } else {
+                alert('Empleado actualizado');
+            }
             limpiarFormularioEmpleado();
             cargarEmpleados();
         })
-        .catch(err => console.error(err));
+        .catch(err => {
+            console.error(err);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar el empleado.' });
+            }
+        });
 }
 
 // ============================================

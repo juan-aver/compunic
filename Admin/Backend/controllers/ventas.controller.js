@@ -138,3 +138,60 @@ exports.findByVendedor = async (req, res) => {
     res.status(500).send({ message: err.message });
   }
 };
+
+const emailService = require('../services/email.service');
+
+exports.enviarFacturaEmail = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { email } = req.body;
+
+    const venta = await Ventas.getById(id);
+    if (!venta) {
+      return res.status(404).json({ success: false, message: 'Venta no encontrada.' });
+    }
+
+    const emailDestino = email || venta.EMAIL_CLIENTE;
+    if (!emailDestino || !emailDestino.includes('@')) {
+      return res.status(400).json({
+        success: false,
+        message: 'No se encontró una dirección de correo válida para el cliente. Por favor ingrese el correo electrónico.'
+      });
+    }
+
+    const nombreCompleto = `${venta.NOMBRE_CLIENTE || ''} ${venta.APELLIDO_CLIENTE || ''}`.replace(/\bnull\b/gi, '').replace(/\s+/g, ' ').trim() || 'Estimado(a) Cliente';
+
+    await emailService.sendInvoiceEmail(
+      emailDestino,
+      nombreCompleto,
+      venta.FACTURA || `FAC-${venta.ID_VENTA}`,
+      null, // HTML enriquecido
+      parseFloat(venta.TOTAL) || 0,
+      venta.items || []
+    );
+
+    // Auditoría
+    try {
+      await AuditoriaModel.registrar({
+        id_empleado: req.userId || 11,
+        username: req.username || 'Sistema',
+        accion: 'ENVIO_FACTURA_EMAIL',
+        tabla: 'VENTAS',
+        descripcion: `Se envió la factura ${venta.FACTURA} al correo ${emailDestino} (${nombreCompleto})`
+      });
+    } catch (auditErr) {
+      console.error('Error en auditoría de envío de factura:', auditErr);
+    }
+
+    res.json({
+      success: true,
+      message: `Factura enviada exitosamente al correo ${emailDestino}.`
+    });
+  } catch (error) {
+    console.error('Error al enviar factura por email:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al enviar la factura por email: ' + error.message
+    });
+  }
+};

@@ -10,6 +10,8 @@
           <option value="">-- Seleccione Rol --</option>
           <option value="ADMIN">Administrador</option>
           <option value="VENDEDOR">Vendedor</option>
+          <option value="CAJERO">Cajero</option>
+          <option value="TECNICO">Técnico</option>
           <option value="TEMPORAL">Temporal</option>
         </select>
       </div>
@@ -76,22 +78,22 @@
       </div>
 
       <!-- ============================================ -->
-      <!-- MENÚ DESPLEGABLE: Datos del Vendedor -->
+      <!-- MENÚ DESPLEGABLE: Datos Laborales (VENDEDOR/CAJERO/TECNICO) -->
       <!-- ============================================ -->
       <div id="acordeon-vendedor" class="acordeon-seccion" style="display: none;">
         <div class="acordeon-header" onclick="toggleAcordeon('contenido-vendedor', this)">
-          <span>🏬 Datos del Vendedor</span>
+          <span id="titulo-acordeon-laboral">🏬 Datos del Puesto (Área y Horario)</span>
           <span class="acordeon-flecha">▼</span>
         </div>
         <div id="contenido-vendedor" class="acordeon-contenido acordeon-abierto">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div class="input-with-icon">
               <span class="input-icon">🏬</span>
-              <input id="AREA" type="text" placeholder="Área Asignada" />
+              <input id="AREA" type="text" placeholder="Área / Especialidad / Caja" />
             </div>
             <div class="input-with-icon">
               <span class="input-icon">⏰</span>
-              <input id="HORARIO" type="text" placeholder="Horario" />
+              <input id="HORARIO" type="text" placeholder="Horario / Turno" />
             </div>
           </div>
         </div>
@@ -338,6 +340,16 @@ input:checked + .slider:before {
 .badge-rol.vendedor {
   background: linear-gradient(135deg, #d1ecf1, #bee5eb);
   border: 1px solid #17a2b8;
+}
+
+.badge-rol.cajero {
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  border: 1px solid #28a745;
+}
+
+.badge-rol.tecnico {
+  background: linear-gradient(135deg, #e8daef, #d7bde2);
+  border: 1px solid #9b59b6;
 }
 
 .badge-rol.temporal {

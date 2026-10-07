@@ -1,11 +1,11 @@
 <!-- 
-  ¡Atención! Este HTML fue ensamblado a altas horas de la noche ☕. 
-  Si ves un div anidado 5 veces, lo siento, era necesario para centrar un botón.
+  Módulo: Gestión de Servicios Técnicos - Compunic
+  Incluye: Asignación de técnicos, Evidencia fotográfica, Notas de taller y Calificación de clientes
 -->
 <div class="main-container">
     <header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h1>Gestión de Servicios</h1>
+            <h1><i class="fas fa-tools"></i> Gestión de Servicios Técnicos</h1>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <button class="btn-nuevo-producto" onclick="abrirModalServicio()">
                     <i class="fas fa-plus"></i> Nuevo Servicio
@@ -16,80 +16,149 @@
 
     <div class="content-wrapper">
 
-        <!-- ⚠️ Cuidado con los z-index de este Modal de Agregar/Editar Servicio -->
+        <!-- Modal de Agregar/Editar Servicio -->
         <div id="modalServicioForm" class="producto-form-modal" style="display: none;">
             <div class="producto-form-modal-overlay" onclick="cerrarModalServicio()"></div>
-            <div class="producto-form-modal-content" style="max-width: 600px;">
+            <div class="producto-form-modal-content" style="max-width: 720px; max-height: 92vh;">
                 <div class="producto-form-modal-header">
                     <h3 id="modalServicioTitle"><i class="fas fa-plus-circle"></i> Nuevo Servicio</h3>
                     <button class="producto-form-modal-close" onclick="cerrarModalServicio()">&times;</button>
                 </div>
                 <div class="producto-form-modal-body">
                     <form id="formularioServicio">
+                        <!-- Fila 1: Cliente y Técnico Asignado -->
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
                             <div>
-                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Cliente:</label>
-                                <select id="id_cliente" name="id_cliente" class="form-control" required
-                                    style="width: 100%;">
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">
+                                    <i class="fas fa-user"></i> Cliente: <span style="color:red;">*</span>
+                                </label>
+                                <select id="id_cliente" name="id_cliente" class="form-control" required style="width: 100%;">
                                     <option value="">Seleccione un cliente</option>
                                 </select>
                             </div>
                             <div>
-                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Garantía
-                                    Aplicada:</label>
-                                <select id="id_garantia" name="id_garantia" class="form-control" style="width: 100%;">
-                                    <option value="">Seleccione una garantía</option>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">
+                                    <i class="fas fa-user-cog"></i> Técnico Asignado:
+                                </label>
+                                <select id="id_empleado" name="id_empleado" class="form-control" style="width: 100%;">
+                                    <option value="">Sin técnico asignado</option>
                                 </select>
                             </div>
                         </div>
 
+                        <!-- Fila 2: Tipo de Servicio y Estado del Trabajo -->
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
                             <div>
-                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Tipo de
-                                    Servicio:</label>
-                                <select id="id_servicio_tipo" name="id_servicio_tipo" class="form-control" required
-                                    style="width: 100%;">
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">
+                                    <i class="fas fa-wrench"></i> Tipo de Servicio: <span style="color:red;">*</span>
+                                </label>
+                                <select id="id_servicio_tipo" name="id_servicio_tipo" class="form-control" required style="width: 100%;">
                                     <option value="">Seleccione un tipo</option>
                                 </select>
                             </div>
                             <div>
-                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Estado del
-                                    Trabajo:</label>
-                                <select id="id_servicio_estado" name="id_servicio_estado" class="form-control" required
-                                    style="width: 100%;">
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">
+                                    <i class="fas fa-tasks"></i> Estado del Trabajo: <span style="color:red;">*</span>
+                                </label>
+                                <select id="id_servicio_estado" name="id_servicio_estado" class="form-control" required style="width: 100%;">
                                     <option value="">Seleccione un estado</option>
                                 </select>
                             </div>
                         </div>
 
+                        <!-- Fila 3: Garantía y Costo Final -->
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
                             <div>
-                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Descripción:</label>
-                                <input type="text" id="descripcion" name="descripcion" class="form-control"
-                                    placeholder="Descripción del trabajo..." style="width: 100%;">
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">
+                                    <i class="fas fa-shield-alt"></i> Garantía Aplicada:
+                                </label>
+                                <select id="id_garantia" name="id_garantia" class="form-control" style="width: 100%;">
+                                    <option value="">Seleccione una garantía (opcional)</option>
+                                </select>
                             </div>
                             <div>
-                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Costo Final
-                                    ($):</label>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">
+                                    <i class="fas fa-dollar-sign"></i> Costo Final (C$): <span style="color:red;">*</span>
+                                </label>
                                 <input type="number" id="costo" name="costo" step="0.01" class="form-control" required
                                     placeholder="0.00" style="width: 100%;">
                             </div>
                         </div>
 
+                        <!-- Fila 4: Descripción del Trabajo -->
+                        <div style="margin-bottom: 15px;">
+                            <label style="font-weight: 600; display: block; margin-bottom: 4px;">
+                                <i class="fas fa-align-left"></i> Descripción / Problema Reportado:
+                            </label>
+                            <input type="text" id="descripcion" name="descripcion" class="form-control"
+                                placeholder="Ej: Cambio de pantalla y mantenimiento general..." style="width: 100%;">
+                        </div>
+
+                        <!-- Fila 5: Fechas -->
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
                             <div>
-                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Fecha
-                                    Solicitud:</label>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">
+                                    <i class="fas fa-calendar-alt"></i> Fecha Solicitud: <span style="color:red;">*</span>
+                                </label>
                                 <input type="date" id="fecha_solicitud" name="fecha_solicitud" class="form-control"
                                     required style="width: 100%;">
                             </div>
                             <div>
-                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">Fecha
-                                    Ejecución:</label>
+                                <label style="font-weight: 600; display: block; margin-bottom: 4px;">
+                                    <i class="fas fa-calendar-check"></i> Fecha Ejecución / Entrega:
+                                </label>
                                 <input type="date" id="fecha_ejecucion" name="fecha_ejecucion" class="form-control"
                                     style="width: 100%;">
                             </div>
                         </div>
+
+                        <!-- Fila 6: Notas Técnicas -->
+                        <div style="margin-bottom: 15px;">
+                            <label style="font-weight: 600; display: block; margin-bottom: 4px;">
+                                <i class="fas fa-clipboard-list"></i> Diagnóstico y Notas del Técnico:
+                            </label>
+                            <textarea id="notas_tecnicas" name="notas_tecnicas" rows="2" class="form-control"
+                                placeholder="Detalles de reparación, componentes reemplazados, observaciones técnicas..." style="width: 100%;"></textarea>
+                        </div>
+
+                        <!-- Fila 7: Evidencia Fotográfica -->
+                        <div class="evidencia-upload-section" style="margin-bottom: 15px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                            <label style="font-weight: 600; display: block; margin-bottom: 6px; color: #1e293b;">
+                                <i class="fas fa-camera"></i> Evidencia Fotográfica (Antes / Después):
+                            </label>
+                            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                                <input type="file" id="evidencia_file" name="evidencia" accept="image/jpeg,image/png,image/webp,image/gif" class="form-control" style="flex: 1; min-width: 200px;">
+                                <input type="hidden" id="evidencia_url" name="evidencia_url">
+                            </div>
+                            <!-- Contenedor de vista previa -->
+                            <div id="evidencia-preview-box" style="display: none; margin-top: 10px; position: relative; width: fit-content;">
+                                <img id="evidencia-img-preview" src="" alt="Vista previa de evidencia" style="max-height: 120px; border-radius: 6px; border: 1px solid #e2e8f0; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <button type="button" onclick="quitarEvidenciaPreview()" title="Quitar imagen" style="position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Fila 8: Calificación y Opinión del Cliente -->
+                        <div class="calificacion-cliente-section" style="padding: 12px; background: #fefce8; border-radius: 8px; border: 1px solid #fef08a; margin-bottom: 10px;">
+                            <label style="font-weight: 600; display: block; margin-bottom: 6px; color: #854d0e;">
+                                <i class="fas fa-star" style="color: #eab308;"></i> Calificación y Reseña del Cliente:
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 8px;">
+                                <div class="star-rating-widget" id="star-rating-form">
+                                    <i class="fas fa-star star-item" data-val="1" onclick="setStarRating(1)"></i>
+                                    <i class="fas fa-star star-item" data-val="2" onclick="setStarRating(2)"></i>
+                                    <i class="fas fa-star star-item" data-val="3" onclick="setStarRating(3)"></i>
+                                    <i class="fas fa-star star-item" data-val="4" onclick="setStarRating(4)"></i>
+                                    <i class="fas fa-star star-item" data-val="5" onclick="setStarRating(5)"></i>
+                                </div>
+                                <span id="star-rating-text" style="font-weight: 600; color: #a16207; font-size: 0.9rem;">Sin calificar</span>
+                                <input type="hidden" id="calificacion" name="calificacion" value="">
+                            </div>
+                            <textarea id="opinion_cliente" name="opinion_cliente" rows="2" class="form-control"
+                                placeholder="Comentarios u opinión expresada por el cliente sobre el servicio..." style="width: 100%;"></textarea>
+                        </div>
+
                         <!-- ID temporal oculto para edición -->
                         <input type="hidden" id="id_servicio" name="id_servicio">
                         <input type="hidden" id="id_temporal" name="id_temporal">
@@ -112,14 +181,83 @@
             </div>
         </div>
 
+        <!-- Modal Visor de Evidencia Fotográfica (Lightbox) -->
+        <div id="modalVisorEvidencia" class="producto-form-modal" style="display: none;">
+            <div class="producto-form-modal-overlay" onclick="cerrarVisorEvidencia()"></div>
+            <div class="producto-form-modal-content" style="max-width: 650px; text-align: center; background: #0f172a; color: white;">
+                <div class="producto-form-modal-header" style="background: transparent; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <h3 id="visorEvidenciaTitle" style="color: white;"><i class="fas fa-image"></i> Evidencia Fotográfica</h3>
+                    <button class="producto-form-modal-close" onclick="cerrarVisorEvidencia()">&times;</button>
+                </div>
+                <div class="producto-form-modal-body" style="padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <img id="visorEvidenciaImg" src="" alt="Evidencia Fotográfica" style="max-width: 100%; max-height: 60vh; border-radius: 8px; object-fit: contain; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                    <p id="visorEvidenciaDesc" style="margin-top: 12px; color: #94a3b8; font-size: 0.95rem;"></p>
+                </div>
+                <div class="producto-form-modal-footer" style="background: transparent; border-top: 1px solid rgba(255,255,255,0.1); justify-content: center;">
+                    <a id="visorEvidenciaDownload" href="" target="_blank" download="evidencia_servicio.jpg" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 0.9rem;">
+                        <i class="fas fa-external-link-alt"></i> Abrir Original
+                    </a>
+                    <button type="button" class="btn-modal-cancel" onclick="cerrarVisorEvidencia()">
+                        <i class="fas fa-times"></i> Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Calificación Rápida de Servicio -->
+        <div id="modalCalificarServicio" class="producto-form-modal" style="display: none;">
+            <div class="producto-form-modal-overlay" onclick="cerrarModalCalificar()"></div>
+            <div class="producto-form-modal-content" style="max-width: 480px;">
+                <div class="producto-form-modal-header" style="background: linear-gradient(135deg, #d97706, #f59e0b);">
+                    <h3 style="color: white;"><i class="fas fa-star"></i> Calificar Servicio Técnico</h3>
+                    <button class="producto-form-modal-close" onclick="cerrarModalCalificar()">&times;</button>
+                </div>
+                <div class="producto-form-modal-body">
+                    <input type="hidden" id="quick_id_servicio">
+                    <p id="quick_servicio_info" style="font-weight: 500; color: #475569; margin-bottom: 15px;"></p>
+                    
+                    <div style="text-align: center; margin-bottom: 18px;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px; color: #1e293b;">
+                            Nivel de Satisfacción del Cliente:
+                        </label>
+                        <div class="star-rating-widget large" id="star-rating-quick" style="justify-content: center;">
+                            <i class="fas fa-star quick-star" data-val="1" onclick="setQuickStarRating(1)"></i>
+                            <i class="fas fa-star quick-star" data-val="2" onclick="setQuickStarRating(2)"></i>
+                            <i class="fas fa-star quick-star" data-val="3" onclick="setQuickStarRating(3)"></i>
+                            <i class="fas fa-star quick-star" data-val="4" onclick="setQuickStarRating(4)"></i>
+                            <i class="fas fa-star quick-star" data-val="5" onclick="setQuickStarRating(5)"></i>
+                        </div>
+                        <span id="quick_rating_text" style="font-weight: 600; color: #d97706; font-size: 1rem; margin-top: 6px; display: block;">Seleccione estrellas</span>
+                        <input type="hidden" id="quick_calificacion" value="">
+                    </div>
+
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 4px; color: #1e293b;">
+                            <i class="fas fa-comment"></i> Opinión / Reseña del Cliente:
+                        </label>
+                        <textarea id="quick_opinion_cliente" rows="3" class="form-control" placeholder="Escriba aquí los comentarios u opinión del cliente..." style="width: 100%;"></textarea>
+                    </div>
+                </div>
+                <div class="producto-form-modal-footer">
+                    <button type="button" class="btn-modal-cancel" onclick="cerrarModalCalificar()">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn-modal-save" onclick="guardarCalificacionRapida()">
+                        <i class="fas fa-check"></i> Guardar Calificación
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <section class="busqueda" id="seccion-busqueda">
-            <h2>Buscar Servicio</h2>
+            <h2><i class="fas fa-search"></i> Buscar Servicio Técnico</h2>
             <div class="search-container">
-                <input type="text" id="buscar_servicio" placeholder="Buscar por descripción, cliente o tipo..."
-                    class="search-input">
+                <input type="text" id="buscar_servicio" placeholder="Buscar por descripción, cliente, técnico o tipo..."
+                    class="search-input" onkeyup="filtrarServicios()">
             </div>
         </section>
 
+        <!-- Tabla de Servicios Activos -->
         <div class="table-container" style="margin-top: 25px;">
             <h2 style="color: var(--warning-color);"><i class="fas fa-tools"></i> Servicios Activos (En Progreso / Pendientes)</h2>
             <table id="tabla-servicios-activos">
@@ -128,6 +266,7 @@
                         <th>ID</th>
                         <th>Descripción</th>
                         <th>Cliente</th>
+                        <th>Técnico</th>
                         <th>Tipo</th>
                         <th>Garantía</th>
                         <th>F. Solicitud</th>
@@ -141,7 +280,8 @@
             </table>
         </div>
 
-        <div class="table-container" style="margin-top: 35px; opacity: 0.9;">
+        <!-- Tabla de Historial de Trabajos Realizados -->
+        <div class="table-container" style="margin-top: 35px; opacity: 0.95;">
             <h2 style="color: var(--success-color);"><i class="fas fa-history"></i> Historial de Trabajos Realizados</h2>
             <table id="tabla-servicios-historial">
                 <thead>
@@ -149,9 +289,9 @@
                         <th>ID</th>
                         <th>Descripción</th>
                         <th>Cliente</th>
-                        <th>Tipo</th>
-                        <th>Garantía</th>
-                        <th>F. Solicitud</th>
+                        <th>Técnico</th>
+                        <th>Evidencia</th>
+                        <th>Calificación</th>
                         <th>F. Ejecución</th>
                         <th>Estado</th>
                         <th>Costo</th>
@@ -164,4 +304,4 @@
         </div>
 
     </div>
-</div>
+</div>

@@ -56,11 +56,18 @@ h3 {
   font-weight: 700;
   text-align: center;
   display: inline-block;
-  color: white;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white !important;
   letter-spacing: 0.5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   text-transform: uppercase;
   white-space: nowrap !important;
+}
+
+.badge-registrar_merma,
+.badge-merma {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  color: white !important;
 }
 
 /* Coloration for specific action types in Light Mode */

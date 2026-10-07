@@ -186,88 +186,253 @@ async function sendAccountLockoutEmail(email, nombreCompleto) {
 }
 
 /**
- * Enviar correo con factura adjunta
+ * Enviar correo con factura detallada y PDF opcional adjunto
  * @param {string} email - Correo del destinatario
  * @param {string} nombreCliente - Nombre del cliente
  * @param {string} numeroFactura - Número de factura
- * @param {Buffer} pdfBuffer - Buffer del PDF de la factura
+ * @param {Buffer|null} pdfBuffer - Buffer opcional del PDF de la factura
  * @param {number} total - Total de la compra
+ * @param {Array} items - Lista opcional de items para desglose
  */
-async function sendInvoiceEmail(email, nombreCliente, numeroFactura, pdfBuffer, total) {
+async function sendInvoiceEmail(email, nombreCliente, numeroFactura, pdfBuffer, total, items = []) {
+    let itemsHtml = '';
+    if (items && items.length > 0) {
+        itemsHtml = `
+            <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 13px;">
+                <thead>
+                    <tr style="background: #f1f5f9; text-align: left;">
+                        <th style="padding: 8px; border-bottom: 2px solid #cbd5e1;">Cant</th>
+                        <th style="padding: 8px; border-bottom: 2px solid #cbd5e1;">Descripción</th>
+                        <th style="padding: 8px; border-bottom: 2px solid #cbd5e1; text-align: right;">Precio</th>
+                        <th style="padding: 8px; border-bottom: 2px solid #cbd5e1; text-align: right;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${items.map(it => `
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 8px; font-weight: bold;">${it.CANTIDAD || it.cantidad || 1}</td>
+                            <td style="padding: 8px;">
+                                ${it.NOMBRE_PRODUCTO || it.nombre || 'Producto'}
+                                ${it.NUMEROS_SERIE ? `<br><span style="font-size: 11px; color: #64748b;">S/N: ${it.NUMEROS_SERIE}</span>` : ''}
+                            </td>
+                            <td style="padding: 8px; text-align: right;">C$ ${parseFloat(it.PRECIO_UNITARIO || it.precio_unitario || it.precio_venta || 0).toFixed(2)}</td>
+                            <td style="padding: 8px; text-align: right; font-weight: bold;">C$ ${parseFloat(it.SUBTOTAL || it.subtotal || 0).toFixed(2)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    const attachments = [];
+    if (pdfBuffer) {
+        attachments.push({
+            filename: `Factura_${numeroFactura}.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf'
+        });
+    }
+
     const mailOptions = {
-        from: `"COMPUNIC - Ventas" <${process.env.EMAIL_USER}>`,
+        from: `"COMPUNIC - Facturación" <${process.env.EMAIL_USER}>`,
         to: email,
-        subject: `✅ Factura ${numeroFactura} - Compra Confirmada`,
+        subject: `🧾 Factura Electrónica ${numeroFactura} - COMPUNIC`,
         html: `
             <!DOCTYPE html>
             <html>
             <head>
                 <style>
-                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-                    .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0; border-radius: 4px; }
-                    .info-box { background: white; padding: 20px; border-radius: 5px; margin: 20px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-                    .total { font-size: 24px; color: #667eea; font-weight: bold; }
-                    .footer { text-align: center; color: #666; font-size: 12px; margin-top: 20px; }
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #1e293b; margin:0; padding:0; background: #f8fafc; }
+                    .container { max-width: 620px; margin: 20px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+                    .header { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 30px; text-align: center; }
+                    .content { padding: 30px; }
+                    .success-box { background: #dcfce7; border-left: 4px solid #16a34a; padding: 12px 16px; margin: 15px 0; border-radius: 4px; color: #15803d; font-weight: 500; }
+                    .info-box { background: #f8fafc; padding: 18px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0; }
+                    .total-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 15px; margin: 15px 0; text-align: right; }
+                    .total { font-size: 22px; color: #1d4ed8; font-weight: bold; }
+                    .footer { text-align: center; color: #94a3b8; font-size: 12px; padding: 20px; background: #f1f5f9; border-top: 1px solid #e2e8f0; }
                 </style>
             </head>
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>✅ ¡Compra Confirmada!</h1>
+                        <h1 style="margin: 0; font-size: 24px;">🧾 Factura Electrónica</h1>
+                        <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;">COMPUNIC - Soluciones Informáticas</p>
                     </div>
                     <div class="content">
-                        <p>Hola <strong>${nombreCliente}</strong>,</p>
+                        <p>Estimado(a) <strong>${nombreCliente}</strong>,</p>
                         
                         <div class="success-box">
-                            <strong>🎉 Tu compra ha sido procesada exitosamente</strong>
+                            ✅ Su compra ha sido registrada y facturada exitosamente.
                         </div>
-                        
-                        <p>Gracias por tu compra en COMPUNIC. Adjunto encontrarás tu factura electrónica.</p>
                         
                         <div class="info-box">
-                            <p><strong>Número de Factura:</strong> ${numeroFactura}</p>
-                            <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-NI', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        })}</p>
-                            <p><strong>Total:</strong> <span class="total">C$ ${total.toFixed(2)}</span></p>
+                            <table style="width:100%; font-size: 14px;">
+                                <tr>
+                                    <td><strong>N° Factura:</strong></td>
+                                    <td style="text-align:right; font-weight:bold; color:#1e40af;">${numeroFactura}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fecha de Emisión:</strong></td>
+                                    <td style="text-align:right;">${new Date().toLocaleDateString('es-NI', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>RUC Emisor:</strong></td>
+                                    <td style="text-align:right;">0012705950036G</td>
+                                </tr>
+                            </table>
                         </div>
                         
-                        <p><strong>📎 Factura Adjunta:</strong></p>
-                        <p>Hemos adjuntado tu factura en formato PDF a este correo. Puedes descargarla y guardarla para tus registros.</p>
+                        ${itemsHtml}
                         
-                        <p>Si tienes alguna pregunta sobre tu compra, no dudes en contactarnos.</p>
-                        
-                        <div class="footer">
-                            <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
-                            <p>&copy; ${new Date().getFullYear()} COMPUNIC - Sistema de Gestión</p>
-                            <p>Managua, Nicaragua | Tel: (505) 8289-0773</p>
+                        <div class="total-box">
+                            <span style="font-size: 14px; color: #64748b;">Monto Total (IVA Incluido):</span><br>
+                            <span class="total">C$ ${parseFloat(total).toFixed(2)}</span>
                         </div>
+                        
+                        <div style="background: #f8fafc; border-left: 3px solid #64748b; padding: 10px 14px; font-size: 11px; color: #64748b; margin-top: 20px;">
+                            <strong>Garantía:</strong> Todos los productos cuentan con respaldo y soporte técnico de COMPUNIC según las condiciones de fábrica. Guarde este correo como comprobante digital.
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <p style="margin: 0 0 5px;"><strong>COMPUNIC</strong> | Colonia Maestro Gabriel, Managua, Nicaragua</p>
+                        <p style="margin: 0;">Tel: (505) 8568-0614 | Email: compunicventas@gmail.com</p>
                     </div>
                 </div>
             </body>
             </html>
         `,
-        attachments: [
-            {
-                filename: `Factura_${numeroFactura}.pdf`,
-                content: pdfBuffer,
-                contentType: 'application/pdf'
-            }
-        ]
+        attachments
     };
 
     try {
         const info = await transporter.sendMail(mailOptions);
-        console.log('✅ Factura enviada por email:', info.messageId);
+        console.log('✅ Factura enviada por email a:', email, 'ID:', info.messageId);
         return { success: true, messageId: info.messageId };
     } catch (error) {
         console.error('❌ Error enviando factura por email:', error);
-        throw new Error('No se pudo enviar la factura por email');
+        throw new Error('No se pudo enviar la factura por email: ' + error.message);
+    }
+}
+
+/**
+ * Enviar proforma / cotización comercial por correo electrónico (REQ-FR-19, UR-08)
+ */
+async function sendCotizacionEmail(email, nombreCliente, numeroCotizacion, fechaVencimiento, total, items = [], notas = '') {
+    const itemsHtml = items.map(it => `
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 8px; font-weight: bold;">${it.CANTIDAD || it.cantidad || 1}</td>
+            <td style="padding: 8px;">
+                ${it.NOMBRE_PRODUCTO || it.nombre || 'Producto'}
+                ${it.MODELO ? `<br><span style="font-size: 11px; color: #64748b;">Mod: ${it.MODELO}</span>` : ''}
+            </td>
+            <td style="padding: 8px; text-align: right;">C$ ${parseFloat(it.PRECIO_UNITARIO || it.precio_unitario || 0).toFixed(2)}</td>
+            <td style="padding: 8px; text-align: right; font-weight: bold;">C$ ${parseFloat(it.SUBTOTAL || it.subtotal || 0).toFixed(2)}</td>
+        </tr>
+    `).join('');
+
+    const subtotal = total / 1.15;
+    const iva = total - subtotal;
+
+    const mailOptions = {
+        from: `"COMPUNIC - Cotizaciones" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: `📋 Proforma Comercial ${numeroCotizacion} - COMPUNIC`,
+        html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #1e293b; margin:0; padding:0; background: #f8fafc; }
+                    .container { max-width: 620px; margin: 20px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+                    .header { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; padding: 30px; text-align: center; }
+                    .content { padding: 30px; }
+                    .info-box { background: #f8fafc; padding: 18px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0; }
+                    .total-box { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 15px; margin: 15px 0; }
+                    .footer { text-align: center; color: #94a3b8; font-size: 12px; padding: 20px; background: #f1f5f9; border-top: 1px solid #e2e8f0; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1 style="margin: 0; font-size: 24px;">📋 Proforma Comercial</h1>
+                        <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;">COMPUNIC - Soluciones Informáticas</p>
+                    </div>
+                    <div class="content">
+                        <p>Estimado(a) <strong>${nombreCliente}</strong>,</p>
+                        <p>Agradecemos su interés en nuestros productos. A continuación le presentamos la cotización solicitada:</p>
+                        
+                        <div class="info-box">
+                            <table style="width:100%; font-size: 14px;">
+                                <tr>
+                                    <td><strong>N° Cotización:</strong></td>
+                                    <td style="text-align:right; font-weight:bold; color:#0284c7;">${numeroCotizacion}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fecha de Emisión:</strong></td>
+                                    <td style="text-align:right;">${new Date().toLocaleDateString('es-NI')}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Válida hasta:</strong></td>
+                                    <td style="text-align:right; font-weight: bold; color: #e11d48;">${new Date(fechaVencimiento).toLocaleDateString('es-NI')}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 13px;">
+                            <thead>
+                                <tr style="background: #f1f5f9; text-align: left;">
+                                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1;">Cant</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1;">Descripción</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1; text-align: right;">Unitario</th>
+                                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1; text-align: right;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml}
+                            </tbody>
+                        </table>
+                        
+                        <div class="total-box">
+                            <table style="width: 100%; font-size: 14px;">
+                                <tr>
+                                    <td>Subtotal:</td>
+                                    <td style="text-align: right; font-weight: 500;">C$ ${subtotal.toFixed(2)}</td>
+                                </tr>
+                                <tr>
+                                    <td>IVA (15%):</td>
+                                    <td style="text-align: right; font-weight: 500;">C$ ${iva.toFixed(2)}</td>
+                                </tr>
+                                <tr style="border-top: 1px solid #bae6fd; font-size: 18px; font-weight: bold; color: #0369a1;">
+                                    <td style="padding-top: 8px;">TOTAL:</td>
+                                    <td style="padding-top: 8px; text-align: right;">C$ ${parseFloat(total).toFixed(2)}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        ${notas ? `<p style="font-size: 12px; color: #475569; background: #f8fafc; padding: 10px; border-radius: 6px;"><strong>Notas:</strong> ${notas}</p>` : ''}
+
+                        <p style="font-size: 12px; color: #64748b;">
+                            * Esta cotización no reserva inventario. Los precios y existencias están sujetos a cambio tras el vencimiento de la proforma.
+                        </p>
+                    </div>
+                    <div class="footer">
+                        <p style="margin: 0 0 5px;"><strong>COMPUNIC</strong> | Colonia Maestro Gabriel, Managua, Nicaragua</p>
+                        <p style="margin: 0;">Tel: (505) 8568-0614 | Email: compunicventas@gmail.com</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('✅ Proforma enviada por email a:', email, 'ID:', info.messageId);
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error('❌ Error enviando cotización por email:', error);
+        throw new Error('No se pudo enviar la cotización por email: ' + error.message);
     }
 }
 
@@ -594,6 +759,7 @@ module.exports = {
     verifyEmailService,
     sendAccountLockoutEmail,
     sendInvoiceEmail,
+    sendCotizacionEmail,
     sendNewEmployeePasswordEmail,
     sendPedidoPendienteEmail,
     sendPagoConfirmadoEmail,

@@ -98,14 +98,83 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             document.querySelector('.seccion-final').after(politicasDiv);
 
-            // 6. Configurar botón de descarga PDF
+            // 6. Configurar botón de descarga PDF y Envío por Correo
             configurarBotonPDF(venta.FACTURA);
+            configurarBotonEmail(idVenta, venta.FACTURA, venta.EMAIL_CLIENTE, venta.NOMBRE_CLIENTE);
         })
         .catch(err => {
             console.error(err);
-            alert('Error al cargar los datos de la factura.');
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Error al cargar los datos de la factura: ' + err.message });
+            } else {
+                alert('Error al cargar los datos de la factura.');
+            }
         });
 });
+
+// Función para configurar el botón de envío por Correo Electrónico (REQ-FR-51)
+function configurarBotonEmail(idVenta, numeroFactura, emailCliente, nombreCliente) {
+    const btnEmail = document.getElementById('btn-enviar-email');
+    if (!btnEmail) return;
+
+    btnEmail.addEventListener('click', async () => {
+        const { value: emailDestino } = await Swal.fire({
+            title: '📧 Enviar Factura por Correo',
+            text: `Ingrese el correo electrónico al cual enviar la factura ${numeroFactura}:`,
+            input: 'email',
+            inputValue: emailCliente || '',
+            inputPlaceholder: 'correo@ejemplo.com',
+            showCancelButton: true,
+            confirmButtonText: '🚀 Enviar Ahora',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#059669',
+            inputValidator: (value) => {
+                if (!value || !value.includes('@')) {
+                    return 'Por favor ingrese un correo electrónico válido.';
+                }
+            }
+        });
+
+        if (emailDestino) {
+            Swal.fire({
+                title: 'Enviando Factura...',
+                text: 'Por favor espere mientras procesamos el envío.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                const response = await fetch(`http://localhost:3001/api/ventas/${idVenta}/enviar-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: emailDestino })
+                });
+
+                const resData = await response.json();
+
+                if (!response.ok || !resData.success) {
+                    throw new Error(resData.message || 'No se pudo enviar el correo.');
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Factura Enviada!',
+                    text: `La factura se envió exitosamente a ${emailDestino}.`,
+                    confirmButtonColor: '#2563eb'
+                });
+            } catch (err) {
+                console.error('Error enviando factura:', err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al enviar',
+                    text: err.message || 'Ocurrió un error inesperado al enviar el correo.'
+                });
+            }
+        }
+    });
+}
 
 // Función para configurar el botón de descarga PDF
 function configurarBotonPDF(numeroFactura) {
@@ -152,7 +221,11 @@ function configurarBotonPDF(numeroFactura) {
                 })
                 .catch(err => {
                     console.error('Error al generar PDF:', err);
-                    alert('Error al generar el PDF. Por favor, intenta nuevamente.');
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'error', title: 'Error PDF', text: 'Error al generar el PDF. Por favor, intenta nuevamente.' });
+                    } else {
+                        alert('Error al generar el PDF. Por favor, intenta nuevamente.');
+                    }
                     btnDescargar.textContent = '📥 Descargar PDF';
                     btnDescargar.disabled = false;
                 });

@@ -10,9 +10,11 @@ router.get('/', serviciosController.getAll);
 router.get('/tipos', serviciosController.getTipos);
 router.get('/estados', serviciosController.getEstados);
 router.get('/:id', serviciosController.getById);
-router.post('/', serviciosController.create);
-router.put('/:id', serviciosController.update);
+router.post('/', serviciosController.upload.single('evidencia'), serviciosController.create);
+router.put('/:id', serviciosController.upload.single('evidencia'), serviciosController.update);
 router.put('/:id/estado', serviciosController.updateEstado);
+router.post('/:id/evidencia', serviciosController.upload.single('evidencia'), serviciosController.subirEvidencia);
+router.post('/:id/calificacion', serviciosController.calificarServicio);
 router.delete('/:id', serviciosController.delete);
 
 module.exports = router;

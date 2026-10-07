@@ -287,6 +287,9 @@ function renderProductCards(paginatedData) {
                     <button class="btn-card-detail" style="background: #9b59b6; border-color: #9b59b6;" onclick="event.stopPropagation(); abrirModalSeries(window._allProductos[${gIndex}])">
                         <i class="fas fa-barcode"></i> Series
                     </button>
+                    <button class="btn-card-detail" style="background: #e74c3c; border-color: #e74c3c;" onclick="event.stopPropagation(); abrirModalMerma(window._allProductos[${gIndex}].id_producto || window._allProductos[${gIndex}].ID_PRODUCTO)">
+                        <i class="fas fa-exclamation-triangle"></i> Merma
+                    </button>
                     <button class="btn-card-detail" onclick="event.stopPropagation(); mostrarDetalleProducto(window._allProductos[${gIndex}])">
                         <i class="fas fa-eye"></i> Detalle
                     </button>
@@ -883,3 +886,224 @@ function eliminarSerie(id_serie) {
     });
 }
 window.eliminarSerie = eliminarSerie;
+
+// ========================================================================================================
+// LÓGICA DE REGISTRO DE MERMAS Y PÉRDIDAS (REQ-FR-05)
+// ========================================================================================================
+
+window.abrirModalMerma = function(idProductoSeleccionado) {
+    const modal = document.getElementById('modalMermaForm');
+    const select = document.getElementById('merma_producto_select');
+    if (!modal || !select) return;
+
+    // Poblar select con productos disponibles
+    select.innerHTML = '<option value="" disabled selected>Seleccione un producto...</option>';
+    const productos = window._allProductos || [];
+    productos.forEach(p => {
+        const id = p.id_producto || p.ID_PRODUCTO;
+        const nombre = p.nombre || p.NOMBRE || p.NOMBRE_PRODUCTO;
+        const stock = Number(p.stock ?? p.stock_actual_calculado ?? p.STOCK ?? 0);
+        select.innerHTML += `<option value="${id}" data-stock="${stock}" data-precio="${p.precio_compra || p.PRECIO_COMPRA || 0}">${nombre} (Stock: ${stock})</option>`;
+    });
+
+    if (idProductoSeleccionado) {
+        select.value = idProductoSeleccionado;
+    }
+
+    document.getElementById('merma_cantidad').value = 1;
+    document.getElementById('merma_motivo').value = 'Dañado';
+    document.getElementById('merma_justificacion').value = '';
+    
+    alCambiarProductoMerma();
+    modal.style.display = 'flex';
+};
+
+window.cerrarModalMerma = function() {
+    const modal = document.getElementById('modalMermaForm');
+    if (modal) modal.style.display = 'none';
+};
+
+window.alCambiarProductoMerma = function() {
+    const select = document.getElementById('merma_producto_select');
+    const stockInfo = document.getElementById('merma_stock_info');
+    const seriesContainer = document.getElementById('merma_series_container');
+    const seriesList = document.getElementById('merma_series_list');
+    
+    if (!select.value) {
+        if (stockInfo) stockInfo.style.display = 'none';
+        if (seriesContainer) seriesContainer.style.display = 'none';
+        return;
+    }
+
+    const selectedOption = select.options[select.selectedIndex];
+    const stock = parseInt(selectedOption.getAttribute('data-stock') || '0', 10);
+    const precio = parseFloat(selectedOption.getAttribute('data-precio') || '0');
+
+    document.getElementById('merma_stock_disponible').textContent = stock;
+    document.getElementById('merma_costo_unitario').textContent = 'C$' + precio.toFixed(2);
+    if (stockInfo) stockInfo.style.display = 'block';
+
+    const inputCant = document.getElementById('merma_cantidad');
+    inputCant.max = Math.max(stock, 1);
+    if (parseInt(inputCant.value) > stock && stock > 0) {
+        inputCant.value = stock;
+    }
+
+    calcularCostoTotalMerma();
+
+    // Consultar si el producto tiene series activas
+    fetch(`${API_BASE}/series/${select.value}`)
+        .then(res => res.json())
+        .then(series => {
+            const seriesEnStock = (series || []).filter(s => s.ESTADO === 'en_stock');
+            if (seriesEnStock.length > 0) {
+                seriesContainer.style.display = 'block';
+                seriesList.innerHTML = seriesEnStock.map(s => `
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9em; cursor: pointer;">
+                        <input type="checkbox" name="merma_serie_cb" value="${s.NUMERO_SERIE}" onchange="actualizarSeriesMermaSeleccionadas()">
+                        <span><strong>${s.NUMERO_SERIE}</strong> (${s.CONDICION || 'Nuevo'})</span>
+                    </label>
+                `).join('');
+                actualizarSeriesMermaSeleccionadas();
+            } else {
+                seriesContainer.style.display = 'none';
+                seriesList.innerHTML = '';
+            }
+        })
+        .catch(() => {
+            seriesContainer.style.display = 'none';
+        });
+};
+
+window.calcularCostoTotalMerma = function() {
+    const select = document.getElementById('merma_producto_select');
+    const cantidad = parseInt(document.getElementById('merma_cantidad').value || '0', 10);
+    if (!select.value) {
+        document.getElementById('merma_costo_total').textContent = 'C$0.00';
+        return;
+    }
+
+    const selectedOption = select.options[select.selectedIndex];
+    const precio = parseFloat(selectedOption.getAttribute('data-precio') || '0');
+    const total = precio * cantidad;
+    document.getElementById('merma_costo_total').textContent = 'C$' + total.toFixed(2);
+};
+
+window.actualizarSeriesMermaSeleccionadas = function() {
+    const checked = document.querySelectorAll('input[name="merma_serie_cb"]:checked');
+    const countEl = document.getElementById('merma_series_count');
+    if (countEl) countEl.textContent = checked.length;
+    if (checked.length > 0) {
+        document.getElementById('merma_cantidad').value = checked.length;
+        calcularCostoTotalMerma();
+    }
+};
+
+window.guardarMerma = async function(event) {
+    if (event) event.preventDefault();
+
+    const idProducto = document.getElementById('merma_producto_select').value;
+    const cantidad = parseInt(document.getElementById('merma_cantidad').value, 10);
+    const motivo = document.getElementById('merma_motivo').value;
+    const justificacion = document.getElementById('merma_justificacion').value.trim();
+
+    if (!idProducto) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'warning', title: 'Atención', text: 'Seleccione un producto.' });
+        } else {
+            alert('Seleccione un producto.');
+        }
+        return;
+    }
+
+    if (!cantidad || cantidad <= 0) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'warning', title: 'Cantidad Inválida', text: 'La cantidad a descontar debe ser mayor a 0.' });
+        } else {
+            alert('La cantidad a descontar debe ser mayor a 0.');
+        }
+        return;
+    }
+
+    if (!justificacion) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'warning', title: 'Campo Obligatorio', text: 'La justificación es obligatoria para registrar una merma.' });
+        } else {
+            alert('La justificación es obligatoria.');
+        }
+        document.getElementById('merma_justificacion').focus();
+        return;
+    }
+
+    // Obtener series seleccionadas si aplica
+    const seriesChecked = Array.from(document.querySelectorAll('input[name="merma_serie_cb"]:checked')).map(cb => cb.value);
+
+    let idEmpleado = 11;
+    let username = 'admin';
+    try {
+        if (typeof Auth !== 'undefined' && typeof Auth.getEmpleadoId === 'function') {
+            idEmpleado = Auth.getEmpleadoId() || 11;
+            username = Auth.getUser() || 'admin';
+        } else {
+            const sess = JSON.parse(sessionStorage.getItem('compunic_session') || '{}');
+            idEmpleado = sess.id_empleado || 11;
+            username = sess.user || 'admin';
+        }
+    } catch (e) {
+        idEmpleado = 11;
+    }
+
+    const payload = {
+        id_producto: parseInt(idProducto, 10),
+        cantidad,
+        motivo,
+        justificacion,
+        series: seriesChecked,
+        id_empleado: idEmpleado
+    };
+
+    try {
+        const res = await fetch(`${API_BASE}/mermas`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-user-id': String(idEmpleado),
+                'x-user-username': username
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || 'Error al registrar la merma');
+        }
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Merma Registrada!',
+                text: 'La pérdida se registró exitosamente y el stock ha sido descontado.',
+                timer: 2500,
+                showConfirmButton: true,
+                confirmButtonColor: '#145D90'
+            });
+        } else {
+            alert('✅ ' + data.message);
+        }
+
+        cerrarModalMerma();
+        cargarProductos();
+    } catch (err) {
+        console.error('Error al registrar merma:', err);
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al procesar',
+                text: err.message,
+                confirmButtonColor: '#d33'
+            });
+        } else {
+            alert('❌ ' + err.message);
+        }
+    }
+};

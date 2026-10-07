@@ -14,6 +14,14 @@ router.get('/administradores/buscar/:termino', empleadosController.buscarAdminis
 router.get('/temporales', empleadosController.obtenerTemporales);
 router.get('/temporales/buscar/:termino', empleadosController.buscarTemporales);
 
+// Rutas para Cajeros
+router.get('/cajeros', empleadosController.obtenerCajeros);
+router.get('/cajeros/buscar/:termino', empleadosController.buscarCajeros);
+
+// Rutas para Técnicos
+router.get('/tecnicos', empleadosController.obtenerTecnicos);
+router.get('/tecnicos/buscar/:termino', empleadosController.buscarTecnicos);
+
 // Rutas Generales de CRUD (Sirven para todos, se diferencian por el 'rol' que venga en el body)
 router.get('/', empleadosController.obtenerTodos);
 router.get('/buscar/:termino', empleadosController.buscarTodos);

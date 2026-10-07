@@ -26,9 +26,9 @@ const AuthModel = {
                 e.EMAIL,
                 e.AREA
             FROM EMPLEADOS e
-            WHERE e.USERNAME = ? 
+            WHERE LOWER(e.USERNAME) = LOWER(?) 
               AND e.ESTADO = 1
-              AND e.ROL IN ('ADMIN', 'VENDEDOR')
+              AND e.ROL IN ('ADMIN', 'VENDEDOR', 'CAJERO', 'TECNICO')
         `;
 
         try {
@@ -257,7 +257,7 @@ const AuthModel = {
             await db.query(markTokenUsedQuery, [tokenData.id_token]);
 
             console.log(`✅ Contraseña restablecida para usuario: ${tokenData.username}`);
-            
+
             return tokenData;
         } catch (error) {
             console.error('❌ Error restableciendo contraseña:', error);
@@ -280,7 +280,7 @@ const AuthModel = {
                 WHERE EMAIL = ?
             `;
             const [rows] = await db.query(query, [email]);
-            
+
             if (rows.length === 0) {
                 console.log(`⚠️ No se encontró empleado con email: ${email}`);
                 return null;

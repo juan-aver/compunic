@@ -3,8 +3,8 @@
 /* ========================================= */
 
 /* Importar sistema de diseño */
-@import url('./variables.css');
-@import url('./components.css');
+@import url('../variables.css');
+@import url('../components.css');
 
 /* ========================================= *//* =========================================
    ESTILO GLASS MEJORADO (más legible)
