@@ -85,6 +85,7 @@
       const subEmpleados = document.getElementById('nav-sub-empleados');
       const subClientes = document.getElementById('nav-sub-clientes');
       const subPagosWeb = document.getElementById('nav-sub-pagos-web');
+      const subCaja = document.getElementById('nav-sub-caja');
       const subAuditoria = document.getElementById('nav-sub-auditoria');
 
       if (role === 'admin') {
@@ -93,6 +94,7 @@
         if (navInventario) navInventario.style.display = 'none';
         if (navCompras) navCompras.style.display = 'none';
         if (navAdmin) {
+          if (subCaja) subCaja.style.display = 'none';
           if (subEmpleados) subEmpleados.style.display = 'none';
           if (subPagosWeb) subPagosWeb.style.display = 'none';
           if (subAuditoria) subAuditoria.style.display = 'none';
@@ -188,6 +190,7 @@
   <script src="logic/empleados_temporales.js"></script>
   <script src="logic/pagos_web.js"></script>
   <script src="logic/auditorias.js"></script>
+  <script src="logic/caja.js"></script>
   <script src="js/dashboard_stats.js" defer></script>
   <!-- <script src="js/dashboard_charts.js" defer></script> -->
   <script src="js/vendedor_auto.js" defer></script>
@@ -249,6 +252,7 @@
         <li class="nav-item-dropdown" id="nav-administracion">
           <a href="#" class="nav-link">Administración</a>
           <ul class="dropdown-menu glass">
+            <li id="nav-sub-caja"><a href="#" onclick="cargarVista('gestion-caja')" style="color:#059669; font-weight:700;"><i class="fas fa-cash-register"></i> Control de Caja y Arqueo</a></li>
             <li id="nav-sub-reportes"><a href="#" onclick="cargarVista('gestion-reportes')" style="color:#10b981; font-weight:700;"><i class="fas fa-chart-line"></i> Reportes y Estadísticas</a></li>
             <li id="nav-sub-empleados"><a href="#" onclick="cargarVista('gestion-empleados')">Personal / Empleados</a></li>
             <li id="nav-sub-clientes"><a href="#" onclick="cargarVista('gestion-clientes')">Clientes</a></li>
@@ -363,6 +367,12 @@
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-clientes')">
             <span class="mobile-menu-icon">👥</span>
             Clientes
+          </a>
+        </li>
+        <li class="mobile-menu-item" data-vista="gestion-caja">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-caja')">
+            <span class="mobile-menu-icon">💵</span>
+            Control de Caja
           </a>
         </li>
         <li class="mobile-menu-item" data-vista="gestion-pagos-web">
@@ -549,12 +559,21 @@
           </div>
 
           <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-            <div class="stat-card stat-card-green stagger-item" onclick="cargarVista('gestion-ventas')" style="cursor: pointer;">
+            <div class="stat-card stat-card-green stagger-item" onclick="cargarVista('gestion-caja')" style="cursor: pointer;">
               <div class="stat-icon"><i class="fas fa-cash-register" style="font-size: 36px;"></i></div>
               <div class="stat-content">
-                <p class="stat-label">Caja & Cobro</p>
+                <p class="stat-label">Caja & Turnos</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Arqueo y Cierre</h3>
+                <p class="stat-detail">Apertura, movimientos y cuadre</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-blue stagger-item" onclick="cargarVista('gestion-ventas')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-barcode" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Punto de Venta</p>
                 <h3 class="stat-value" style="font-size: 1.3rem;">Cobrar / POS</h3>
-                <p class="stat-detail">Procesar pagos y facturación</p>
+                <p class="stat-detail">Procesar ventas y facturación</p>
               </div>
             </div>
 

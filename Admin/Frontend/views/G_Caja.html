@@ -1,0 +1,179 @@
+<!-- ==========================================================================
+     MÓDULO: G_Caja.html
+     PROPÓSITO: Gestión integral de Caja Chica, Turnos, Arqueo y Cierre (CU-27, CU-28, CU-29)
+     ========================================================================== -->
+<div class="caja-container">
+    
+    <!-- HEADER PRINCIPAL -->
+    <div class="caja-header">
+        <div class="caja-title">
+            <h1><i class="fas fa-cash-register"></i> Control de Caja y Arqueo Diario</h1>
+            <p class="subtitle">Gestión de turnos de cobro, movimientos de efectivo, arqueos y conciliación financiera.</p>
+        </div>
+        <div id="caja-header-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div id="caja-status-indicator" class="caja-status-pill status-cerrada">
+                <i class="fas fa-circle" style="font-size: 0.6rem;"></i>
+                <span id="caja-status-text">Caja Cerrada</span>
+            </div>
+            <button id="btn-header-accion-caja" class="btn-caja btn-caja-abrir" onclick="CajaApp.mostrarModalApertura()">
+                <i class="fas fa-key"></i> Abrir Caja
+            </button>
+        </div>
+    </div>
+
+    <!-- SECCIÓN SI LA CAJA ESTÁ CERRADA -->
+    <div id="caja-cerrada-view" class="caja-cerrada-banner" style="display: none;">
+        <i class="fas fa-lock"></i>
+        <h2>No hay un turno de caja activo</h2>
+        <p>Para comenzar a registrar cobros en el punto de venta, compras menores o ingresos directos, debes declarar el fondo de cambio inicial y abrir el turno de caja.</p>
+        <button class="btn-caja btn-caja-abrir" style="font-size: 1.1rem; padding: 12px 28px;" onclick="CajaApp.mostrarModalApertura()">
+            <i class="fas fa-cash-register"></i> Iniciar Turno / Abrir Caja
+        </button>
+    </div>
+
+    <!-- SECCIÓN SI LA CAJA ESTÁ ABIERTA -->
+    <div id="caja-abierta-view" style="display: none;">
+        
+        <!-- KPI CARDS CON BALANCE EN TIEMPO REAL -->
+        <div class="caja-kpi-grid">
+            <div class="caja-kpi-card">
+                <div class="caja-kpi-icon kpi-icon-initial"><i class="fas fa-coins"></i></div>
+                <div class="caja-kpi-info">
+                    <p>Fondo Inicial</p>
+                    <h3 id="kpi-monto-inicial">C$ 0.00</h3>
+                </div>
+            </div>
+
+            <div class="caja-kpi-card">
+                <div class="caja-kpi-icon kpi-icon-ventas"><i class="fas fa-shopping-bag"></i></div>
+                <div class="caja-kpi-info">
+                    <p>Ventas en Efectivo</p>
+                    <h3 id="kpi-ventas-efectivo">C$ 0.00</h3>
+                </div>
+            </div>
+
+            <div class="caja-kpi-card">
+                <div class="caja-kpi-icon kpi-icon-ingresos"><i class="fas fa-arrow-down"></i></div>
+                <div class="caja-kpi-info">
+                    <p>Otros Ingresos (+)</p>
+                    <h3 id="kpi-otros-ingresos">C$ 0.00</h3>
+                </div>
+            </div>
+
+            <div class="caja-kpi-card">
+                <div class="caja-kpi-icon kpi-icon-egresos"><i class="fas fa-arrow-up"></i></div>
+                <div class="caja-kpi-info">
+                    <p>Salidas / Gastos (-)</p>
+                    <h3 id="kpi-salidas-gastos">C$ 0.00</h3>
+                </div>
+            </div>
+
+            <div class="caja-kpi-card" style="border: 2px solid #10b981;">
+                <div class="caja-kpi-icon kpi-icon-total"><i class="fas fa-vault"></i></div>
+                <div class="caja-kpi-info">
+                    <p style="color: #059669; font-weight: 800;">Efectivo en Gaveta</p>
+                    <h3 id="kpi-saldo-teorico" style="color: #059669;">C$ 0.00</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- BARRA DE ACCIONES OPERATIVAS -->
+        <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+            <button class="btn-caja btn-caja-ingreso" onclick="CajaApp.mostrarModalMovimiento('INGRESO')">
+                <i class="fas fa-plus-circle"></i> Entrada de Efectivo
+            </button>
+            <button class="btn-caja btn-caja-egreso" onclick="CajaApp.mostrarModalMovimiento('EGRESO')">
+                <i class="fas fa-minus-circle"></i> Salida / Retiro de Efectivo
+            </button>
+            <button class="btn-caja btn-caja-arqueo" onclick="CajaApp.mostrarModalArqueo()">
+                <i class="fas fa-calculator"></i> Arqueo y Cerrar Caja
+            </button>
+            <button class="btn-caja btn-caja-secundario" onclick="CajaApp.cargarDatosCaja()">
+                <i class="fas fa-sync-alt"></i> Actualizar Balance
+            </button>
+        </div>
+
+        <!-- PESTAÑAS DE CONTENIDO -->
+        <div class="caja-tabs-nav">
+            <button class="caja-tab-btn active" onclick="CajaApp.cambiarPestana('movimientos', this)">
+                <i class="fas fa-exchange-alt"></i> Movimientos Directos (<span id="count-movimientos">0</span>)
+            </button>
+            <button class="caja-tab-btn" onclick="CajaApp.cambiarPestana('ventas', this)">
+                <i class="fas fa-receipt"></i> Ventas del Turno (<span id="count-ventas">0</span>)
+            </button>
+            <button class="caja-tab-btn" onclick="CajaApp.cambiarPestana('historial', this)">
+                <i class="fas fa-history"></i> Historial de Turnos de Caja
+            </button>
+        </div>
+
+        <!-- TABLA: MOVIMIENTOS DIRECTOS -->
+        <div id="tab-movimientos-content" class="caja-table-card">
+            <div class="caja-table-wrapper">
+                <table class="caja-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha y Hora</th>
+                            <th>Tipo</th>
+                            <th>Concepto / Justificación</th>
+                            <th>Monto (C$)</th>
+                            <th>Registrado Por</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-movimientos-body">
+                        <tr><td colspan="5" style="text-align: center; color: #94a3b8;">Cargando movimientos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TABLA: VENTAS DEL TURNO -->
+        <div id="tab-ventas-content" class="caja-table-card" style="display: none;">
+            <div class="caja-table-wrapper">
+                <table class="caja-table">
+                    <thead>
+                        <tr>
+                            <th>Nº Factura</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Método de Pago</th>
+                            <th>Vendedor</th>
+                            <th>Total (C$)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-ventas-body">
+                        <tr><td colspan="6" style="text-align: center; color: #94a3b8;">Cargando ventas...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TABLA: HISTORIAL DE TURNOS (AUDITORÍA) -->
+    <div id="tab-historial-content" class="caja-table-card" style="display: none; margin-top: 20px;">
+        <h3 style="margin: 0 0 16px 0; font-size: 1.2rem; color: #0f172a;"><i class="fas fa-clipboard-check"></i> Historial de Turnos de Caja (Auditoría Administrativa)</h3>
+        <div class="caja-table-wrapper">
+            <table class="caja-table">
+                <thead>
+                    <tr>
+                        <th>Nº Turno</th>
+                        <th>Cajero</th>
+                        <th>Apertura</th>
+                        <th>Cierre</th>
+                        <th>Fondo Inicial</th>
+                        <th>Saldo Esperado</th>
+                        <th>Efectivo Real</th>
+                        <th>Diferencia</th>
+                        <th>Estado</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-historial-body">
+                    <tr><td colspan="10" style="text-align: center; color: #94a3b8;">Cargando historial...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+

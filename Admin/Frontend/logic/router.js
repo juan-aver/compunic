@@ -74,6 +74,7 @@ function obtenerVistasPermitidasPorRol(role) {
             'gestion-devoluciones'
         ],
         'cajero': [
+            'gestion-caja',
             'gestion-ventas',
             'gestion-lista-ventas',
             'gestion-devoluciones',
@@ -129,6 +130,7 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
         'gestion-servicios': { html: 'views/G_Servicios.html', css: 'css/views/G_Servicios.css' },
         'gestion-devoluciones': { html: 'views/G_Devoluciones.html', css: 'css/views/G_Devoluciones.css' },
         'gestion-pagos-web':     { html: 'views/G_Pagos_Web.html',  css: '' },
+        'gestion-caja':          { html: 'views/G_Caja.html',       css: 'css/views/G_Caja.css' },
         'gestion-auditoria':     { html: 'views/G_Auditorias.html', css: 'css/views/G_Auditorias.css' },
         'gestion-reportes':      { html: 'views/G_Reportes.html',   css: 'css/views/G_Reportes.css' }
     };
@@ -392,6 +394,10 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         if (typeof cargarAuditorias === 'function') cargarAuditorias();
                         if (typeof filtrarTabla === 'function') {
                             filtrarTabla('buscar_auditoria', 'tablaAuditorias', [2, 3, 4, 5]);
+                        }
+                    } else if (nombreVista === 'gestion-caja') {
+                        if (typeof window.inicializarModuloCaja === 'function') {
+                            window.inicializarModuloCaja();
                         }
                     }
                 });

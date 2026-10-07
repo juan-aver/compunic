@@ -4,7 +4,6 @@ require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 
 // --- IMPORTACIÓN DE RUTAS ---
 const authRoutes = require('./routes/auth.routes.js');
@@ -36,6 +35,7 @@ const mermasRoutes = require('./routes/mermas.routes.js');
 const cotizacionesRoutes = require('./routes/cotizaciones.routes.js');
 const devolucionesProveedoresRoutes = require('./routes/devoluciones_proveedores.routes.js');
 const reportesRoutes = require('./routes/reportes.routes.js');
+const cajaRoutes = require('./routes/caja.routes.js');
 
 
 const app = express();
@@ -90,6 +90,7 @@ app.use('/api/reportes/auditoria', auditoriaRoutes);
 app.use('/api/reportes', reportesRoutes);
 app.use('/api/series', seriesRoutes);
 app.use('/api/mermas', mermasRoutes);
+app.use('/api/caja', cajaRoutes);
 
 
 

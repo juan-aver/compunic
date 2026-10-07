@@ -20,3 +20,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Temporales y backups
+scratch/
+backup_*.sql
