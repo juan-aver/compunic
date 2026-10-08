@@ -48,7 +48,7 @@ const EmpleadosController = {
     },
     obtenerTecnicos: async (req, res) => {
         try {
-            const resultados = await Empleado.obtenerTodos('TECNICO');
+            const resultados = await Empleado.obtenerTodos(['TECNICO', 'TEMPORAL']);
             res.json(resultados);
         } catch (error) {
             res.status(500).send(error.message);
@@ -122,9 +122,8 @@ const EmpleadosController = {
                 return res.status(400).send('Rol inválido o faltante');
             }
 
-            // Los usuarios con acceso al sistema (ADMIN, VENDEDOR, CAJERO, TECNICO) inician con ESTADO=0 hasta que creen contraseña
-            // TEMPORAL inicia como ESTADO=1 (activo) porque no tiene acceso al sistema
-            const estadoInicial = (rol === 'TEMPORAL') ? 1 : 0;
+            // Los usuarios con email inician con ESTADO=0 hasta que creen contraseña desde el enlace de activación
+            const estadoInicial = email ? 0 : 1;
 
             const datos = [
                 nombre || null, 
@@ -144,8 +143,8 @@ const EmpleadosController = {
             const result = await Empleado.agregar(datos);
             const nuevoId = result.insertId;
 
-            // Si es ADMIN, VENDEDOR, CAJERO o TECNICO, enviar correo para crear contraseña
-            const rolesConAcceso = ['ADMIN', 'VENDEDOR', 'CAJERO', 'TECNICO'];
+            // Todos los roles operativos (incluyendo TEMPORAL) pueden recibir correo para crear contraseña
+            const rolesConAcceso = ['ADMIN', 'VENDEDOR', 'CAJERO', 'TECNICO', 'TEMPORAL'];
             if (rolesConAcceso.includes(rol) && email) {
                 try {
                     // Crear token de bienvenida (2 horas de expiración)

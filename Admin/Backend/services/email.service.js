@@ -446,7 +446,14 @@ async function sendCotizacionEmail(email, nombreCliente, numeroCotizacion, fecha
 async function sendNewEmployeePasswordEmail(email, token, nombreCompleto, rol) {
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${token}&welcome=1`;
 
-    const rolTexto = rol === 'ADMIN' ? 'Administrador' : 'Vendedor';
+    const rolNombres = {
+        'ADMIN': 'Administrador',
+        'VENDEDOR': 'Vendedor',
+        'CAJERO': 'Cajero',
+        'TECNICO': 'Técnico',
+        'TEMPORAL': 'Técnico Temporal'
+    };
+    const rolTexto = rolNombres[rol] || rol;
 
     const mailOptions = {
         from: `"COMPUNIC - Sistema" <${process.env.EMAIL_USER}>`,

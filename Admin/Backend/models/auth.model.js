@@ -28,7 +28,7 @@ const AuthModel = {
             FROM EMPLEADOS e
             WHERE LOWER(e.USERNAME) = LOWER(?) 
               AND e.ESTADO = 1
-              AND e.ROL IN ('ADMIN', 'VENDEDOR', 'CAJERO', 'TECNICO')
+              AND e.ROL IN ('ADMIN', 'VENDEDOR', 'CAJERO', 'TECNICO', 'TEMPORAL')
         `;
 
         try {

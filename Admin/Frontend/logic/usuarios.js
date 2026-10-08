@@ -81,6 +81,9 @@ function mostrarCamposPorRol() {
         abrirAcordeon('acordeon-acceso', 'contenido-acceso');
         abrirAcordeon('acordeon-vendedor', 'contenido-vendedor');
     } else if (rol === 'TEMPORAL') {
+        if (tituloLaboral) tituloLaboral.textContent = '🛠️ Datos del Técnico Temporal (Taller y Horario)';
+        abrirAcordeon('acordeon-acceso', 'contenido-acceso');
+        abrirAcordeon('acordeon-vendedor', 'contenido-vendedor');
         abrirAcordeon('acordeon-temporal', 'contenido-temporal');
     }
 }
@@ -285,7 +288,7 @@ function agregarEmpleado() {
     }
 
     // Validar email obligatorio para roles con acceso al sistema
-    const rolesConAcceso = ['ADMIN', 'VENDEDOR', 'CAJERO', 'TECNICO'];
+    const rolesConAcceso = ['ADMIN', 'VENDEDOR', 'CAJERO', 'TECNICO', 'TEMPORAL'];
     if (rolesConAcceso.includes(datos.rol) && !datos.email) {
         return (typeof Swal !== 'undefined')
             ? Swal.fire({ icon: 'warning', title: 'Email Requerido', text: 'El Email es obligatorio para este rol (se enviará el correo de activación de credenciales).' })

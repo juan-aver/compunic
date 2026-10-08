@@ -56,15 +56,8 @@
         userDisplay.innerHTML = `Usuario: <strong>${user}</strong><div style="margin-top: 4px;"><span class="badge-rol ${role}">${rolTexto}</span></div>`;
       }
 
-      // Bloquear acceso para temporales
-      if (role === 'temporal') {
-        alert('Acceso no autorizado para empleados temporales.');
-        Auth.logout();
-        return;
-      }
-
       // Ocultar por defecto todos los bloques de roles específicos
-      document.querySelectorAll('.admin-only, .vendedor-only, .cajero-only, .tecnico-only').forEach(el => {
+      document.querySelectorAll('.admin-only, .vendedor-only, .cajero-only, .tecnico-only, .temporal-only').forEach(el => {
         el.style.display = 'none';
       });
 
@@ -121,17 +114,47 @@
         if (navCompras) navCompras.style.display = 'none';
         if (navAdmin) navAdmin.style.display = 'none';
         if (navInventario) {
-          if (subProductos) subProductos.style.display = 'none';
+          if (subProductos) subProductos.style.display = ''; // Catálogo de Inventario visible
           if (subCategorias) subCategorias.style.display = 'none';
+          if (subHistorialStock) subHistorialStock.style.display = 'none'; // Historial de Stock oculto
         }
         if (navServicios) {
           if (subVentas) subVentas.style.display = 'none';
           if (subListaVentas) subListaVentas.style.display = 'none';
           if (subDevoluciones) subDevoluciones.style.display = 'none';
+          if (subServicios) subServicios.style.display = '';
+          if (subGarantias) subGarantias.style.display = '';
         }
+
+        // Ocultar métricas privadas del dashboard (ganancias y clientes)
+        const gridGeneral = document.getElementById('grid-kpis-principales');
+        if (gridGeneral) gridGeneral.style.display = 'none';
 
         document.querySelectorAll('.tecnico-only').forEach(el => el.style.display = '');
         const greetingName = document.getElementById('tecnico-nombre-greeting');
+        if (greetingName && user) greetingName.textContent = user.split(' ')[0] || user;
+      } else if (role === 'temporal') {
+        if (navCompras) navCompras.style.display = 'none';
+        if (navAdmin) navAdmin.style.display = 'none';
+        if (navInventario) {
+          if (subProductos) subProductos.style.display = ''; // Catálogo de Inventario visible
+          if (subCategorias) subCategorias.style.display = 'none';
+          if (subHistorialStock) subHistorialStock.style.display = 'none'; // Historial de Stock oculto
+        }
+        if (navServicios) {
+          if (subVentas) subVentas.style.display = 'none';
+          if (subListaVentas) subListaVentas.style.display = 'none';
+          if (subDevoluciones) subDevoluciones.style.display = 'none';
+          if (subServicios) subServicios.style.display = '';
+          if (subGarantias) subGarantias.style.display = '';
+        }
+
+        // Ocultar métricas privadas del dashboard (ganancias y clientes)
+        const gridGeneral = document.getElementById('grid-kpis-principales');
+        if (gridGeneral) gridGeneral.style.display = 'none';
+
+        document.querySelectorAll('.temporal-only').forEach(el => el.style.display = '');
+        const greetingName = document.getElementById('temporal-nombre-greeting');
         if (greetingName && user) greetingName.textContent = user.split(' ')[0] || user;
       }
 
@@ -157,9 +180,9 @@
       // Cargar estadísticas del dashboard
       cargarEstadisticasDashboard();
 
-      // Auto-iniciar el tutorial interactivo de AURUM si no se ha completado (solo admins)
+      // Auto-iniciar el tutorial interactivo de AURUM si no se ha completado
       const role = (Auth.getRole() || '').toLowerCase();
-      if (role === 'admin') {
+      if (['admin', 'vendedor', 'cajero', 'tecnico', 'temporal'].includes(role)) {
         setTimeout(() => {
           if (typeof AurumTutorial !== 'undefined') {
             if (sessionStorage.getItem('aurum_tutorial_start_on_load') === 'true') {
@@ -255,6 +278,7 @@
             <li id="nav-sub-caja"><a href="#" onclick="cargarVista('gestion-caja')" style="color:#059669; font-weight:700;"><i class="fas fa-cash-register"></i> Control de Caja y Arqueo</a></li>
             <li id="nav-sub-reportes"><a href="#" onclick="cargarVista('gestion-reportes')" style="color:#10b981; font-weight:700;"><i class="fas fa-chart-line"></i> Reportes y Estadísticas</a></li>
             <li id="nav-sub-empleados"><a href="#" onclick="cargarVista('gestion-empleados')">Personal / Empleados</a></li>
+            <li id="nav-sub-temporales"><a href="#" onclick="cargarVista('gestion-temporales')" style="color:#ea580c; font-weight:700;"><i class="fas fa-wrench"></i> Técnicos Temporales</a></li>
             <li id="nav-sub-clientes"><a href="#" onclick="cargarVista('gestion-clientes')">Clientes</a></li>
             <li id="nav-sub-pagos-web"><a href="#" onclick="cargarVista('gestion-pagos-web')" style="color:#f97316; font-weight:700;">💳 Pagos Tienda Web</a></li>
             <li id="nav-sub-auditoria"><a href="#" onclick="cargarVista('gestion-auditoria')" style="color:#3498db; font-weight:700;"><i class="fas fa-history"></i> Auditoría del Sistema</a></li>
@@ -363,6 +387,12 @@
             Personal / Empleados
           </a>
         </li>
+        <li class="mobile-menu-item" data-vista="gestion-temporales">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-temporales')">
+            <span class="mobile-menu-icon">🛠️</span>
+            Técnicos Temporales
+          </a>
+        </li>
         <li class="mobile-menu-item" data-vista="gestion-clientes">
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-clientes')">
             <span class="mobile-menu-icon">👥</span>
@@ -409,7 +439,7 @@
 
       <div id="content">
         <!-- Dashboard Mejorado -->
-        <div class="dashboard-grid">
+        <div class="dashboard-grid" id="grid-kpis-principales">
           <!-- Tarjeta 1: Ingresos -->
           <div class="stat-card stat-card-blue stagger-item" onclick="cargarVista('gestion-lista-ventas')" style="cursor: pointer;">
             <div class="stat-icon">
@@ -625,30 +655,78 @@
               </div>
             </div>
 
-            <div class="stat-card stat-card-yellow stagger-item" onclick="cargarVista('gestion-garantias')" style="cursor: pointer;">
+            <div class="stat-card stat-card-yellow stagger-item" onclick="abrirModalTiposGarantia()" style="cursor: pointer;">
               <div class="stat-icon"><i class="fas fa-shield-alt" style="font-size: 36px;"></i></div>
               <div class="stat-content">
-                <p class="stat-label">Garantías</p>
-                <h3 class="stat-value" style="font-size: 1.3rem;">Reclamos y Pólizas</h3>
-                <p class="stat-detail">Comprobación de garantías</p>
+                <p class="stat-label">Garantías & Coberturas</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Tipos de Garantías</h3>
+                <p class="stat-detail">Pólizas, vigencias y coberturas</p>
               </div>
             </div>
 
-            <div class="stat-card stat-card-blue stagger-item" onclick="cargarVista('historial-stock')" style="cursor: pointer;">
-              <div class="stat-icon"><i class="fas fa-microchip" style="font-size: 36px;"></i></div>
+            <div class="stat-card stat-card-blue stagger-item" onclick="cargarVista('gestion-productos')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-boxes" style="font-size: 36px;"></i></div>
               <div class="stat-content">
-                <p class="stat-label">Repuestos y Series</p>
-                <h3 class="stat-value" style="font-size: 1.3rem;">Consultar Stock</h3>
-                <p class="stat-detail">Disponibilidad de componentes</p>
+                <p class="stat-label">Catálogo de Inventario</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Consultar Catálogo</h3>
+                <p class="stat-detail">Componentes, repuestos y stock</p>
               </div>
             </div>
 
             <div class="stat-card stat-card-green stagger-item" onclick="abrirModalServiciosPendientes()" style="cursor: pointer;">
-              <div class="stat-icon"><i class="fas fa-exclamation-triangle" style="font-size: 36px;"></i></div>
+              <div class="stat-icon"><i class="fas fa-clipboard-list" style="font-size: 36px;"></i></div>
               <div class="stat-content">
-                <p class="stat-label">Prioridades</p>
-                <h3 class="stat-value" style="font-size: 1.3rem;">Urgencias</h3>
-                <p class="stat-detail">Equipos en espera y diagnóstico</p>
+                <p class="stat-label">Servicios Pendientes</p>
+                <h3 class="stat-value" id="tecnico-servicios-total" style="font-size: 1.3rem;">Tickets Taller</h3>
+                <p class="stat-detail" id="tecnico-servicios-diagnostico">Equipos en espera y diagnóstico</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN EXCLUSIVA PARA PERSONAL TEMPORAL   -->
+        <!-- ========================================== -->
+        <div class="temporal-only" style="display: none; margin-top: 1.5rem;">
+          <div class="dashboard-greeting" style="background: linear-gradient(135deg, rgba(234, 88, 12, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(234, 88, 12, 0.3); margin-bottom: 1.5rem;">
+            <h2 style="margin: 0 0 0.5rem 0; color: #ea580c;">¡Hola, <span id="temporal-nombre-greeting">Técnico</span>! 🛠️⏱️</h2>
+            <p style="margin: 0; color: var(--text-muted);">Mesa de trabajo de taller técnico: Diagnósticos, soporte técnico, garantías y reparaciones (Técnico Temporal).</p>
+          </div>
+
+          <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <div class="stat-card stat-card-red stagger-item" onclick="cargarVista('gestion-servicios')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-tools" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Taller & Reparaciones</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Tickets Asignados</h3>
+                <p class="stat-detail">Diagnósticos y foto de evidencia</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-yellow stagger-item" onclick="abrirModalTiposGarantia()" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-shield-alt" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Garantías & Coberturas</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Tipos de Garantías</h3>
+                <p class="stat-detail">Pólizas, vigencias y coberturas</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-blue stagger-item" onclick="cargarVista('gestion-productos')" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-boxes" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Catálogo de Inventario</p>
+                <h3 class="stat-value" style="font-size: 1.3rem;">Consultar Catálogo</h3>
+                <p class="stat-detail">Componentes, repuestos y stock</p>
+              </div>
+            </div>
+
+            <div class="stat-card stat-card-green stagger-item" onclick="abrirModalServiciosPendientes()" style="cursor: pointer;">
+              <div class="stat-icon"><i class="fas fa-clipboard-list" style="font-size: 36px;"></i></div>
+              <div class="stat-content">
+                <p class="stat-label">Servicios Pendientes</p>
+                <h3 class="stat-value" id="temporal-servicios-total" style="font-size: 1.3rem;">Tickets Taller</h3>
+                <p class="stat-detail" id="temporal-servicios-diagnostico">Equipos en espera y diagnóstico</p>
               </div>
             </div>
           </div>
@@ -736,6 +814,33 @@
                     <!-- Filas dinámicas -->
                 </tbody>
             </table>
+        </div>
+    </div>
+  </div>
+
+  <!-- Modal Informativo: Tipos de Garantías Compunic -->
+  <div id="tipos-garantias-modal" class="modal-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="modal-content glass" style="width: 90%; max-width: 650px; padding: 1.8rem; border-radius: 14px; position: relative; background: var(--bg-color); color: var(--text-color); max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.35); border: 1px solid var(--border-color);">
+        <button onclick="document.getElementById('tipos-garantias-modal').style.display='none'" class="btn-close" style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color);">&times;</button>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.2rem;">
+            <div style="background: rgba(234, 88, 12, 0.15); color: #ea580c; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div>
+                <h3 style="margin: 0; color: var(--text-color); font-size: 1.25rem;">Tipos de Garantías Compunic</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Pólizas oficiales, coberturas y criterios de servicio técnico</p>
+            </div>
+        </div>
+        <div id="tipos-garantias-body" style="overflow-y: auto; padding-right: 6px; max-height: calc(85vh - 160px);">
+            <!-- Renderizado dinámico por abrirModalTiposGarantia() -->
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+            <button onclick="document.getElementById('tipos-garantias-modal').style.display='none'; cargarVista('gestion-garantias');" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-list"></i> Ver Lista de Garantías
+            </button>
+            <button onclick="document.getElementById('tipos-garantias-modal').style.display='none'" style="background: #64748b; color: white; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                Cerrar
+            </button>
         </div>
     </div>
   </div>

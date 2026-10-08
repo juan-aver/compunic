@@ -231,7 +231,296 @@
         }
     ];
 
-    // Helper para esperar que cargue un elemento dinámico de la interfaz
+    // Definición de Pasos para Cajeros
+    const cajeroSteps = [
+        {
+            title: "¡Bienvenido al Control de Caja! 💵",
+            subtitle: "Gestión de Turnos y Cobros",
+            body: "<p>Hola, soy <strong>AURUM</strong>, tu asistente del sistema. Te acompañaré en este tutorial rápido para que aprendas a abrir tu turno de caja, cobrar en punto de venta, validar pagos web y realizar arqueos.</p><p>¿Iniciamos la guía?</p>",
+            target: null,
+            placement: "center"
+        },
+        {
+            title: "Tu Centro de Cobros 📊",
+            subtitle: "Accesos Rápidos del Cajero",
+            body: "<p>Este es tu panel principal como cajero. Tienes acceso inmediato a 5 operaciones clave: <strong>Caja & Turnos</strong>, <strong>Punto de Venta POS</strong>, <strong>Comprobantes Web</strong>, <strong>Facturas del Día</strong> y <strong>Devoluciones</strong>.</p>",
+            target: ".cajero-only .dashboard-grid",
+            placement: "bottom"
+        },
+        {
+            title: "Paso 1: Módulo de Caja 🧭",
+            subtitle: "Menú de Navegación",
+            body: "<p>Para gestionar aperturas de turno, fondos de cambio y arqueos de efectivo, abre el menú **Administración** en la barra superior.</p>",
+            target: "#nav-administracion",
+            placement: "bottom"
+        },
+        {
+            title: "Control de Caja y Arqueo 💵",
+            subtitle: "Submenú de Administración",
+            body: "<p>Haz clic en el sub-botón **Control de Caja y Arqueo** para entrar al módulo financiero de turnos y movimientos.</p>",
+            target: '#nav-administracion a[onclick="cargarVista(\'gestion-caja\')"]',
+            placement: "bottom"
+        },
+        {
+            title: "Apertura de Turno y Cuadre de Caja 🪙",
+            subtitle: "Arqueo Diario",
+            body: "<p>¡He abierto el módulo de <strong>Caja</strong>! Aquí debes iniciar turno declarando tu **Fondo Inicial** (fondo de cambio). Durante el día verás el balance en vivo de ventas en efectivo vs transferencias, y al finalizar podrás registrar tu **Cierre de Caja** con el conteo físico de dinero.</p>",
+            target: "#content",
+            placement: "top",
+            action: () => {
+                window.cargarVista('gestion-caja');
+            }
+        },
+        {
+            title: "Paso 2: Cobros y Facturación 🧭",
+            subtitle: "Menú de Navegación",
+            body: "<p>Cuando un cliente se acerque a pagar sus compras, dirígete al menú superior **Servicios**.</p>",
+            target: "#nav-servicios",
+            placement: "bottom"
+        },
+        {
+            title: "Punto de Venta POS 💰",
+            subtitle: "Submenú de Servicios",
+            body: "<p>Haz clic en el sub-botón **Generar Venta** para ingresar al punto de cobro y emitir facturas.</p>",
+            target: '#nav-servicios a[onclick="cargarVista(\'gestion-ventas\')"]',
+            placement: "bottom"
+        },
+        {
+            title: "Cobro y Facturación Rápida 💳",
+            subtitle: "Punto de Venta POS",
+            body: "<p>En esta pantalla agregas los artículos del cliente, seleccionas el método de pago (Efectivo o Transferencia) y confirmas el cobro. Cada venta impactará de forma inmediata en tu turno de caja activo.</p>",
+            target: "#content",
+            placement: "top",
+            action: () => {
+                window.cargarVista('gestion-ventas');
+            }
+        },
+        {
+            title: "Paso 3: Validar Pagos Tienda Web 🌐",
+            subtitle: "Submenú de Administración",
+            body: "<p>Los pedidos realizados por clientes desde la tienda en línea requieren tu verificación. Abre **Administración** y haz clic en **💳 Pagos Tienda Web**.</p>",
+            target: '#nav-administracion a[onclick="cargarVista(\'gestion-pagos-web\')"]',
+            placement: "bottom"
+        },
+        {
+            title: "Aprobación de Transferencias Online 📱",
+            subtitle: "Tienda en Línea",
+            body: "<p>En el módulo de <strong>Pagos Web</strong> puedes inspeccionar el comprobante bancario subido por el cliente, cotejar la transacción con la cuenta bancaria y aprobar o rechazar la compra.</p>",
+            target: "#content",
+            placement: "top",
+            action: () => {
+                window.cargarVista('gestion-pagos-web');
+            }
+        },
+        {
+            title: "Paso 4: Devoluciones y Reversiones 🔄",
+            subtitle: "Submenú de Servicios",
+            body: "<p>Si un cliente solicita una devolución o cambio con nota de crédito, accede a **Devoluciones** dentro del menú Servicios para procesar el reintegro.</p>",
+            target: '#nav-servicios a[onclick="cargarVista(\'gestion-devoluciones\')"]',
+            placement: "bottom"
+        },
+        {
+            title: "¡Turno Listo para Operar! 🎉",
+            subtitle: "Control Financiero Impecable",
+            body: "<p>Has completado el tutorial de Cajero. Recuerda siempre abrir tu turno con el fondo de cambio exacto y registrar los arqueos antes de salir.</p><p>¡Mucho éxito en tus cobros!</p>",
+            target: null,
+            placement: "center"
+        }
+    ];
+
+    // Definición de Pasos para Técnicos
+    const tecnicoSteps = [
+        {
+            title: "¡Bienvenido al Taller Técnico! 🛠️",
+            subtitle: "Mesa de Soporte, Diagnóstico y Reparaciones",
+            body: "<p>Hola, soy <strong>AURUM</strong>, tu asistente de Inteligencia Artificial. Te daré un recorrido guiado por tu mesa de trabajo para que aprendas a gestionar diagnósticos, tickets de reparación, garantías y evidencias fotográficas.</p><p>¿Empezamos el recorrido?</p>",
+            target: null,
+            placement: "center"
+        },
+        {
+            title: "Tu Mesa de Trabajo 📊",
+            subtitle: "Panel del Taller",
+            body: "<p>Este es tu panel especializado como técnico. Desde aquí tienes acceso directo a tus <strong>Tickets de Servicio</strong>, <strong>Garantías de Clientes</strong>, <strong>Consulta de Repuestos</strong> y atención a <strong>Urgencias</strong>.</p>",
+            target: ".tecnico-only .dashboard-grid",
+            placement: "bottom"
+        },
+        {
+            title: "Paso 1: Módulo de Servicios 🧭",
+            subtitle: "Menú de Navegación",
+            body: "<p>Tus trabajos asignados y equipos en reparación se encuentran dentro del menú desplegable **Servicios** en la barra superior.</p>",
+            target: "#nav-servicios",
+            placement: "bottom"
+        },
+        {
+            title: "Tickets de Soporte Técnico 🔧",
+            subtitle: "Submenú de Servicios",
+            body: "<p>Haz clic en el sub-botón **Servicios** para ver y gestionar la lista de equipos en taller.</p>",
+            target: '#nav-servicios a[onclick="cargarVista(\'gestion-servicios\')"]',
+            placement: "bottom"
+        },
+        {
+            title: "Gestión de Servicios y Diagnósticos 🔧",
+            subtitle: "Mesa de Reparaciones",
+            body: "<p>¡He abierto la vista de <strong>Servicios Técnicos</strong>! Aquí visualizas los equipos asignados a tu nombre. Puedes registrar nuevos equipos con **+ Nuevo Servicio**, actualizar el estado (<em>En Diagnóstico</em>, <em>En Reparación</em>, <em>En Espera de Repuesto</em>) y añadir notas técnicas.</p>",
+            target: "#content",
+            placement: "top",
+            action: () => {
+                window.cargarVista('gestion-servicios');
+            }
+        },
+        {
+            title: "Evidencia Fotográfica Obligatoria 📸",
+            subtitle: "Garantía de Calidad Compunic",
+            body: "<p>⚠️ <strong>Regla de calidad:</strong> Al finalizar un trabajo y cambiar su estado a <strong>Realizada</strong>, el sistema te solicitará obligatoriamente adjuntar la <strong>foto de evidencia</strong> (JPG o PNG) del equipo funcionando antes de que el cliente pueda retirarlo.</p>",
+            target: "#content",
+            placement: "top"
+        },
+        {
+            title: "Paso 2: Garantías de Clientes 🛡️",
+            subtitle: "Submenú de Servicios",
+            body: "<p>Para validar si un equipo con fallas califica para reparación o sustitución bajo garantía de fábrica, abre el menú **Servicios** y selecciona **Garantías**.</p>",
+            target: '#nav-servicios a[onclick="cargarVista(\'gestion-garantias\')"]',
+            placement: "bottom"
+        },
+        {
+            title: "Pólizas y Reclamos de Garantía 🛡️",
+            subtitle: "Inspección de Hardware",
+            body: "<p>En el módulo de <strong>Garantías</strong> puedes comprobar la cobertura de un producto mediante su factura o serie, y vincular la póliza al ticket de reparación para que se procese con descuento o sin costo.</p>",
+            target: "#content",
+            placement: "top",
+            action: () => {
+                window.cargarVista('gestion-garantias');
+            }
+        },
+        {
+            title: "Paso 3: Consulta de Repuestos 🧭",
+            subtitle: "Menú Inventario",
+            body: "<p>Como técnico tienes acceso a consultar el stock disponible de piezas y componentes. Abre el menú **Inventario** en la barra superior.</p>",
+            target: "#nav-inventario",
+            placement: "bottom"
+        },
+        {
+            title: "Historial y Trazabilidad de Stock 📦",
+            subtitle: "Submenú de Inventario",
+            body: "<p>Haz clic en el sub-botón **Historial de stock** para revisar la existencia y movimientos de repuestos y componentes.</p>",
+            target: '#nav-inventario a[onclick="cargarVista(\'historial-stock\')"]',
+            placement: "bottom"
+        },
+        {
+            title: "Disponibilidad de Componentes 🔍",
+            subtitle: "Control de Repuestos",
+            body: "<p>En el <strong>Historial de Stock</strong> puedes verificar existencias de pantallas, memorias, fuentes o accesorios antes de comprometerte con un plazo de entrega con el cliente.</p>",
+            target: "#content",
+            placement: "top",
+            action: () => {
+                window.cargarVista('historial-stock');
+            }
+        },
+        {
+            title: "¡Taller Operativo! 🎉",
+            subtitle: "Soporte Técnico de Primera",
+            body: "<p>Has finalizado el tutorial de Técnico. Ya cuentas con todas las herramientas para recibir equipos, registrar diagnósticos, subir evidencias y dar el mejor servicio.</p><p>¡Mucho éxito en el taller!</p>",
+            target: null,
+            placement: "center"
+        }
+    ];
+
+    // Definición de Pasos para Personal Temporal (Técnicos Temporales)
+    const temporalSteps = [
+        {
+            title: "¡Bienvenido Técnico Temporal! 🛠️⏱️",
+            subtitle: "Mesa de Soporte, Diagnóstico y Taller",
+            body: "<p>Hola, soy <strong>AURUM</strong>, tu asistente de Inteligencia Artificial. Te daré un recorrido guiado por tu mesa de trabajo de taller técnico para que aprendas a gestionar diagnósticos, tickets de reparación, garantías y evidencias fotográficas.</p><p>¿Empezamos el recorrido?</p>",
+            target: null,
+            placement: "center"
+        },
+        {
+            title: "Tu Mesa de Taller 📊",
+            subtitle: "Panel de Reparaciones",
+            body: "<p>Este es tu panel técnico de soporte. Desde aquí tienes acceso directo a tus <strong>Tickets Asignados</strong>, <strong>Garantías de Clientes</strong>, <strong>Consulta de Repuestos</strong> y <strong>Urgencias</strong>.</p>",
+            target: ".temporal-only .dashboard-grid",
+            placement: "bottom"
+        },
+        {
+            title: "Paso 1: Módulo de Servicios 🧭",
+            subtitle: "Menú de Navegación",
+            body: "<p>Tus trabajos técnicos asignados y equipos en reparación se encuentran dentro del menú desplegable **Servicios** en la barra superior.</p>",
+            target: "#nav-servicios",
+            placement: "bottom"
+        },
+        {
+            title: "Tickets de Soporte Técnico 🔧",
+            subtitle: "Submenú de Servicios",
+            body: "<p>Haz clic en el sub-botón **Servicios** para ver y gestionar la lista de equipos en taller.</p>",
+            target: '#nav-servicios a[onclick="cargarVista(\'gestion-servicios\')"]',
+            placement: "bottom"
+        },
+        {
+            title: "Gestión de Servicios y Diagnósticos 🔧",
+            subtitle: "Mesa de Reparaciones",
+            body: "<p>¡He abierto la vista de <strong>Servicios Técnicos</strong>! Aquí visualizas los equipos asignados a tu nombre. Puedes registrar nuevos equipos con **+ Nuevo Servicio**, actualizar el estado (<em>En Diagnóstico</em>, <em>En Reparación</em>, <em>En Espera de Repuesto</em>) y documentar notas técnicas.</p>",
+            target: "#content",
+            placement: "top",
+            action: () => {
+                window.cargarVista('gestion-servicios');
+            }
+        },
+        {
+            title: "Evidencia Fotográfica Obligatoria 📸",
+            subtitle: "Garantía de Calidad Compunic",
+            body: "<p>⚠️ <strong>Regla de calidad:</strong> Al finalizar un trabajo y cambiar su estado a <strong>Realizada</strong>, el sistema te solicitará obligatoriamente adjuntar la <strong>foto de evidencia</strong> (JPG o PNG) del equipo funcionando antes de que pueda ser entregado al cliente.</p>",
+            target: "#content",
+            placement: "top"
+        },
+        {
+            title: "Paso 2: Garantías y Tipos de Cobertura 🛡️",
+            subtitle: "Submenú de Servicios",
+            body: "<p>Para validar si un equipo califica para reparación o sustitución, abre el menú **Servicios** y selecciona **Garantías**.</p>",
+            target: '#nav-servicios a[onclick="cargarVista(\'gestion-garantias\')"]',
+            placement: "bottom"
+        },
+        {
+            title: "Pólizas y Tipos de Garantías 🛡️",
+            subtitle: "Inspección de Coberturas",
+            body: "<p>En Compunic manejamos 6 tipos de garantías: <strong>Estándar</strong> (12 meses), <strong>Extendida</strong>, <strong>Fabricante</strong>, <strong>Limitada</strong>, <strong>Nula</strong> y <strong>Premium</strong>. Puedes consultar el detalle de cada tipo pulsando el botón <em>'Ver Tipos de Garantías'</em>.</p>",
+            target: "#content",
+            placement: "top",
+            action: () => {
+                window.cargarVista('gestion-garantias');
+            }
+        },
+        {
+            title: "Paso 3: Catálogo de Inventario y Repuestos 📦",
+            subtitle: "Menú Inventario",
+            body: "<p>Para consultar repuestos, piezas y componentes disponibles en almacén, abre el menú **Inventario** en la barra superior.</p>",
+            target: "#nav-inventario",
+            placement: "bottom"
+        },
+        {
+            title: "Catálogo de Productos 🔍",
+            subtitle: "Submenú de Inventario",
+            body: "<p>Haz clic en **Productos** para explorar el catálogo completo de componentes y refacciones antes de asignar una reparación.</p>",
+            target: '#nav-inventario a[onclick="cargarVista(\'gestion-productos\')"]',
+            placement: "bottom"
+        },
+        {
+            title: "Disponibilidad de Piezas y Componentes 💻",
+            subtitle: "Catálogo en Tiempo Real",
+            body: "<p>En el <strong>Catálogo de Productos</strong> puedes verificar stock, precios y especificaciones de componentes para cualquier trabajo del taller.</p>",
+            target: "#content",
+            placement: "top",
+            action: () => {
+                window.cargarVista('gestion-productos');
+            }
+        },
+        {
+            title: "¡Taller Operativo! 🎉",
+            subtitle: "Soporte Técnico Especializado",
+            body: "<p>Has finalizado tu inducción de Técnico Temporal. Ya cuentas con tus credenciales activas y todas las herramientas para diagnosticar, reparar y brindar el mejor servicio técnico.</p><p>¡Mucho éxito en el taller!</p>",
+            target: null,
+            placement: "center"
+        }
+    ];
     function waitForElement(selector, callback, maxTries = 20) {
         let tries = 0;
         const interval = setInterval(() => {
@@ -488,8 +777,19 @@
 
             console.log(`✨ [AurumTutorial] Iniciando tutorial para el rol: ${role}`);
 
-            // Seleccionar pasos correspondientes
-            activeSteps = role === 'admin' ? adminSteps : vendorSteps;
+            // Seleccionar pasos correspondientes según el rol
+            const roleNorm = (role || '').toLowerCase();
+            if (roleNorm === 'admin') {
+                activeSteps = adminSteps;
+            } else if (roleNorm === 'cajero') {
+                activeSteps = cajeroSteps;
+            } else if (roleNorm === 'tecnico') {
+                activeSteps = tecnicoSteps;
+            } else if (roleNorm === 'temporal') {
+                activeSteps = temporalSteps;
+            } else {
+                activeSteps = vendorSteps;
+            }
             currentStepIndex = 0;
 
             // Inicializar elementos de UI

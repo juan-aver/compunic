@@ -2,13 +2,22 @@
 
     <!-- Sección de formulario - se puede ocultar -->
     <section class="formulario" id="seccion-formulario">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h2>Gestión de Garantías</h2>
-            <button type="button" id="btn-toggle-form-garantia"
-                style="background: #6c757d; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;"
-                onclick="toggleFormularioGarantia()">
-                <i class="fas fa-eye-slash"></i> Ocultar Formulario
-            </button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+            <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-shield-alt" style="color: #ea580c;"></i> Gestión de Garantías
+            </h2>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" id="btn-ver-tipos-garantia"
+                    style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 7px 15px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px;"
+                    onclick="if (typeof abrirModalTiposGarantia === 'function') abrirModalTiposGarantia();">
+                    <i class="fas fa-info-circle"></i> Ver Tipos de Garantías
+                </button>
+                <button type="button" id="btn-toggle-form-garantia"
+                    style="background: #6c757d; color: white; border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;"
+                    onclick="toggleFormularioGarantia()">
+                    <i class="fas fa-eye-slash"></i> Ocultar Formulario
+                </button>
+            </div>
         </div>
         <form id="formulario-garantias">
 

@@ -19,6 +19,7 @@ const dbConfig = process.env.DB_URL
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : '',
     database: process.env.DB_NAME || 'COMPUNIC_V5',
+    charset: 'utf8mb4',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0

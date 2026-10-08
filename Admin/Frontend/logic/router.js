@@ -86,6 +86,11 @@ function obtenerVistasPermitidasPorRol(role) {
             'gestion-garantias',
             'historial-stock',
             'gestion-productos'
+        ],
+        'temporal': [
+            'gestion-servicios',
+            'gestion-garantias',
+            'gestion-productos'
         ]
     };
     return matrizPermisos[rolNormalizado] || [];
@@ -132,7 +137,8 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
         'gestion-pagos-web':     { html: 'views/G_Pagos_Web.html',  css: '' },
         'gestion-caja':          { html: 'views/G_Caja.html',       css: 'css/views/G_Caja.css' },
         'gestion-auditoria':     { html: 'views/G_Auditorias.html', css: 'css/views/G_Auditorias.css' },
-        'gestion-reportes':      { html: 'views/G_Reportes.html',   css: 'css/views/G_Reportes.css' }
+        'gestion-reportes':      { html: 'views/G_Reportes.html',   css: 'css/views/G_Reportes.css' },
+        'gestion-temporales':    { html: 'views/G_Temporales.html', css: 'css/views/G_Empleados.css' }
     };
 
     const vista = rutas[nombreVista];
@@ -398,6 +404,13 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                     } else if (nombreVista === 'gestion-caja') {
                         if (typeof window.inicializarModuloCaja === 'function') {
                             window.inicializarModuloCaja();
+                        }
+                    } else if (nombreVista === 'gestion-temporales') {
+                        if (typeof window.initTemporalesEventos === 'function') {
+                            window.initTemporalesEventos();
+                        }
+                        if (typeof window.cargarETemporales === 'function') {
+                            window.cargarETemporales();
                         }
                     }
                 });
