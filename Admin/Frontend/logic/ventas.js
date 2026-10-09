@@ -203,7 +203,7 @@ function renderGridHTML(productos) {
         card.innerHTML = `
             ${badgeHtml}
             ${imagenUrl
-                ? `<img src="${imgPath}" alt="${nombre}">`
+                ? `<img src="${imgPath}" alt="" onerror="this.onerror=null; this.outerHTML='<div class=\\'pos-card-placeholder\\'><i class=\\'fas fa-box-open\\'></i></div>';">`
                 : `<div class="pos-card-placeholder"><i class="fas fa-box-open"></i></div>`
             }
             <div class="pos-card-body">
@@ -341,14 +341,14 @@ function initVentasPOSSearch() {
 function actualizarCantidadVenta(index, nuevaCantidad) {
     const cant = parseInt(nuevaCantidad);
     if (cant <= 0) {
-        alert("La cantidad debe ser mayor a 0");
+        Alerta.advertencia("La cantidad debe ser mayor a 0");
         renderizarItemsVentaNew();
         return;
     }
 
     const item = itemsVenta[index];
     if (item.stock !== undefined && cant > item.stock) {
-        alert(`❌ Error: No hay suficiente stock. Stock disponible: ${item.stock}.`);
+        Alerta.error(`No hay suficiente stock. Stock disponible: ${item.stock}.`, 'Stock Insuficiente');
         renderizarItemsVentaNew();
         return;
     }
@@ -358,20 +358,28 @@ function actualizarCantidadVenta(index, nuevaCantidad) {
     renderizarItemsVentaNew();
 }
 
-function eliminarItemVenta(index) {
-    if (confirm("¿Eliminar este producto de la venta?")) {
+async function eliminarItemVenta(index) {
+    const confirmado = await Alerta.confirmar(
+        "¿Eliminar este producto de la venta?",
+        { titulo: "Quitar Producto", confirmText: "Sí, quitar", peligroso: true }
+    );
+    if (confirmado) {
         itemsVenta.splice(index, 1);
         renderizarItemsVentaNew();
     }
 }
 
-function cancelarVenta() {
+async function cancelarVenta() {
     if (itemsVenta.length === 0) {
         document.getElementById('sale-form').reset();
         return;
     }
     
-    if (confirm("¿Estás seguro de que deseas cancelar la venta actual? Se perderán todos los productos agregados.")) {
+    const confirmado = await Alerta.confirmar(
+        "¿Estás seguro de que deseas cancelar la venta actual? Se perderán todos los productos agregados.",
+        { titulo: "Cancelar Venta", confirmText: "Sí, cancelar venta", peligroso: true }
+    );
+    if (confirmado) {
         itemsVenta = [];
         renderizarItemsVentaNew();
         document.getElementById('sale-form').reset();

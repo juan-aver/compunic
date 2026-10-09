@@ -27,7 +27,7 @@ function agregarCategoria() {
     const datos = recolectarDatosCategoria();
 
     if (!datos.nombre_categoria) {
-        return alert("Por favor, escribe un nombre para la categoría.");
+        return Alerta.advertencia("Por favor, escribe un nombre para la categoría.");
     }
 
     fetch(`${API_BASE}/categorias`, {
@@ -37,18 +37,21 @@ function agregarCategoria() {
     })
         .then(res => res.json())
         .then(() => {
-            alert('Categoría agregada exitosamente');
+            Alerta.exito('Categoría agregada exitosamente');
             limpiarFormularioCategoria();
             cargarCategorias();
         })
-        .catch(error => console.error('Error al agregar:', error));
+        .catch(error => {
+            console.error('Error al agregar:', error);
+            Alerta.error('Error al agregar categoría');
+        });
 }
 
 function modificarCategoria() {
     const form = document.getElementById('formulario-categorias');
     const id = form.dataset.idCategoria;
 
-    if (!id) return alert('Primero haz clic en una categoría de la tabla para seleccionarla.');
+    if (!id) return Alerta.advertencia('Primero haz clic en una categoría de la tabla para seleccionarla.');
 
     fetch(`${API_BASE}/categorias/${id}`, {
         method: 'PUT',
@@ -57,28 +60,39 @@ function modificarCategoria() {
     })
         .then(res => res.json())
         .then(() => {
-            alert('Categoría modificada correctamente');
+            Alerta.exito('Categoría modificada correctamente');
             limpiarFormularioCategoria();
             cargarCategorias();
         })
-        .catch(error => console.error('Error al modificar:', error));
+        .catch(error => {
+            console.error('Error al modificar:', error);
+            Alerta.error('Error al modificar categoría');
+        });
 }
 
-function eliminarCategoria() {
+async function eliminarCategoria() {
     const form = document.getElementById('formulario-categorias');
     const id = form.dataset.idCategoria;
 
-    if (!id) return alert('Primero haz clic en una categoría de la tabla para seleccionarla.');
-    if (!confirm('¿Seguro que deseas eliminar esta categoría permanentemente?')) return;
+    if (!id) return Alerta.advertencia('Primero haz clic en una categoría de la tabla para seleccionarla.');
+    
+    const confirmado = await Alerta.confirmar(
+        '¿Seguro que deseas eliminar esta categoría permanentemente?',
+        { titulo: 'Eliminar Categoría', confirmText: 'Sí, eliminar', peligroso: true }
+    );
+    if (!confirmado) return;
 
     fetch(`${API_BASE}/categorias/${id}`, { method: 'DELETE' })
         .then(res => res.json())
         .then(() => {
-            alert('Categoría eliminada');
+            Alerta.exito('Categoría eliminada permanentemente');
             limpiarFormularioCategoria();
             cargarCategorias();
         })
-        .catch(error => console.error('Error al eliminar:', error));
+        .catch(error => {
+            console.error('Error al eliminar:', error);
+            Alerta.error('Error al eliminar categoría');
+        });
 }
 
 function cargarCategorias() {
@@ -147,10 +161,19 @@ function iniciarEdicionCategoria(e, id, nombre) {
 }
 
 // Alternar estado de la categoria (dar de baja o reactivar)
-function toggleEstadoCategoria(e, id, nuevoEstado) {
-    e.stopPropagation();
+async function toggleEstadoCategoria(e, id, nuevoEstado) {
+    if (e && e.stopPropagation) e.stopPropagation();
     const accionStr = nuevoEstado === 0 ? 'dar de baja' : 'reactivar';
-    if (!confirm(`¿Seguro que deseas ${accionStr} esta categoría?`)) return;
+    const confirmado = await Alerta.confirmar(
+        `¿Seguro que deseas ${accionStr} esta categoría?`,
+        {
+            titulo: `${nuevoEstado === 0 ? 'Dar de baja' : 'Reactivar'} Categoría`,
+            confirmText: `Sí, ${accionStr}`,
+            peligroso: nuevoEstado === 0,
+            icono: nuevoEstado === 0 ? 'warning' : 'question'
+        }
+    );
+    if (!confirmado) return;
 
     fetch(`${API_BASE}/categorias/${id}`, {
         method: 'PUT',
@@ -159,14 +182,17 @@ function toggleEstadoCategoria(e, id, nuevoEstado) {
     })
         .then(res => res.json())
         .then(() => {
-            alert(`Categoría ${nuevoEstado === 0 ? 'dada de baja' : 'reactivada'} correctamente`);
+            Alerta.exito(`Categoría ${nuevoEstado === 0 ? 'dada de baja' : 'reactivada'} correctamente`);
             limpiarFormularioCategoria();
             cargarCategorias();
             if (typeof poblarSelectCategorias === 'function') {
                 poblarSelectCategorias();
             }
         })
-        .catch(error => console.error(`Error al ${accionStr}:`, error));
+        .catch(error => {
+            console.error(`Error al ${accionStr}:`, error);
+            Alerta.error(`Error al ${accionStr} la categoría`);
+        });
 }
 
 function limpiarFormularioCategoria() {

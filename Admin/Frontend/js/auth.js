@@ -53,7 +53,11 @@ const Auth = {
             return false;
         } catch (error) {
             console.error('❌ Error en login:', error);
-            alert('Error de conexión con el servidor');
+            if (typeof Alerta !== 'undefined') {
+                Alerta.error('No se pudo conectar con el servidor. Verifique su conexión.', 'Error de Conexión');
+            } else {
+                alert('Error de conexión con el servidor');
+            }
             return false;
         }
     },

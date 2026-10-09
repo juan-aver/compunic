@@ -12,15 +12,15 @@ function inicializarVendedorAutomatico() {
 
     if (!session) {
         console.error('❌ No hay sesión activa');
-        alert('Error: No se pudo obtener la información del usuario. Por favor, inicie sesión nuevamente.');
-        window.location.href = 'index.html';
+        Alerta.error('No se pudo obtener la información del usuario. Por favor, inicie sesión nuevamente.', 'Sesión Requerida');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
         return;
     }
 
     // Verificar que tenga ID_VENDEDOR
     if (!session.id_empleado) {
         console.error('❌ El usuario no tiene ID_VENDEDOR asignado');
-        alert('Error: Su usuario no está configurado como vendedor. Contacte al administrador.');
+        Alerta.advertencia('Su usuario no está configurado como vendedor. Contacte al administrador.', 'Atención');
         return;
     }
 

@@ -56,6 +56,10 @@ function mostrarDetalleProducto(producto) {
     if (modalImagen && modalPlaceholder) {
         if (p.imagen_url) {
             modalImagen.src = p.imagen_url.startsWith('http') ? p.imagen_url : `${SERVER_URL}/${p.imagen_url}`;
+            modalImagen.onerror = function () {
+                modalImagen.style.display = 'none';
+                if (modalPlaceholder) modalPlaceholder.style.display = 'block';
+            };
             modalImagen.style.display = 'block';
             modalPlaceholder.style.display = 'none';
         } else {
@@ -256,7 +260,7 @@ function renderProductCards(paginatedData) {
         // Image
         const imgPath = imagenUrl && imagenUrl.startsWith('http') ? imagenUrl : `${SERVER_URL}/${imagenUrl}`;
         const imgHtml = imagenUrl
-            ? `<img src="${imgPath}" alt="${nombre}">`
+            ? `<img src="${imgPath}" alt="" onerror="this.onerror=null; this.outerHTML='<div class=\\'card-img-placeholder\\'><i class=\\'fas fa-box-open\\'></i></div>';">`
             : '<div class="card-img-placeholder"><i class="fas fa-box-open"></i></div>';
 
         // Stock class
@@ -501,7 +505,7 @@ function construirPayloadProducto() {
 function modificarProducto() {
     const form = document.getElementById('formularioProducto');
     const id = form?.dataset.idSelected || document.getElementById('id_producto').value;
-    if (!id) return alert('Seleccione un producto de la tabla para modificar');
+    if (!id) return Alerta.advertencia('Seleccione un producto de la tabla para modificar');
 
     const formData = new FormData();
     formData.append('nombre', document.getElementById('nombre_producto').value);
@@ -530,24 +534,29 @@ function modificarProducto() {
         })
         .then(() => {
             cerrarModalProducto();
-            alert('Producto modificado exitosamente');
+            Alerta.exito('Producto modificado exitosamente');
             document.getElementById('formularioProducto')?.reset();
             document.getElementById('preview_imagen_container').style.display = 'none';
             if (typeof cargarProductos === 'function') cargarProductos();
         })
         .catch(err => {
             console.error('Error modificando producto:', err);
-            alert('Error al modificar producto: ' + err.message);
+            Alerta.error('Error al modificar producto: ' + err.message);
         });
 }
 
 // 🔴 Da de baja un producto (lo desactiva sin eliminar de la BD)
-function darDeBajaProducto() {
+async function darDeBajaProducto() {
     const form = document.getElementById('formularioProducto');
     const id = form?.dataset.idSelected || document.getElementById('id_producto').value;
-    if (!id) return alert('Seleccione un producto de la tabla para dar de baja');
+    if (!id) return Alerta.advertencia('Seleccione un producto de la tabla para dar de baja');
     const nombre = document.getElementById('nombre_producto')?.value || `ID ${id}`;
-    if (!confirm(`¿Dar de baja el producto "${nombre}"?\n\nEl producto no aparecerá disponible para vender, pero se conserva en el sistema.`)) return;
+    
+    const confirmado = await Alerta.confirmar(
+        `El producto no aparecerá disponible para vender, pero se conservará en el sistema.`,
+        { titulo: `¿Dar de baja "${nombre}"?`, confirmText: 'Sí, dar de baja', peligroso: true }
+    );
+    if (!confirmado) return;
 
     fetch(`${API_BASE}/productos/${id}`, {
         method: 'PUT',
@@ -558,14 +567,14 @@ function darDeBajaProducto() {
             const json = await res.json().catch(() => null);
             if (!res.ok) {
                 const errMsg = json && (json.error || json.mensaje) ? (json.error || json.mensaje) : `HTTP ${res.status}`;
-                alert('Error al dar de baja: ' + errMsg);
+                Alerta.error('Error al dar de baja: ' + errMsg);
                 throw new Error(errMsg);
             }
             return json;
         })
         .then(() => {
             cerrarModalProducto();
-            alert(`🚫 Producto "${nombre}" dado de baja exitosamente.\nAparecerá marcado visualmente y no estará disponible para vender.`);
+            Alerta.exito(`Producto "${nombre}" dado de baja exitosamente. No estará disponible para ventas.`);
             document.getElementById('formularioProducto')?.reset();
             if (typeof cargarProductos === 'function') cargarProductos();
         })
@@ -576,12 +585,17 @@ function darDeBajaProducto() {
 window.darDeBajaProducto = darDeBajaProducto;
 
 // ✅ Reactiva un producto dado de baja
-function reactivarProducto() {
+async function reactivarProducto() {
     const form = document.getElementById('formularioProducto');
     const id = form?.dataset.idSelected || document.getElementById('id_producto').value;
-    if (!id) return alert('Seleccione un producto para reactivar');
+    if (!id) return Alerta.advertencia('Seleccione un producto para reactivar');
     const nombre = document.getElementById('nombre_producto')?.value || `ID ${id}`;
-    if (!confirm(`¿Reactivar el producto "${nombre}"?\n\nVolverá a estar disponible para vender.`)) return;
+    
+    const confirmado = await Alerta.confirmar(
+        `Volverá a estar disponible inmediatamente para vender.`,
+        { titulo: `¿Reactivar "${nombre}"?`, confirmText: 'Sí, reactivar', peligroso: false, icono: 'question' }
+    );
+    if (!confirmado) return;
 
     fetch(`${API_BASE}/productos/${id}`, {
         method: 'PUT',
@@ -591,14 +605,14 @@ function reactivarProducto() {
         .then(async res => {
             const json = await res.json().catch(() => null);
             if (!res.ok) {
-                alert('Error al reactivar: ' + (json?.error || json?.mensaje || `HTTP ${res.status}`));
+                Alerta.error('Error al reactivar: ' + (json?.error || json?.mensaje || `HTTP ${res.status}`));
                 throw new Error(json?.error || 'error');
             }
             return json;
         })
         .then(() => {
             cerrarModalProducto();
-            alert(`✅ Producto "${nombre}" reactivado exitosamente.`);
+            Alerta.exito(`Producto "${nombre}" reactivado exitosamente.`);
             document.getElementById('formularioProducto')?.reset();
             if (typeof cargarProductos === 'function') cargarProductos();
         })
@@ -611,7 +625,7 @@ window.reactivarProducto = reactivarProducto;
 function agregarProducto() {
     const form = document.getElementById('formularioProducto');
     const nombre = document.getElementById('nombre_producto').value;
-    if (!nombre) return alert("El nombre del producto es obligatorio.");
+    if (!nombre) return Alerta.advertencia("El nombre del producto es obligatorio.");
 
     const formData = new FormData();
     formData.append('nombre', nombre);
@@ -635,21 +649,21 @@ function agregarProducto() {
             const json = await res.json().catch(() => null);
             if (!res.ok) {
                 const errMsg = json && (json.error || json.mensaje || json.detail) ? (json.error || json.mensaje || json.detail) : `HTTP ${res.status}`;
-                alert('Error al crear producto: ' + errMsg);
+                Alerta.error('Error al crear producto: ' + errMsg);
                 throw new Error(errMsg);
             }
             return json;
         })
         .then(resp => {
             cerrarModalProducto();
-            alert('Producto agregado exitosamente. ID generado: ' + (resp.id || 'N/A'));
+            Alerta.exito('Producto agregado exitosamente. ID: ' + (resp.id || 'N/A'));
             if (form) form.reset();
             document.getElementById('preview_imagen_container').style.display = 'none';
             if (typeof cargarProductos === 'function') cargarProductos();
         })
         .catch(err => {
             console.error('Error agregando producto:', err);
-            alert('Error al agregar producto: ' + err.message);
+            Alerta.error('Error al agregar producto: ' + err.message);
         });
 }
 
@@ -767,7 +781,7 @@ function cargarSeriesDisponibles(id_producto) {
 window.cargarSeriesDisponibles = cargarSeriesDisponibles;
 
 function enviarSeries(seriales) {
-    if (!idProductoSeriesActual) return alert('No hay producto seleccionado');
+    if (!idProductoSeriesActual) return Alerta.advertencia('No hay producto seleccionado');
     
     fetch(`${API_BASE}/series`, {
         method: 'POST',
@@ -789,7 +803,7 @@ function enviarSeries(seriales) {
         return data;
     })
     .then(data => {
-        alert(data.message || 'Series registradas exitosamente');
+        Alerta.exito(data.message || 'Series registradas exitosamente');
         // Clear inputs
         document.getElementById('serie_individual').value = '';
         document.getElementById('series_lote').value = '';
@@ -799,7 +813,7 @@ function enviarSeries(seriales) {
     })
     .catch(err => {
         console.error(err);
-        alert(err.message);
+        Alerta.error(err.message, 'Error en Series');
     });
 }
 
@@ -807,7 +821,7 @@ function guardarSerieIndividual() {
     const serie = document.getElementById('serie_individual').value.trim();
     const condicion = document.getElementById('condicion_individual').value;
     
-    if (!serie) return alert('Ingrese un número de serie');
+    if (!serie) return Alerta.advertencia('Ingrese un número de serie');
     
     enviarSeries([{ numero_serie: serie, condicion: condicion }]);
 }
@@ -819,7 +833,7 @@ function guardarSeriesLote() {
     
     const arraySeries = texto.split(/[\n,]+/).map(s => s.trim()).filter(s => s.length > 0);
     
-    if (arraySeries.length === 0) return alert('No se encontraron series válidas');
+    if (arraySeries.length === 0) return Alerta.advertencia('No se encontraron series válidas');
     
     const seriales = arraySeries.map(s => ({ numero_serie: s, condicion: condicion }));
     enviarSeries(seriales);
@@ -830,8 +844,8 @@ function guardarSeriesAuto() {
     const prefijo = document.getElementById('serie_prefijo').value.trim();
     const cantidad = parseInt(document.getElementById('serie_cantidad').value);
     
-    if (!prefijo) return alert('Ingrese un prefijo');
-    if (!cantidad || cantidad <= 0) return alert('Ingrese una cantidad válida');
+    if (!prefijo) return Alerta.advertencia('Ingrese un prefijo');
+    if (!cantidad || cantidad <= 0) return Alerta.advertencia('Ingrese una cantidad válida');
     
     fetch(`${API_BASE}/series/${idProductoSeriesActual}`, {
         headers: { 'x-user-id': localStorage.getItem('compunic_admin_id') }
@@ -858,13 +872,17 @@ function guardarSeriesAuto() {
     })
     .catch(err => {
         console.error('Error al auto-generar:', err);
-        alert('Error al verificar las series existentes para generar nuevas');
+        Alerta.error('Error al verificar las series existentes para generar nuevas');
     });
 }
 window.guardarSeriesAuto = guardarSeriesAuto;
 
-function eliminarSerie(id_serie) {
-    if (!confirm('¿Seguro que desea eliminar esta serie del sistema?')) return;
+async function eliminarSerie(id_serie) {
+    const confirmado = await Alerta.confirmar(
+        '¿Seguro que desea eliminar esta serie del sistema?',
+        { titulo: 'Eliminar Serie', confirmText: 'Sí, eliminar', peligroso: true }
+    );
+    if (!confirmado) return;
     
     fetch(`${API_BASE}/series/${id_serie}`, {
         method: 'DELETE',
@@ -878,11 +896,12 @@ function eliminarSerie(id_serie) {
         return res.json();
     })
     .then(() => {
+        Alerta.exito('Serie eliminada correctamente');
         cargarSeriesDisponibles(idProductoSeriesActual);
     })
     .catch(err => {
         console.error(err);
-        alert('Error al eliminar serie');
+        Alerta.error('Error al eliminar serie: ' + err.message);
     });
 }
 window.eliminarSerie = eliminarSerie;
@@ -1008,29 +1027,17 @@ window.guardarMerma = async function(event) {
     const justificacion = document.getElementById('merma_justificacion').value.trim();
 
     if (!idProducto) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({ icon: 'warning', title: 'Atención', text: 'Seleccione un producto.' });
-        } else {
-            alert('Seleccione un producto.');
-        }
+        Alerta.advertencia('Seleccione un producto para registrar la merma.');
         return;
     }
 
     if (!cantidad || cantidad <= 0) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({ icon: 'warning', title: 'Cantidad Inválida', text: 'La cantidad a descontar debe ser mayor a 0.' });
-        } else {
-            alert('La cantidad a descontar debe ser mayor a 0.');
-        }
+        Alerta.advertencia('La cantidad a descontar debe ser mayor a 0.', 'Cantidad Inválida');
         return;
     }
 
     if (!justificacion) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({ icon: 'warning', title: 'Campo Obligatorio', text: 'La justificación es obligatoria para registrar una merma.' });
-        } else {
-            alert('La justificación es obligatoria.');
-        }
+        Alerta.advertencia('La justificación es obligatoria para registrar una merma.', 'Campo Obligatorio');
         document.getElementById('merma_justificacion').focus();
         return;
     }
@@ -1078,32 +1085,11 @@ window.guardarMerma = async function(event) {
             throw new Error(data.error || 'Error al registrar la merma');
         }
 
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Merma Registrada!',
-                text: 'La pérdida se registró exitosamente y el stock ha sido descontado.',
-                timer: 2500,
-                showConfirmButton: true,
-                confirmButtonColor: '#145D90'
-            });
-        } else {
-            alert('✅ ' + data.message);
-        }
-
+        Alerta.exito('La pérdida se registró exitosamente y el stock ha sido descontado.', '¡Merma Registrada!');
         cerrarModalMerma();
         cargarProductos();
     } catch (err) {
         console.error('Error al registrar merma:', err);
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error al procesar',
-                text: err.message,
-                confirmButtonColor: '#d33'
-            });
-        } else {
-            alert('❌ ' + err.message);
-        }
+        Alerta.error(err.message, 'Error al registrar merma');
     }
 };

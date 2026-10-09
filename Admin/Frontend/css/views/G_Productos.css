@@ -1518,20 +1518,23 @@ textarea[readonly] {
 }
 
 .product-card .card-actions {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .product-card .card-actions button {
-  flex: 1;
-  padding: 7px 4px !important;
-  font-size: 0.8rem;
+  width: 100%;
+  padding: 6px 4px !important;
+  font-size: 0.78rem;
   border-radius: 8px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
+  white-space: nowrap;
 }
 
 .product-card .card-actions .btn-card-detail {

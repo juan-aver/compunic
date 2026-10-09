@@ -178,11 +178,7 @@ function cambiarEstadoEmpleado(id, isActivo) {
         })
         .catch(err => {
             console.error(err);
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Hubo un error al actualizar el estado del empleado.' });
-            } else {
-                alert("Hubo un error al actualizar el estado del empleado.");
-            }
+            Alerta.error('Hubo un error al actualizar el estado del empleado.');
             cargarEmpleados(); // Reload to reset toggle visual state
         });
 }
@@ -277,29 +273,21 @@ function buscarEmpleado() {
 function agregarEmpleado() {
     const datos = recolectarDatosEmpleado();
     if (!datos.rol) {
-        return (typeof Swal !== 'undefined')
-            ? Swal.fire({ icon: 'warning', title: 'Rol Requerido', text: 'Debe seleccionar un Rol para el empleado.' })
-            : alert("Debe seleccionar un Rol");
+        return Alerta.advertencia('Debe seleccionar un Rol para el empleado.', 'Rol Requerido');
     }
     if (!datos.nombre || !datos.apellido) {
-        return (typeof Swal !== 'undefined')
-            ? Swal.fire({ icon: 'warning', title: 'Campos Incompletos', text: 'Nombre y Apellido son obligatorios.' })
-            : alert("Nombre y Apellido son obligatorios");
+        return Alerta.advertencia('Nombre y Apellido son obligatorios.', 'Campos Incompletos');
     }
 
     // Validar email obligatorio para roles con acceso al sistema
     const rolesConAcceso = ['ADMIN', 'VENDEDOR', 'CAJERO', 'TECNICO', 'TEMPORAL'];
     if (rolesConAcceso.includes(datos.rol) && !datos.email) {
-        return (typeof Swal !== 'undefined')
-            ? Swal.fire({ icon: 'warning', title: 'Email Requerido', text: 'El Email es obligatorio para este rol (se enviará el correo de activación de credenciales).' })
-            : alert("El Email es obligatorio para este rol (se enviará el correo de activación de credenciales).");
+        return Alerta.advertencia('El Email es obligatorio para este rol (se enviará el correo de activación de credenciales).', 'Email Requerido');
     }
 
     // Validar username obligatorio para roles con acceso al sistema
     if (rolesConAcceso.includes(datos.rol) && !datos.username) {
-        return (typeof Swal !== 'undefined')
-            ? Swal.fire({ icon: 'warning', title: 'Usuario Requerido', text: 'El Nombre de Usuario es obligatorio para los roles con acceso al sistema.' })
-            : alert("El Nombre de Usuario es obligatorio para los roles con acceso al sistema.");
+        return Alerta.advertencia('El Nombre de Usuario es obligatorio para los roles con acceso al sistema.', 'Usuario Requerido');
     }
 
     fetch(`${API_BASE}/empleados`, {
@@ -309,42 +297,19 @@ function agregarEmpleado() {
     })
         .then(res => res.json())
         .then(data => {
-            if (typeof Swal !== 'undefined') {
-                if (data.correoEnviado) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Empleado Agregado!',
-                        text: data.mensaje || 'Se envió un correo al empleado para que cree su contraseña.',
-                        confirmButtonColor: '#3085d6'
-                    });
-                } else if (datos.rol === 'TEMPORAL') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Empleado Agregado!',
-                        text: 'Empleado temporal agregado correctamente.',
-                        confirmButtonColor: '#3085d6'
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Información',
-                        text: data.mensaje || 'Empleado agregado.',
-                        confirmButtonColor: '#3085d6'
-                    });
-                }
+            if (data.correoEnviado) {
+                Alerta.exito(data.mensaje || 'Se envió un correo al empleado para que cree su contraseña.', '¡Empleado Agregado!');
+            } else if (datos.rol === 'TEMPORAL') {
+                Alerta.exito('Empleado temporal agregado correctamente.', '¡Empleado Agregado!');
             } else {
-                alert(data.mensaje || 'Empleado agregado correctamente');
+                Alerta.info(data.mensaje || 'Empleado agregado correctamente.', 'Información');
             }
             limpiarFormularioEmpleado();
             cargarEmpleados();
         })
         .catch(err => {
             console.error(err);
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Ocurrió un error al agregar el empleado.' });
-            } else {
-                alert('Error al agregar empleado.');
-            }
+            Alerta.error('Ocurrió un error al agregar el empleado.');
         });
 }
 
@@ -356,9 +321,7 @@ function modificarEmpleado() {
     const form = document.getElementById('formulario-empleados');
     const id = form.dataset.idEmpleado;
     if (!id) {
-        return (typeof Swal !== 'undefined')
-            ? Swal.fire({ icon: 'info', title: 'Atención', text: 'Selecciona un empleado de la tabla para editar sus datos.' })
-            : alert("Selecciona un empleado de la tabla");
+        return Alerta.info('Selecciona un empleado de la tabla para editar sus datos.', 'Atención');
     }
 
     const datos = recolectarDatosEmpleado();
@@ -370,19 +333,13 @@ function modificarEmpleado() {
     })
         .then(res => res.text())
         .then(() => {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'success', title: '¡Actualizado!', text: 'Empleado actualizado correctamente.' });
-            } else {
-                alert('Empleado actualizado');
-            }
+            Alerta.exito('Empleado actualizado correctamente.', '¡Actualizado!');
             limpiarFormularioEmpleado();
             cargarEmpleados();
         })
         .catch(err => {
             console.error(err);
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar el empleado.' });
-            }
+            Alerta.error('No se pudo actualizar el empleado.');
         });
 }
 

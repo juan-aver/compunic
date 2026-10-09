@@ -211,16 +211,7 @@ function guardarCalificacionRapida() {
     const opinion = document.getElementById('quick_opinion_cliente').value;
 
     if (!calificacion || parseInt(calificacion) < 1) {
-        if (window.Swal) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Atención',
-                text: 'Por favor seleccione al menos 1 estrella para registrar la calificación.',
-                confirmButtonColor: '#007bff'
-            });
-        } else {
-            alert('Por favor seleccione una calificación de 1 a 5 estrellas.');
-        }
+        Alerta.advertencia('Por favor seleccione al menos 1 estrella para registrar la calificación.');
         return;
     }
 
@@ -238,24 +229,12 @@ function guardarCalificacionRapida() {
     })
     .then(data => {
         cerrarModalCalificar();
-        if (window.Swal) {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Calificación Registrada!',
-                text: 'La opinión del cliente ha sido guardada satisfactoriamente.',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        }
+        Alerta.exito('La opinión del cliente ha sido guardada satisfactoriamente.', '¡Calificación Registrada!');
         cargarServicios();
     })
     .catch(err => {
         console.error(err);
-        if (window.Swal) {
-            Swal.fire({ icon: 'error', title: 'Error', text: err.message });
-        } else {
-            alert('Error: ' + err.message);
-        }
+        Alerta.error(err.message, 'Error');
     });
 }
 window.guardarCalificacionRapida = guardarCalificacionRapida;
@@ -455,11 +434,7 @@ function cambiarEstadoServicioInline(idServicio, nuevoEstadoId) {
     })
     .catch(err => {
         console.error(err);
-        if (window.Swal) {
-            Swal.fire({ icon: 'error', title: 'Error', text: err.message });
-        } else {
-            alert('Error al actualizar estado: ' + err.message);
-        }
+        Alerta.error('Error al actualizar estado: ' + err.message);
         cargarServicios();
     });
 }
@@ -649,16 +624,7 @@ function agregarServicio() {
     const costo = document.getElementById('costo').value;
 
     if (!idCliente || !idTipo || !idEstado || !costo) {
-        if (window.Swal) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Campos Incompletos',
-                text: 'Cliente, tipo de servicio, estado y costo son obligatorios.',
-                confirmButtonColor: '#007bff'
-            });
-        } else {
-            alert('Cliente, tipo de servicio, estado y costo son obligatorios.');
-        }
+        Alerta.advertencia('Cliente, tipo de servicio, estado y costo son obligatorios.', 'Campos Incompletos');
         return;
     }
 
@@ -691,24 +657,12 @@ function agregarServicio() {
     })
     .then(() => {
         cerrarModalServicio();
-        if (window.Swal) {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Servicio Creado!',
-                text: 'La orden de servicio técnico fue registrada exitosamente.',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        }
+        Alerta.exito('La orden de servicio técnico fue registrada exitosamente.', '¡Servicio Creado!');
         cargarServicios();
     })
     .catch(err => {
         console.error(err);
-        if (window.Swal) {
-            Swal.fire({ icon: 'error', title: 'Error', text: err.message });
-        } else {
-            alert('Error: ' + err.message);
-        }
+        Alerta.error(err.message, 'Error al agregar servicio');
     });
 }
 
@@ -722,16 +676,7 @@ function modificarServicio() {
     const costo = document.getElementById('costo').value;
 
     if (!idCliente || !idTipo || !idEstado || !costo) {
-        if (window.Swal) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Campos Incompletos',
-                text: 'Cliente, tipo de servicio, estado y costo son obligatorios.',
-                confirmButtonColor: '#007bff'
-            });
-        } else {
-            alert('Cliente, tipo de servicio, estado y costo son obligatorios.');
-        }
+        Alerta.advertencia('Cliente, tipo de servicio, estado y costo son obligatorios.', 'Campos Incompletos');
         return;
     }
 
@@ -765,24 +710,12 @@ function modificarServicio() {
     })
     .then(() => {
         cerrarModalServicio();
-        if (window.Swal) {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Servicio Actualizado!',
-                text: 'Los cambios fueron guardados exitosamente.',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        }
+        Alerta.exito('Los cambios fueron guardados exitosamente.', '¡Servicio Actualizado!');
         cargarServicios();
     })
     .catch(err => {
         console.error(err);
-        if (window.Swal) {
-            Swal.fire({ icon: 'error', title: 'Error', text: err.message });
-        } else {
-            alert('Error: ' + err.message);
-        }
+        Alerta.error(err.message, 'Error al modificar servicio');
     });
 }
 
@@ -798,43 +731,22 @@ function eliminarServicio() {
             })
             .then(() => {
                 cerrarModalServicio();
-                if (window.Swal) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Eliminado',
-                        text: 'El servicio fue eliminado correctamente.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                }
+                Alerta.exito('El servicio fue eliminado correctamente.', 'Eliminado');
                 cargarServicios();
             })
             .catch(err => {
                 console.error(err);
-                if (window.Swal) {
-                    Swal.fire({ icon: 'error', title: 'Error', text: err.message });
-                } else {
-                    alert('Error: ' + err.message);
-                }
+                Alerta.error(err.message, 'Error al eliminar');
             });
     };
 
-    if (window.Swal) {
-        Swal.fire({
-            title: '¿Eliminar este servicio?',
-            text: 'Esta acción no se puede deshacer.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then(result => {
-            if (result.isConfirmed) accionEliminar();
-        });
-    } else {
-        if (confirm('¿Está seguro de eliminar este servicio?')) accionEliminar();
-    }
+    Alerta.confirmar('¿Eliminar este servicio? Esta acción no se puede deshacer.', {
+        titulo: 'Eliminar Servicio',
+        confirmText: 'Sí, eliminar',
+        peligroso: true
+    }).then(confirmado => {
+        if (confirmado) accionEliminar();
+    });
 }
 
 // Filtro de búsqueda en tiempo real

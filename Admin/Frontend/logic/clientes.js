@@ -76,7 +76,7 @@ function agregarCliente() {
     const email = document.getElementById('EMAIL').value;
     const cedula = document.getElementById('CEDULA').value;
 
-    if (!nombre || !apellido) return alert("Nombre y Apellido son obligatorios");
+    if (!nombre || !apellido) return Alerta.advertencia("Nombre y Apellido son obligatorios");
 
     fetch(`${API_BASE}/clientes`, {
         method: 'POST',
@@ -85,17 +85,20 @@ function agregarCliente() {
     })
         .then(res => res.json())
         .then(data => {
-            alert('Cliente agregado correctamente');
+            Alerta.exito('Cliente agregado correctamente');
             limpiarFormularioCliente();
             cargarClientes();
         })
-        .catch(err => console.error('Error agregando cliente:', err));
+        .catch(err => {
+            console.error('Error agregando cliente:', err);
+            Alerta.error('Error al agregar cliente');
+        });
 }
 
 function modificarCliente() {
     const form = document.getElementById('formulario-clientes');
     const id = form.dataset.idCliente;
-    if (!id) return alert("Selecciona un cliente de la tabla");
+    if (!id) return Alerta.advertencia("Selecciona un cliente de la tabla");
 
     const nombre = document.getElementById('NOMBRE').value;
     const apellido = document.getElementById('APELLIDO').value;
@@ -110,30 +113,40 @@ function modificarCliente() {
     })
         .then(res => res.json())
         .then(() => {
-            alert('Cliente actualizado correctamente');
+            Alerta.exito('Cliente actualizado correctamente');
             limpiarFormularioCliente();
             cargarClientes();
         })
-        .catch(err => console.error('Error modificando cliente:', err));
+        .catch(err => {
+            console.error('Error modificando cliente:', err);
+            Alerta.error('Error al modificar cliente');
+        });
 }
 
-function eliminarCliente() {
+async function eliminarCliente() {
     const form = document.getElementById('formulario-clientes');
     const id = form.dataset.idCliente;
-    if (!id) return alert("Selecciona un cliente de la tabla");
+    if (!id) return Alerta.advertencia("Selecciona un cliente de la tabla");
 
-    if (!confirm('¿Estás seguro de eliminar este cliente?')) return;
+    const confirmado = await Alerta.confirmar(
+        'El cliente será dado de baja en el sistema.',
+        { titulo: '¿Dar de baja a este cliente?', confirmText: 'Sí, dar de baja', peligroso: true }
+    );
+    if (!confirmado) return;
 
     fetch(`${API_BASE}/clientes/${id}`, {
         method: 'DELETE'
     })
         .then(res => res.json())
         .then(() => {
-            alert('Cliente eliminado correctamente');
+            Alerta.exito('Cliente dado de baja correctamente');
             limpiarFormularioCliente();
             cargarClientes();
         })
-        .catch(err => console.error('Error eliminando cliente:', err));
+        .catch(err => {
+            console.error('Error eliminando cliente:', err);
+            Alerta.error('Error al dar de baja al cliente');
+        });
 }
 
 function buscarCliente() {
@@ -209,9 +222,13 @@ function limpiarFormularioCliente() {
     }
 }
 
-function darDeBajaClienteDesdeTabla(event, id) {
+async function darDeBajaClienteDesdeTabla(event, id) {
     if (event) event.stopPropagation();
-    if (!confirm(`¿Dar de baja al cliente con ID ${id}?`)) return;
+    const confirmado = await Alerta.confirmar(
+        `El cliente pasará a estado inactivo.`,
+        { titulo: `¿Dar de baja al cliente #${id}?`, confirmText: 'Sí, dar de baja', peligroso: true }
+    );
+    if (!confirmado) return;
 
     fetch(`${API_BASE}/clientes/${id}`, { method: 'DELETE' })
         .then(async res => {
@@ -219,17 +236,21 @@ function darDeBajaClienteDesdeTabla(event, id) {
             return res.json();
         })
         .then(() => {
-            alert('✅ Cliente dado de baja.');
+            Alerta.exito('Cliente dado de baja.');
             limpiarFormularioCliente();
             cargarClientes();
         })
-        .catch(err => alert(err.message));
+        .catch(err => Alerta.error(err.message));
 }
 window.darDeBajaClienteDesdeTabla = darDeBajaClienteDesdeTabla;
 
-function activarClienteDesdeTabla(event, id) {
+async function activarClienteDesdeTabla(event, id) {
     if (event) event.stopPropagation();
-    if (!confirm(`¿Dar de alta al cliente con ID ${id}?`)) return;
+    const confirmado = await Alerta.confirmar(
+        `El cliente volverá a estar activo en el sistema.`,
+        { titulo: `¿Dar de alta al cliente #${id}?`, confirmText: 'Sí, reactivar', peligroso: false, icono: 'question' }
+    );
+    if (!confirmado) return;
 
     fetch(`${API_BASE}/clientes/${id}/activar`, { method: 'PUT' })
         .then(async res => {
@@ -237,10 +258,10 @@ function activarClienteDesdeTabla(event, id) {
             return res.json();
         })
         .then(() => {
-            alert('✅ Cliente dado de alta.');
+            Alerta.exito('Cliente dado de alta.');
             limpiarFormularioCliente();
             cargarClientes();
         })
-        .catch(err => alert(err.message));
+        .catch(err => Alerta.error(err.message));
 }
 window.activarClienteDesdeTabla = activarClienteDesdeTabla;

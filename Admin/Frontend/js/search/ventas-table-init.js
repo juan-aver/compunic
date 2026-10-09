@@ -46,8 +46,11 @@ function initVentasTableEnhancements() {
         (data, row) => {
             console.log('Editar venta:', data);
         },
-        (data, row) => {
-            if (confirm(`¿Está seguro de eliminar la venta ${data['no. factura']}?`)) {
+        async (data, row) => {
+            const ok = typeof Alerta !== 'undefined'
+                ? await Alerta.confirmar(`¿Está seguro de eliminar la venta ${data['no. factura']}?`, { titulo: 'Eliminar Venta', confirmText: 'Sí, eliminar', peligroso: true })
+                : confirm(`¿Está seguro de eliminar la venta ${data['no. factura']}?`);
+            if (ok) {
                 console.log('Eliminar venta:', data);
             }
         },

@@ -373,7 +373,7 @@
     window.confirmarRechazo = async function() {
         const el = document.getElementById('motivo-rechazo');
         const motivo = el ? el.value.trim() : '';
-        if (!motivo || motivo.length < 5) { alert('Escribe un motivo de al menos 5 caracteres'); return; }
+        if (!motivo || motivo.length < 5) { Alerta.advertencia('Escribe un motivo de al menos 5 caracteres'); return; }
         if (!pedidoParaRechazar) return;
 
         try {

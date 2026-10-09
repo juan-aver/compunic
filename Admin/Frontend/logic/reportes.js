@@ -500,7 +500,7 @@ window.exportarReporteActual = exportarReporteActual;
 
 function exportarAExcel() {
     if (typeof XLSX === 'undefined') {
-        alert('La librería SheetJS (XLSX) aún no se ha cargado. Por favor recarga la página.');
+        Alerta.advertencia('La librería SheetJS (XLSX) aún no se ha cargado. Por favor recarga la página.', 'Cargando');
         return;
     }
 

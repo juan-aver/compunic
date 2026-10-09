@@ -621,7 +621,12 @@ const Validaciones = {
      */
     mostrarErrores: function (errores) {
         if (errores.length > 0) {
-            alert('❌ Errores de validación:\n\n' + errores.map((e, i) => `${i + 1}. ${e}`).join('\n'));
+            const htmlMsg = errores.map((e, i) => `${i + 1}. ${e}`).join('<br>');
+            if (typeof Alerta !== 'undefined') {
+                Alerta.advertencia(htmlMsg, 'Errores de Validación');
+            } else {
+                alert('Errores de validación:\n\n' + errores.join('\n'));
+            }
         }
     },
 

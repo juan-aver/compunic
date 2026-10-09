@@ -126,10 +126,19 @@ function seleccionarGarantiaEditar(e, g) {
 window.seleccionarGarantiaEditar = seleccionarGarantiaEditar;
 
 // Alternar estado de la garantía (dar de baja o reactivar)
-function toggleEstadoGarantia(e, id, nuevoEstado) {
-    e.stopPropagation();
+async function toggleEstadoGarantia(e, id, nuevoEstado) {
+    if (e && e.stopPropagation) e.stopPropagation();
     const accionStr = nuevoEstado === 0 ? 'dar de baja' : 'reactivar';
-    if (!confirm(`¿Seguro que deseas ${accionStr} esta garantía?`)) return;
+    const confirmado = await Alerta.confirmar(
+        `¿Seguro que deseas ${accionStr} esta garantía?`,
+        {
+            titulo: `${nuevoEstado === 0 ? 'Dar de baja' : 'Reactivar'} Garantía`,
+            confirmText: `Sí, ${accionStr}`,
+            peligroso: nuevoEstado === 0,
+            icono: nuevoEstado === 0 ? 'warning' : 'question'
+        }
+    );
+    if (!confirmado) return;
 
     fetch(`${API_BASE}/garantias/${id}`, {
         method: 'PUT',
@@ -138,12 +147,15 @@ function toggleEstadoGarantia(e, id, nuevoEstado) {
     })
         .then(res => res.json())
         .then(() => {
-            alert(`Garantía ${nuevoEstado === 0 ? 'dada de baja' : 'reactivada'} correctamente`);
+            Alerta.exito(`Garantía ${nuevoEstado === 0 ? 'dada de baja' : 'reactivada'} correctamente.`);
             cargarGarantias();
             if (typeof poblarSelectGarantiaTipos === 'function') poblarSelectGarantiaTipos();
             if (typeof poblarSelectGarantias === 'function') poblarSelectGarantias();
         })
-        .catch(error => console.error(`Error al ${accionStr}:`, error));
+        .catch(error => {
+            console.error(`Error al ${accionStr}:`, error);
+            Alerta.error(`Error al ${accionStr} la garantía`);
+        });
 }
 window.toggleEstadoGarantia = toggleEstadoGarantia;
 
@@ -218,7 +230,7 @@ function agregarGarantia() {
     const exclusiones = document.getElementById('EXCLUSIONES').value;
 
     if (!duracion_meses || !id_garantia_tipo || !id_garantia_estado) {
-        return alert("Duración, Tipo y Estado son obligatorios");
+        return Alerta.advertencia("Duración, Tipo y Estado son obligatorios");
     }
 
     // Generar ID y fecha automáticamente
@@ -233,17 +245,20 @@ function agregarGarantia() {
     })
         .then(res => res.json())
         .then(data => {
-            if (data.error) return alert(data.error);
-            alert('Garantía agregada correctamente');
+            if (data.error) return Alerta.error(data.error);
+            Alerta.exito('Garantía agregada correctamente');
             limpiarFormularioGarantia();
             cargarGarantias();
         })
-        .catch(err => console.error('Error agregando garantía:', err));
+        .catch(err => {
+            console.error('Error agregando garantía:', err);
+            Alerta.error('Error al agregar garantía');
+        });
 }
 
 function modificarGarantia() {
     const id = document.getElementById('ID_GARANTIA').value;
-    if (!id) return alert("Selecciona una garantía de la tabla");
+    if (!id) return Alerta.advertencia("Selecciona una garantía de la tabla");
 
     const duracion_meses = document.getElementById('DURACION_MESES').value;
     const id_garantia_tipo = document.getElementById('ID_GARANTIA_TIPO').value;
@@ -262,25 +277,37 @@ function modificarGarantia() {
     })
         .then(res => res.json())
         .then(() => {
-            alert('Garantía actualizada correctamente');
+            Alerta.exito('Garantía actualizada correctamente');
             limpiarFormularioGarantia();
             cargarGarantias();
         })
-        .catch(err => console.error('Error modificando garantía:', err));
+        .catch(err => {
+            console.error('Error modificando garantía:', err);
+            Alerta.error('Error al modificar garantía');
+        });
 }
 
-function eliminarGarantia() {
+async function eliminarGarantia() {
     const id = document.getElementById('ID_GARANTIA').value;
-    if (!id) return alert("Selecciona una garantía de la tabla");
-    if (!confirm('¿Estás seguro de eliminar esta garantía?')) return;
+    if (!id) return Alerta.advertencia("Selecciona una garantía de la tabla");
+    
+    const confirmado = await Alerta.confirmar(
+        '¿Estás seguro de eliminar esta garantía del sistema?',
+        { titulo: 'Eliminar Garantía', confirmText: 'Sí, eliminar', peligroso: true }
+    );
+    if (!confirmado) return;
+
     fetch(`${API_BASE}/garantias/${id}`, { method: 'DELETE' })
         .then(res => res.json())
         .then(() => {
-            alert('Garantía eliminada correctamente');
+            Alerta.exito('Garantía eliminada correctamente');
             limpiarFormularioGarantia();
             cargarGarantias();
         })
-        .catch(err => console.error('Error eliminando garantía:', err));
+        .catch(err => {
+            console.error('Error eliminando garantía:', err);
+            Alerta.error('Error al eliminar garantía');
+        });
 }
 
 function buscarGarantia() {

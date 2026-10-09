@@ -23,15 +23,15 @@ function inicializarVendedorAutomatico() {
 
     if (!session) {
         console.error('❌ No hay sesión activa');
-        alert('Error: No se pudo obtener la información del usuario. Por favor, inicie sesión nuevamente.');
-        window.location.href = 'index.html';
+        Alerta.error('No se pudo obtener la información del usuario. Por favor, inicie sesión nuevamente.', 'Sesión Requerida');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
         return;
     }
 
     // Verificar que tenga ID_VENDEDOR
     if (!session.id_vendedor) {
         console.error('❌ El usuario no tiene ID_VENDEDOR asignado');
-        alert('Error: Su usuario no está configurado como vendedor. Contacte al administrador.');
+        Alerta.advertencia('Su usuario no está configurado como vendedor. Contacte al administrador.', 'Atención');
         return;
     }
 
@@ -107,16 +107,7 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
     
     if (!permitidas.includes('*') && !permitidas.includes(nombreVista)) {
         console.warn(`⛔ Acceso denegado a la vista "${nombreVista}" para el rol "${currentRole}".`);
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Acceso Restringido',
-                text: `El rol de ${(currentRole || '').toUpperCase()} no tiene permisos para acceder a esta sección.`,
-                confirmButtonColor: '#3085d6'
-            });
-        } else {
-            alert(`Acceso no autorizado para el rol ${currentRole}.`);
-        }
+        Alerta.advertencia(`El rol de ${(currentRole || '').toUpperCase()} no tiene permisos para acceder a esta sección.`, 'Acceso Restringido');
         return;
     }
 

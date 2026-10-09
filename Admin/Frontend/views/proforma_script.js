@@ -3,11 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const idCotizacion = params.get('id');
 
     if (!idCotizacion) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({ icon: 'warning', title: 'Atención', text: 'No se especificó una cotización para mostrar.' });
-        } else {
-            alert('No se especificó una cotización para mostrar.');
-        }
+        Alerta.advertencia('No se especificó una cotización para mostrar.');
         return;
     }
 
@@ -113,11 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(err => {
             console.error(err);
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Error al cargar los datos de la proforma: ' + err.message });
-            } else {
-                alert('Error al cargar los datos de la proforma.');
-            }
+            Alerta.error('Error al cargar los datos de la proforma: ' + err.message);
         });
 });
 

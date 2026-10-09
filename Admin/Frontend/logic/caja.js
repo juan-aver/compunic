@@ -233,11 +233,6 @@ const CajaApp = {
      * CU-27: Modal para abrir turno de caja declarando fondo inicial
      */
     mostrarModalApertura: async function() {
-        if (typeof Swal === 'undefined') {
-            const monto = prompt('Ingrese el fondo inicial de efectivo en córdobas (C$):', '1000.00');
-            if (monto !== null) this.procesarApertura(monto);
-            return;
-        }
 
         const { value: formValues } = await Swal.fire({
             title: '💵 Apertura de Turno de Caja',
@@ -298,11 +293,7 @@ const CajaApp = {
 
             await this.cargarDatosCaja();
         } catch (err) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: 'Error', text: err.message });
-            } else {
-                alert('Error: ' + err.message);
-            }
+            Alerta.error(err.message, 'Error al abrir caja');
         }
     },
 

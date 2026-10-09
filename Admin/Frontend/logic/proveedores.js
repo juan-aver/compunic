@@ -179,7 +179,7 @@ function buscarProveedor() {
 
 function agregarProveedor() {
     const proveedor = _recolectarFormularioProveedor();
-    if (!proveedor.nombre_empresa) return alert("El Nombre de la Empresa es obligatorio.");
+    if (!proveedor.nombre_empresa) return Alerta.advertencia("El Nombre de la Empresa es obligatorio.");
     delete proveedor.id_proveedor; // No es necesario enviar el ID ya que se autogenera en la BD
 
     fetch(`${API_BASE}/proveedores`, {
@@ -193,17 +193,17 @@ function agregarProveedor() {
             return res.json();
         })
         .then(() => {
-            alert('✅ Proveedor agregado.');
+            Alerta.exito('Proveedor agregado exitosamente.');
             limpiarFormulario();
             cargarProveedores();
         })
-        .catch(err => alert(`❌ Error: ${err.message}`));
+        .catch(err => Alerta.error(`Error: ${err.message}`));
 }
 
 function modificarProveedor() {
     const form = document.getElementById("formularioProveedor");
     const idOriginal = form.dataset.idOriginal;
-    if (!idOriginal) return alert("Selecciona un proveedor primero.");
+    if (!idOriginal) return Alerta.advertencia("Selecciona un proveedor de la tabla primero.");
 
     const proveedor = _recolectarFormularioProveedor();
     fetch(`${API_BASE}/proveedores/${idOriginal}`, {
@@ -214,18 +214,23 @@ function modificarProveedor() {
             return res.json();
         })
         .then(() => {
-            alert('✅ Modificado correctamente.');
+            Alerta.exito('Proveedor modificado correctamente.');
             limpiarFormulario();
             cargarProveedores();
         })
-        .catch(err => alert(err.message));
+        .catch(err => Alerta.error(err.message));
 }
 
-function eliminarProveedor() {
+async function eliminarProveedor() {
     const form = document.getElementById("formularioProveedor");
     const idOriginal = form.dataset.idOriginal;
-    if (!idOriginal) return alert("Selecciona un proveedor primero.");
-    if (!confirm(`¿Dar de baja al proveedor con ID ${idOriginal}?`)) return;
+    if (!idOriginal) return Alerta.advertencia("Selecciona un proveedor primero.");
+    
+    const confirmado = await Alerta.confirmar(
+        `El proveedor pasará a estado inactivo en el sistema.`,
+        { titulo: `¿Dar de baja al proveedor #${idOriginal}?`, confirmText: 'Sí, dar de baja', peligroso: true }
+    );
+    if (!confirmado) return;
 
     fetch(`${API_BASE}/proveedores/${idOriginal}`, { method: 'DELETE' })
         .then(async res => {
@@ -233,11 +238,11 @@ function eliminarProveedor() {
             return res.json();
         })
         .then(() => {
-            alert('✅ Proveedor dado de baja.');
+            Alerta.exito('Proveedor dado de baja exitosamente.');
             limpiarFormulario();
             cargarProveedores();
         })
-        .catch(err => alert(err.message));
+        .catch(err => Alerta.error(err.message));
 }
 
 function _recolectarFormularioProveedor() {
@@ -277,9 +282,13 @@ function limpiarFormulario() {
     }
 }
 
-function darDeBajaDesdeTabla(event, id) {
+async function darDeBajaDesdeTabla(event, id) {
     if (event) event.stopPropagation();
-    if (!confirm(`¿Dar de baja al proveedor con ID ${id}?`)) return;
+    const confirmado = await Alerta.confirmar(
+        `El proveedor pasará a estado inactivo.`,
+        { titulo: `¿Dar de baja al proveedor #${id}?`, confirmText: 'Sí, dar de baja', peligroso: true }
+    );
+    if (!confirmado) return;
 
     fetch(`${API_BASE}/proveedores/${id}`, { method: 'DELETE' })
         .then(async res => {
@@ -287,17 +296,21 @@ function darDeBajaDesdeTabla(event, id) {
             return res.json();
         })
         .then(() => {
-            alert('✅ Proveedor dado de baja.');
+            Alerta.exito('Proveedor dado de baja exitosamente.');
             limpiarFormulario();
             cargarProveedores();
         })
-        .catch(err => alert(err.message));
+        .catch(err => Alerta.error(err.message));
 }
 window.darDeBajaDesdeTabla = darDeBajaDesdeTabla;
 
-function activarProveedorDesdeTabla(event, id) {
+async function activarProveedorDesdeTabla(event, id) {
     if (event) event.stopPropagation();
-    if (!confirm(`¿Dar de alta al proveedor con ID ${id}?`)) return;
+    const confirmado = await Alerta.confirmar(
+        `El proveedor volverá a estar disponible para compras y productos.`,
+        { titulo: `¿Reactivar proveedor #${id}?`, confirmText: 'Sí, reactivar', peligroso: false, icono: 'question' }
+    );
+    if (!confirmado) return;
 
     fetch(`${API_BASE}/proveedores/${id}/activar`, { method: 'PUT' })
         .then(async res => {
@@ -305,10 +318,10 @@ function activarProveedorDesdeTabla(event, id) {
             return res.json();
         })
         .then(() => {
-            alert('✅ Proveedor dado de alta.');
+            Alerta.exito('Proveedor reactivado exitosamente.');
             limpiarFormulario();
             cargarProveedores();
         })
-        .catch(err => alert(err.message));
+        .catch(err => Alerta.error(err.message));
 }
 window.activarProveedorDesdeTabla = activarProveedorDesdeTabla;

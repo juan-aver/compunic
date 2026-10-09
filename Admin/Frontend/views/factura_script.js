@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const idVenta = params.get('id');
 
     if (!idVenta) {
-        alert('No se especificó una venta para mostrar.');
+        Alerta.advertencia('No se especificó una venta para mostrar.');
         return;
     }
 
@@ -112,11 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(err => {
             console.error(err);
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Error al cargar los datos de la factura: ' + err.message });
-            } else {
-                alert('Error al cargar los datos de la factura.');
-            }
+            Alerta.error('Error al cargar los datos de la factura: ' + err.message);
         });
 });
 
@@ -229,11 +225,7 @@ function configurarBotonPDF(numeroFactura) {
                 })
                 .catch(err => {
                     console.error('Error al generar PDF:', err);
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({ icon: 'error', title: 'Error PDF', text: 'Error al generar el PDF. Por favor, intenta nuevamente.' });
-                    } else {
-                        alert('Error al generar el PDF. Por favor, intenta nuevamente.');
-                    }
+                    Alerta.error('Error al generar el PDF. Por favor, intenta nuevamente.', 'Error PDF');
                     btnDescargar.textContent = '📥 Descargar PDF';
                     btnDescargar.disabled = false;
                 });

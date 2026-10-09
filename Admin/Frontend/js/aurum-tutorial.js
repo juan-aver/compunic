@@ -835,8 +835,11 @@
             }
         },
 
-        skip: function () {
-            if (confirm('¿Deseas saltar el tutorial? Puedes volver a iniciarlo en cualquier momento con el botón ✨ Guía Aurum.')) {
+        skip: async function () {
+            const ok = typeof Alerta !== 'undefined'
+                ? await Alerta.confirmar('¿Deseas saltar el tutorial? Puedes volver a iniciarlo en cualquier momento con el botón ✨ Guía Aurum.', { titulo: 'Saltar Guía', confirmText: 'Sí, saltar', cancelText: 'Continuar guía', peligroso: false, icono: 'question' })
+                : confirm('¿Deseas saltar el tutorial? Puedes volver a iniciarlo en cualquier momento con el botón ✨ Guía Aurum.');
+            if (ok) {
                 this.finish();
             }
         },

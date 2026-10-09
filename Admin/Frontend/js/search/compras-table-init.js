@@ -58,8 +58,11 @@ function initComprasTableEnhancements() {
             // Por ejemplo, cargar los datos en el formulario
         },
         // Eliminar
-        (data, row) => {
-            if (confirm(`¿Está seguro de eliminar la compra ${data['no. factura']}?`)) {
+        async (data, row) => {
+            const ok = typeof Alerta !== 'undefined'
+                ? await Alerta.confirmar(`¿Está seguro de eliminar la compra ${data['no. factura']}?`, { titulo: 'Eliminar Compra', confirmText: 'Sí, eliminar', peligroso: true })
+                : confirm(`¿Está seguro de eliminar la compra ${data['no. factura']}?`);
+            if (ok) {
                 console.log('Eliminar compra:', data);
                 // Aquí iría la lógica de eliminación existente
             }

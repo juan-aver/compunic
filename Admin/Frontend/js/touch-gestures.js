@@ -181,9 +181,12 @@ class TouchGestures {
         row.appendChild(deleteBtn);
     }
 
-    handleDelete(row) {
+    async handleDelete(row) {
         // Confirmar eliminación
-        if (confirm('¿Estás seguro de que deseas eliminar este elemento?')) {
+        const ok = typeof Alerta !== 'undefined'
+            ? await Alerta.confirmar('¿Estás seguro de que deseas eliminar este elemento?', { titulo: 'Eliminar Elemento', confirmText: 'Sí, eliminar', peligroso: true })
+            : confirm('¿Estás seguro de que deseas eliminar este elemento?');
+        if (ok) {
             // Animación de salida
             row.style.transform = 'translateX(-100%)';
             row.style.opacity = '0';

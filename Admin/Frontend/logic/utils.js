@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.showToast = function (message, type = 'success') {
     const container = document.getElementById('toast-container');
-    if (!container) return alert(message);
+    if (!container) return (typeof Alerta !== 'undefined' ? Alerta.info(message) : alert(message));
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;

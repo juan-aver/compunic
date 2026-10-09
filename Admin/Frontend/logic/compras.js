@@ -201,7 +201,7 @@ function agregarItemCompra() {
     const garantia = parseInt(document.getElementById('garantia_compra').value) || 0;
 
     if (!idProd || !cant || cant <= 0 || isNaN(precio) || precio < 0) {
-        return alert('Por favor seleccione un producto y cantidades válidas.');
+        return Alerta.advertencia('Por favor seleccione un producto y cantidades válidas.');
     }
 
     const existingItem = itemsCompra.find(i => i.id_producto === idProd);
@@ -311,7 +311,7 @@ function renderComprasPOSGrid() {
                 const imgPath = imagenUrl && imagenUrl.startsWith('http') ? imagenUrl : `${SERVER_URL}/${imagenUrl}`;
                 card.innerHTML = `
                     ${imagenUrl
-                        ? `<img src="${imgPath}" alt="${nombre}">`
+                        ? `<img src="${imgPath}" alt="" onerror="this.onerror=null; this.outerHTML='<div class=\\'pos-card-placeholder\\'><i class=\\'fas fa-box-open\\'></i></div>';">`
                         : `<div class="pos-card-placeholder"><i class="fas fa-box-open"></i></div>`
                     }
                     <div class="pos-card-body">
@@ -369,7 +369,7 @@ function confirmarAgregarCompra() {
     const garantia = parseInt(document.getElementById('popup_garantia').value) || 0;
 
     if (isNaN(precio) || precio < 0) {
-        return alert('Por favor ingrese un costo válido.');
+        return Alerta.advertencia('Por favor ingrese un costo válido.');
     }
 
     const existing = itemsCompra.find(i => i.id_producto == idProducto);
@@ -416,7 +416,7 @@ function initComprasPOSSearch() {
 function actualizarCantidadCompra(index, nuevaCantidad) {
     const cant = parseInt(nuevaCantidad);
     if (cant <= 0) {
-        alert("La cantidad debe ser mayor a 0");
+        Alerta.advertencia("La cantidad debe ser mayor a 0");
         renderizarItemsCompra();
         return;
     }
@@ -425,8 +425,12 @@ function actualizarCantidadCompra(index, nuevaCantidad) {
     renderizarItemsCompra();
 }
 
-function eliminarItemCompra(index) {
-    if (confirm("¿Eliminar este producto de la compra?")) {
+async function eliminarItemCompra(index) {
+    const confirmado = await Alerta.confirmar(
+        "¿Eliminar este producto de la compra actual?",
+        { titulo: "Quitar Producto", confirmText: "Sí, eliminar", peligroso: true }
+    );
+    if (confirmado) {
         itemsCompra.splice(index, 1);
         renderizarItemsCompra();
     }
@@ -436,9 +440,9 @@ function guardarCompra() {
     const idProveedor = document.getElementById('proveedor_compra').value;
     const numeroFactura = document.getElementById('numero_factura').value.trim();
 
-    if (!idProveedor) return alert('Seleccione un proveedor.');
-    if (!numeroFactura) return alert('Ingrese el número de factura del proveedor.');
-    if (itemsCompra.length === 0) return alert('Agregue al menos un producto.');
+    if (!idProveedor) return Alerta.advertencia('Seleccione un proveedor.');
+    if (!numeroFactura) return Alerta.advertencia('Ingrese el número de factura del proveedor.');
+    if (itemsCompra.length === 0) return Alerta.advertencia('Agregue al menos un producto a la compra.');
 
     const payload = {
         id_proveedor: idProveedor,
@@ -457,7 +461,7 @@ function guardarCompra() {
             return data;
         })
         .then(data => {
-            alert('✅ Compra registrada con éxito ID: ' + data.id_compra);
+            Alerta.exito('Compra registrada con éxito. ID: ' + data.id_compra);
             itemsCompra = [];
             document.getElementById('formularioCompra').reset();
             generarFacturaAutomatica();
@@ -466,7 +470,7 @@ function guardarCompra() {
         })
         .catch(err => {
             console.error(err);
-            alert('❌ Error: ' + err.message);
+            Alerta.error('Error al guardar compra: ' + err.message);
         });
 }
 
@@ -518,7 +522,7 @@ function verFactura(id) {
                 .then(r => r.json())
                 .then(compras => {
                     const compra = compras.find(c => c.ID_COMPRA == id);
-                    if (!compra) return alert('No se encontró la información de la compra.');
+                    if (!compra) return Alerta.error('No se encontró la información de la compra.');
                     generarVistaFactura(compra, detalles);
                 });
         })
