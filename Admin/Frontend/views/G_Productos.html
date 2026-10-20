@@ -382,7 +382,9 @@
 
 <script>
   // Definir API_BASE antes de cargar otros scripts
-  const API_BASE = 'http://localhost:3001/api';
+  const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== ''
+    ? 'http://localhost:3001/api'
+    : '/api';
 </script>
 <script>
   // Inicializar productos cuando se accede directamente a esta página

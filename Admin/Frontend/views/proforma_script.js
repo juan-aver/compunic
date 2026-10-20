@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    fetch(`http://localhost:3001/api/cotizaciones/${idCotizacion}`)
+    const apiBase = typeof API_BASE !== 'undefined' ? API_BASE : '/api';
+    fetch(`${apiBase}/cotizaciones/${idCotizacion}`)
         .then(response => {
             if (!response.ok) throw new Error('Error al cargar la cotización');
             return response.json();
@@ -148,7 +149,8 @@ function configurarBotonEmail(cotizacion) {
             // Reutilizamos el endpoint general o envío
             try {
                 // Generar PDF y/o enviar vía backend
-                const response = await fetch(`http://localhost:3001/api/ventas/0/enviar-email`, {
+                const apiBase = typeof API_BASE !== 'undefined' ? API_BASE : '/api';
+                const response = await fetch(`${apiBase}/ventas/0/enviar-email`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 }).catch(() => null);

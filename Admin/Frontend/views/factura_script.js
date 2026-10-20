@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    fetch(`http://localhost:3001/api/ventas/${idVenta}`)
+    const apiBase = typeof API_BASE !== 'undefined' ? API_BASE : '/api';
+    fetch(`${apiBase}/ventas/${idVenta}`)
         .then(response => {
             if (!response.ok) throw new Error('Error al cargar la venta');
             return response.json();
@@ -150,7 +151,8 @@ function configurarBotonEmail(idVenta, numeroFactura, emailCliente, nombreClient
             });
 
             try {
-                const response = await fetch(`http://localhost:3001/api/ventas/${idVenta}/enviar-email`, {
+                const apiBase = typeof API_BASE !== 'undefined' ? API_BASE : '/api';
+                const response = await fetch(`${apiBase}/ventas/${idVenta}/enviar-email`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: emailDestino })
