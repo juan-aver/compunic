@@ -21,6 +21,7 @@ Thumbs.db
 *.swp
 *.swo
 
-# Temporales y backups
+# Temporales, backups y dumps de base de datos
 scratch/
 backup_*.sql
+*.sql
