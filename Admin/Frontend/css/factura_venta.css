@@ -6,10 +6,80 @@
 body {
     background-color: #525659;
     margin: 0;
-    padding: 20px;
+    padding: 20px 10px 40px 10px;
     font-family: 'Roboto', sans-serif;
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+/* =========================================
+   BARRA DE ACCIONES SUPERIOR (BOTONES)
+   ========================================= */
+.acciones-factura-container {
+    width: 21cm;
+    max-width: 95vw;
+    display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 8px 16px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    box-sizing: border-box;
+    flex-wrap: wrap;
+}
+
+.btn-accion-factura {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 15px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Roboto', sans-serif;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+    transition: all 0.2s ease;
+    line-height: 1.2;
+}
+
+.btn-accion-factura:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
+}
+
+.btn-accion-factura:active {
+    transform: translateY(0);
+}
+
+.btn-accion-pdf {
+    background-color: #2563eb;
+}
+.btn-accion-pdf:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-accion-email {
+    background-color: #059669;
+}
+.btn-accion-email:hover {
+    background-color: #047857;
+}
+
+.btn-accion-print {
+    background-color: #475569;
+}
+.btn-accion-print:hover {
+    background-color: #334155;
 }
 
 .hoja-factura {
@@ -443,4 +513,28 @@ body {
     text-transform: uppercase;
     letter-spacing: 2px;
     margin-top: -2px;
+}
+
+/* =========================================
+   IMPRESIÓN (@media print)
+   ========================================= */
+@media print {
+    body {
+        background-color: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+    }
+
+    .acciones-factura-container,
+    .no-print {
+        display: none !important;
+    }
+
+    .hoja-factura {
+        box-shadow: none !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        min-height: auto !important;
+    }
 }

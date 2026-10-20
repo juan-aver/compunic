@@ -16,49 +16,16 @@
 <body>
 
     <!-- Botones de Acción de Proforma -->
-    <div style="text-align: center; padding: 15px; background-color: #f1f5f9; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
-        <button id="btn-descargar-pdf" style="
-            background-color: #0284c7;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-        " onmouseover="this.style.backgroundColor='#0369a1'" onmouseout="this.style.backgroundColor='#0284c7'">
+    <div class="acciones-factura-container no-print">
+        <button id="btn-descargar-pdf" class="btn-accion-factura btn-accion-pdf">
             📥 Descargar Proforma PDF
         </button>
 
-        <button id="btn-enviar-email" style="
-            background-color: #059669;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-        " onmouseover="this.style.backgroundColor='#047857'" onmouseout="this.style.backgroundColor='#059669'">
+        <button id="btn-enviar-email" class="btn-accion-factura btn-accion-email">
             📧 Enviar por Correo
         </button>
 
-        <button onclick="window.print()" style="
-            background-color: #475569;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-        " onmouseover="this.style.backgroundColor='#334155'" onmouseout="this.style.backgroundColor='#475569'">
+        <button onclick="window.print()" class="btn-accion-factura btn-accion-print">
             🖨️ Imprimir
         </button>
     </div>

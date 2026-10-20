@@ -592,6 +592,35 @@ thead tr {
     border-color: var(--dark-bg-elevated, #475569) !important;
 }
 
+[data-theme="dark"] .btn-nuevo-cliente-link {
+    color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .modal-nuevo-cliente-card {
+    background: var(--dark-bg-secondary, #1e293b);
+    border-color: var(--dark-bg-elevated, #475569);
+    color: var(--dark-text-primary, #f1f5f9);
+}
+
+[data-theme="dark"] .modal-nuevo-cliente-footer {
+    background: var(--dark-bg-tertiary, #0f172a);
+    border-top-color: var(--dark-bg-elevated, #334155);
+}
+
+[data-theme="dark"] .modal-form-group label {
+    color: var(--dark-text-secondary, #cbd5e1);
+}
+
+[data-theme="dark"] .input-with-icon-small input {
+    background: var(--dark-bg-tertiary, #334155) !important;
+    color: var(--dark-text-primary, #f1f5f9) !important;
+    border-color: var(--dark-bg-elevated, #475569) !important;
+}
+
+[data-theme="dark"] .input-with-icon-small .input-icon-inner {
+    color: #94a3b8;
+}
+
 [data-theme="dark"] .ventas-pos-product-card {
     background: var(--dark-bg-tertiary, #334155);
 }

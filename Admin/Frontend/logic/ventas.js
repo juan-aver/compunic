@@ -819,8 +819,8 @@ function toggleReferenciaBancaria(valor) {
 }
 window.toggleReferenciaBancaria = toggleReferenciaBancaria;
 
-function poblarSelectClientes() {
-    fetch(`${API_BASE}/clientes`)
+function poblarSelectClientes(selectedId = null) {
+    return fetch(`${API_BASE}/clientes`)
         .then(res => res.json())
         .then(clientes => {
             const select = document.getElementById('cliente-select');
@@ -835,9 +835,18 @@ function poblarSelectClientes() {
                 option.textContent = `${cliente.NOMBRE} ${cliente.APELLIDO} - ${cliente.NOMBRE_EMPRESA || ''}`.trim().replace(/ - $/, '');
                 select.appendChild(option);
             });
+
+            if (selectedId) {
+                select.value = selectedId;
+                if (typeof window.toggleClienteOcasional === 'function') {
+                    window.toggleClienteOcasional(selectedId);
+                }
+            }
+            return clientes;
         })
         .catch(err => console.error('Error al cargar clientes:', err));
 }
+window.poblarSelectClientes = poblarSelectClientes;
 
 function poblarSelectVendedores() {
     fetch(`${API_BASE}/vendedores`)
@@ -1047,6 +1056,116 @@ async function guardarCotizacion() {
     }
 }
 window.guardarCotizacion = guardarCotizacion;
+
+// ============================================================================
+// MODAL REGISTRO RÁPIDO DE CLIENTE DESDE VENTAS
+// ============================================================================
+function abrirModalNuevoCliente() {
+    const modal = document.getElementById('modal-nuevo-cliente');
+    if (modal) {
+        modal.style.display = 'flex';
+        const form = document.getElementById('form-nuevo-cliente-ventas');
+        if (form) form.reset();
+        setTimeout(() => {
+            const inputNombre = document.getElementById('modal-cliente-nombre');
+            if (inputNombre) inputNombre.focus();
+        }, 80);
+    }
+}
+window.abrirModalNuevoCliente = abrirModalNuevoCliente;
+
+function cerrarModalNuevoCliente() {
+    const modal = document.getElementById('modal-nuevo-cliente');
+    if (modal) {
+        modal.style.display = 'none';
+        const form = document.getElementById('form-nuevo-cliente-ventas');
+        if (form) form.reset();
+    }
+}
+window.cerrarModalNuevoCliente = cerrarModalNuevoCliente;
+
+// Listener para cerrar modal con Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modalCliente = document.getElementById('modal-nuevo-cliente');
+        if (modalCliente && modalCliente.style.display !== 'none') {
+            cerrarModalNuevoCliente();
+        }
+    }
+});
+
+async function guardarNuevoClienteDesdeVentas(event) {
+    if (event) event.preventDefault();
+
+    const nombre = document.getElementById('modal-cliente-nombre')?.value.trim();
+    const apellido = document.getElementById('modal-cliente-apellido')?.value.trim();
+    const telefono = document.getElementById('modal-cliente-telefono')?.value.trim() || '';
+    const email = document.getElementById('modal-cliente-email')?.value.trim() || '';
+    const cedula = document.getElementById('modal-cliente-cedula')?.value.trim() || '';
+
+    if (!nombre || !apellido) {
+        if (typeof Alerta !== 'undefined') {
+            Alerta.advertencia('Nombre y Apellido son obligatorios');
+        } else if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'warning', title: 'Campos requeridos', text: 'Nombre y Apellido son obligatorios' });
+        } else {
+            alert('Nombre y Apellido son obligatorios');
+        }
+        return;
+    }
+
+    const btnSubmit = document.getElementById('btn-guardar-nuevo-cliente');
+    const originalBtnHtml = btnSubmit ? btnSubmit.innerHTML : '';
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/clientes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre, apellido, telefono, email, cedula })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || 'Error al guardar el cliente');
+        }
+
+        const nuevoId = data.id;
+
+        // Recargar select de clientes y auto-seleccionar el creado
+        await poblarSelectClientes(nuevoId);
+
+        cerrarModalNuevoCliente();
+
+        if (typeof Alerta !== 'undefined') {
+            Alerta.exito(`Cliente ${nombre} ${apellido} registrado y seleccionado exitosamente.`);
+        } else if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Cliente Registrado!',
+                text: `${nombre} ${apellido} ha sido agregado y seleccionado para esta venta.`
+            });
+        }
+    } catch (err) {
+        console.error('Error al registrar cliente desde ventas:', err);
+        if (typeof Alerta !== 'undefined') {
+            Alerta.error(err.message || 'Error al guardar cliente');
+        } else if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Error al registrar cliente' });
+        } else {
+            alert('Error: ' + err.message);
+        }
+    } finally {
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = originalBtnHtml;
+        }
+    }
+}
+window.guardarNuevoClienteDesdeVentas = guardarNuevoClienteDesdeVentas;
 
 // 2. Historial de Cotizaciones / Proformas Modal
 function abrirModalCotizaciones() {

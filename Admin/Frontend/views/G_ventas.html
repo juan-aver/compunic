@@ -33,11 +33,21 @@
       <!-- Compact header row: Cliente, Vendedor, Factura, Fecha -->
       <div class="ventas-pos-header">
         <div class="pos-header-field">
-          <label class="form-label-small">Cliente</label>
-          <select id="cliente-select" class="form-select" onchange="toggleClienteOcasional(this.value)">
-            <option value="" disabled selected>Seleccione un Cliente</option>
-            <option value="__ocasional__">👤 Cliente Ocasional / Sin Registro</option>
-          </select>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <label class="form-label-small" style="margin-bottom:0;">Cliente</label>
+            <button type="button" onclick="abrirModalNuevoCliente()" class="btn-nuevo-cliente-link" title="Registrar nuevo cliente">
+              <i class="fas fa-user-plus"></i> + Nuevo
+            </button>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <select id="cliente-select" class="form-select" onchange="toggleClienteOcasional(this.value)" style="flex:1;">
+              <option value="" disabled selected>Seleccione un Cliente</option>
+              <option value="__ocasional__">👤 Cliente Ocasional / Sin Registro</option>
+            </select>
+            <button type="button" onclick="abrirModalNuevoCliente()" class="btn-nuevo-cliente-icon" title="Registrar nuevo cliente">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
         </div>
         <!-- Campo de nombre para cliente ocasional (oculto por defecto) -->
         <div class="pos-header-field" id="cliente-ocasional-wrapper" style="display:none;">
@@ -172,6 +182,84 @@
         <div style="padding:12px 20px; background:var(--bg-card-alt, #f8fafc); border-top:1px solid var(--border-color, #e2e8f0); text-align:right;">
           <button onclick="cerrarModalCotizaciones()" class="btn-cancel" style="padding:8px 16px;">Cerrar</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal Registrar Nuevo Cliente Rápido desde Ventas -->
+    <div id="modal-nuevo-cliente" class="modal-nuevo-cliente-backdrop" style="display:none;" onclick="if(event.target === this) cerrarModalNuevoCliente()">
+      <div class="modal-nuevo-cliente-card">
+        <!-- Header -->
+        <div class="modal-nuevo-cliente-header">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="modal-nuevo-cliente-icon-badge">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <div>
+              <h3 style="margin:0; font-size:1.05rem; font-weight:700; color:white;">Registrar Nuevo Cliente</h3>
+              <p style="margin:0; font-size:0.75rem; color:rgba(255,255,255,0.85);">Quedará seleccionado automáticamente en esta venta</p>
+            </div>
+          </div>
+          <button type="button" onclick="cerrarModalNuevoCliente()" class="modal-nuevo-cliente-close-btn" title="Cerrar">&times;</button>
+        </div>
+        
+        <!-- Formulario -->
+        <form id="form-nuevo-cliente-ventas" onsubmit="guardarNuevoClienteDesdeVentas(event)">
+          <div class="modal-nuevo-cliente-body">
+            
+            <div class="modal-form-row">
+              <div class="modal-form-group">
+                <label for="modal-cliente-nombre">Nombre <span class="required-star">*</span></label>
+                <div class="input-with-icon-small">
+                  <i class="fas fa-user input-icon-inner"></i>
+                  <input type="text" id="modal-cliente-nombre" required placeholder="Ej: Juan" class="form-input" autocomplete="off">
+                </div>
+              </div>
+              <div class="modal-form-group">
+                <label for="modal-cliente-apellido">Apellido <span class="required-star">*</span></label>
+                <div class="input-with-icon-small">
+                  <i class="fas fa-user input-icon-inner"></i>
+                  <input type="text" id="modal-cliente-apellido" required placeholder="Ej: Pérez" class="form-input" autocomplete="off">
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-form-row">
+              <div class="modal-form-group">
+                <label for="modal-cliente-telefono">Teléfono</label>
+                <div class="input-with-icon-small">
+                  <i class="fas fa-phone input-icon-inner"></i>
+                  <input type="tel" id="modal-cliente-telefono" placeholder="Ej: 8888-7777" class="form-input" autocomplete="off">
+                </div>
+              </div>
+              <div class="modal-form-group">
+                <label for="modal-cliente-cedula">Cédula de Identidad</label>
+                <div class="input-with-icon-small">
+                  <i class="fas fa-id-card input-icon-inner"></i>
+                  <input type="text" id="modal-cliente-cedula" placeholder="Ej: 001-010190-0001A" class="form-input" autocomplete="off">
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-form-group">
+              <label for="modal-cliente-email">Correo Electrónico</label>
+              <div class="input-with-icon-small">
+                <i class="fas fa-envelope input-icon-inner"></i>
+                <input type="email" id="modal-cliente-email" placeholder="Ej: cliente@correo.com" class="form-input" autocomplete="off">
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Footer con botones -->
+          <div class="modal-nuevo-cliente-footer">
+            <button type="button" onclick="cerrarModalNuevoCliente()" class="btn-cancel" style="padding:8px 16px;">
+              Cancelar
+            </button>
+            <button type="submit" id="btn-guardar-nuevo-cliente" class="btn-register" style="padding:8px 18px; display:inline-flex; align-items:center; gap:8px;">
+              <i class="fas fa-save"></i> Guardar y Seleccionar
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
