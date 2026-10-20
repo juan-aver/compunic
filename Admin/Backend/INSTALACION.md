@@ -235,6 +235,31 @@ node scripts/create-reset-tokens-table.js
 
 ---
 
+## Configuración de Almacenamiento en la Nube (Cloudflare R2)
+
+El sistema soporta subida de archivos y fotos directamente a **Cloudflare R2** (compatible con AWS S3) organizado automáticamente en carpetas:
+- `productos/`: Fotos de catálogo de productos.
+- `servicios/`: Fotos de evidencia de órdenes de servicio técnico.
+- `comprobantes/`: Comprobantes de transferencias bancarias de pedidos online.
+
+### Pasos para configurar R2:
+1. En tu panel de **Cloudflare Dashboard** ve a **R2 Storage**.
+2. Crea un Bucket (ej: `compunic`).
+3. En **R2 -> Manage R2 API Tokens**, crea un token con permisos de **Object Read & Write**.
+4. En la configuración de tu Bucket, activa el acceso público (**Public access -> R2.dev subdomain** o asocia un dominio propio).
+5. Agrega estas variables a tu archivo `.env`:
+```env
+R2_ACCOUNT_ID=tu_account_id_de_cloudflare
+R2_ACCESS_KEY_ID=tu_access_key_id
+R2_SECRET_ACCESS_KEY=tu_secret_access_key
+R2_BUCKET_NAME=compunic
+R2_PUBLIC_URL=https://pub-xxxxxx.r2.dev
+```
+
+*Nota: Si estas variables no están configuradas en `.env`, el sistema guardará las imágenes automáticamente en el disco local o usará ImgBB si está definido.*
+
+---
+
 ## Contacto
 
 Si tienen problemas con la instalación, contactar al equipo de desarrollo.

@@ -9,10 +9,11 @@ const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const FormData = require('form-data');
+const { isR2Configured, subirArchivoR2, eliminarArchivoR2 } = require('../services/r2.service');
 
-// Configuración de almacenamiento para fotos de evidencia
+// Configuración de almacenamiento para fotos de evidencia (R2, ImgBB o Local)
 let storage;
-if (process.env.IMGBB_API_KEY) {
+if (isR2Configured() || process.env.IMGBB_API_KEY) {
     storage = multer.memoryStorage();
 } else {
     storage = multer.diskStorage({
@@ -235,7 +236,14 @@ const serviciosController = {
             }
 
             let evidenciaUrl;
-            if (process.env.IMGBB_API_KEY) {
+            if (isR2Configured()) {
+                evidenciaUrl = await subirArchivoR2({
+                    buffer: req.file.buffer,
+                    originalname: req.file.originalname,
+                    mimetype: req.file.mimetype,
+                    carpeta: 'servicios'
+                });
+            } else if (process.env.IMGBB_API_KEY) {
                 evidenciaUrl = await subirAImgBB(req.file.buffer, req.file.originalname);
             } else {
                 evidenciaUrl = `/uploads/servicios/${req.file.filename}`;

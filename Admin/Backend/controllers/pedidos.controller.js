@@ -12,19 +12,22 @@ const Pedidos  = require('../models/pedidos.model');
 const multer    = require('multer');
 const path      = require('path');
 const fs        = require('fs');
+const { isR2Configured, subirArchivoR2 } = require('../services/r2.service');
 
-// --- Configuración de Multer para comprobantes ---
+// --- Configuración de Multer para comprobantes (R2 en memoria o Disco en Local) ---
 const uploadsDir = path.join(__dirname, '..', 'uploads', 'comprobantes');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
-const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, uploadsDir),
-    filename:    (_req, file, cb) => {
-        const ext  = path.extname(file.originalname);
-        const name = `comprobante_${Date.now()}${ext}`;
-        cb(null, name);
-    }
-});
+const storage = isR2Configured()
+    ? multer.memoryStorage()
+    : multer.diskStorage({
+        destination: (_req, _file, cb) => cb(null, uploadsDir),
+        filename:    (_req, file, cb) => {
+            const ext  = path.extname(file.originalname);
+            const name = `comprobante_${Date.now()}${ext}`;
+            cb(null, name);
+        }
+    });
 
 const upload = multer({
     storage,
@@ -207,12 +210,19 @@ const pedidosController = {
                 const { id } = req.params;
                 const { notas } = req.body;
 
-                if (!req.file) {
-                    return res.status(400).json({ success: false, error: 'No se recibió ningún archivo' });
+                let rutaArchivo;
+                if (isR2Configured()) {
+                    rutaArchivo = await subirArchivoR2({
+                        buffer: req.file.buffer,
+                        originalname: req.file.originalname,
+                        mimetype: req.file.mimetype,
+                        carpeta: 'comprobantes'
+                    });
+                } else {
+                    rutaArchivo = `uploads/comprobantes/${req.file.filename}`;
                 }
 
-                const rutaRelativa = `uploads/comprobantes/${req.file.filename}`;
-                await Pedidos.guardarComprobante(parseInt(id), rutaRelativa, req.file.originalname, notas || '');
+                await Pedidos.guardarComprobante(parseInt(id), rutaArchivo, req.file.originalname, notas || '');
 
                 res.json({ success: true, mensaje: 'Comprobante recibido. Tu pago está siendo verificado.' });
             } catch (error) {

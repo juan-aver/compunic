@@ -13,11 +13,12 @@ const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const FormData = require('form-data');
+const { isR2Configured, subirArchivoR2, eliminarArchivoR2 } = require('../services/r2.service');
 
-// Configuración híbrida de multer: Memoria para Cloud (ImgBB) o Disco para Local
+// Configuración híbrida de multer: Memoria para Cloud (R2 o ImgBB) o Disco para Local
 let storage;
-if (process.env.IMGBB_API_KEY) {
-  // En la nube usamos memoria para luego enviarlo a ImgBB
+if (isR2Configured() || process.env.IMGBB_API_KEY) {
+  // En la nube usamos memoria para enviarlo a R2 o ImgBB
   storage = multer.memoryStorage();
 } else {
   // En local seguimos usando el disco
@@ -70,8 +71,32 @@ async function subirAImgBB(buffer, fileName) {
   }
 }
 
-const eliminarImagen = (imagenUrl) => {
-  if (!imagenUrl || imagenUrl.startsWith('http')) return;
+/**
+ * Procesa la subida de imagen según el backend de almacenamiento disponible (R2 > ImgBB > Local)
+ */
+async function procesarSubidaImagen(file, carpeta = 'productos') {
+  if (!file) return null;
+  if (isR2Configured()) {
+    return await subirArchivoR2({
+      buffer: file.buffer,
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      carpeta
+    });
+  }
+  if (process.env.IMGBB_API_KEY) {
+    return await subirAImgBB(file.buffer, file.originalname);
+  }
+  return `uploads/${carpeta}/` + file.filename;
+}
+
+const eliminarImagen = async (imagenUrl) => {
+  if (!imagenUrl) return;
+  if (isR2Configured() && imagenUrl.startsWith('http')) {
+    await eliminarArchivoR2(imagenUrl);
+    return;
+  }
+  if (imagenUrl.startsWith('http')) return;
   try {
     const imagePath = path.join(__dirname, '..', imagenUrl);
     if (fs.existsSync(imagePath)) {
@@ -130,11 +155,7 @@ const productosController = {
     let imagenUrl = null;
     try {
       if (req.file) {
-        if (process.env.IMGBB_API_KEY) {
-          imagenUrl = await subirAImgBB(req.file.buffer, req.file.originalname);
-        } else {
-          imagenUrl = 'uploads/productos/' + req.file.filename;
-        }
+        imagenUrl = await procesarSubidaImagen(req.file, 'productos');
       }
 
       let adminId = id_empleado;
@@ -210,13 +231,8 @@ const productosController = {
       let imagenUrl = productoActual[0]?.IMAGEN_URL;
 
       if (req.file) {
-        if (!imagenUrl?.startsWith('http')) eliminarImagen(imagenUrl);
-
-        if (process.env.IMGBB_API_KEY) {
-          imagenUrl = await subirAImgBB(req.file.buffer, req.file.originalname);
-        } else {
-          imagenUrl = 'uploads/productos/' + req.file.filename;
-        }
+        if (imagenUrl) await eliminarImagen(imagenUrl);
+        imagenUrl = await procesarSubidaImagen(req.file, 'productos');
       }
 
       const [pStock] = await Producto.obtenerStockCalculado(id);
