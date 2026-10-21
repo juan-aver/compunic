@@ -10,7 +10,8 @@ function getFullImageUrl(url) {
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
         return url;
     }
-    const backendOrigin = typeof API_BASE !== 'undefined' ? API_BASE.replace(/\/api\/?$/, '') : 'http://localhost:3001';
+    const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '' && window.location.port !== '3001';
+    const backendOrigin = typeof API_BASE !== 'undefined' ? API_BASE.replace(/\/api\/?$/, '') : (isLocal ? 'http://localhost:3001' : '');
     return `${backendOrigin}${url.startsWith('/') ? '' : '/'}${url}`;
 }
 

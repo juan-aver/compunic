@@ -7,10 +7,14 @@
 
 (function() {
     const getApiBase = () => {
-        if (window.location.origin && window.location.origin.startsWith('http')) {
-            return window.location.origin;
+        if (typeof API_BASE !== 'undefined') {
+            return API_BASE.replace(/\/api\/?$/, '');
         }
-        return 'http://localhost:3001';
+        const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '' && window.location.port !== '3001';
+        if (isLocal) {
+            return 'http://localhost:3001';
+        }
+        return window.location.origin || '';
     };
     const API = getApiBase();
     let currentEstado = 'PENDIENTE';

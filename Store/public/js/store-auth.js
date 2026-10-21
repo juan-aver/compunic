@@ -27,11 +27,12 @@ function safeRemoveItem(key) {
 
 const StoreAuth = {
     API_URL: (() => {
-        if (window.location.origin && window.location.origin.startsWith('http')) {
-            return `${window.location.origin}/api/store/auth`;
+        const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '' && window.location.port !== '3001';
+        if (isLocal) {
+            return 'http://localhost:3001/api/store/auth';
         }
-        return 'http://localhost:3001/api/store/auth';
-    })(), // Ajustar según entorno
+        return '/api/store/auth';
+    })(),
 
     // Iniciar Sesión
     login: async (email, password) => {

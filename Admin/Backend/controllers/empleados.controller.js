@@ -152,11 +152,19 @@ const EmpleadosController = {
                     
                     if (tokenResult) {
                         const nombreCompleto = `${nombre} ${apellido}`;
+                        let clientOrigin = req.get('origin');
+                        if (!clientOrigin && req.get('referer')) {
+                            try {
+                                const parsedUrl = new URL(req.get('referer'));
+                                clientOrigin = parsedUrl.origin;
+                            } catch (e) {}
+                        }
                         await EmailService.sendNewEmployeePasswordEmail(
                             email,
                             tokenResult.token,
                             nombreCompleto,
-                            rol
+                            rol,
+                            clientOrigin
                         );
                         console.log(`📧 Correo de bienvenida enviado a ${email} (${rol})`);
                         

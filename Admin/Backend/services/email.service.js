@@ -24,14 +24,32 @@ const transporter = nodemailer.createTransport({
 });
 
 /**
+ * Obtener la URL base del frontend de forma dinámica y segura
+ * @param {string} [customOrigin] - Origen detectado de la solicitud del cliente (ej: https://compunic.netlify.app)
+ * @returns {string} URL base sin barra final
+ */
+function getFrontendUrl(customOrigin) {
+    if (customOrigin && typeof customOrigin === 'string' && customOrigin.startsWith('http')) {
+        return customOrigin.replace(/\/+$/, '');
+    }
+    const envUrl = process.env.FRONTEND_URL;
+    if (envUrl && envUrl.trim()) {
+        return envUrl.trim().replace(/\/+$/, '');
+    }
+    return 'http://localhost:3001';
+}
+
+/**
  * Enviar correo de recuperación de contraseña
  * @param {string} email - Correo del destinatario
  * @param {string} token - Token de recuperación
  * @param {string} nombreCompleto - Nombre del empleado
+ * @param {string} [clientOrigin] - Origen del cliente web que solicitó la recuperación
  */
-async function sendPasswordResetEmail(email, token, nombreCompleto) {
+async function sendPasswordResetEmail(email, token, nombreCompleto, clientOrigin) {
 
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${token}`;
+    const baseUrl = getFrontendUrl(clientOrigin);
+    const resetUrl = `${baseUrl}/reset-password.html?token=${token}`;
 
     const mailOptions = {
         from: `"COMPUNIC - Sistema" <${process.env.EMAIL_USER}>`,
@@ -442,9 +460,11 @@ async function sendCotizacionEmail(email, nombreCliente, numeroCotizacion, fecha
  * @param {string} token - Token de creación de contraseña
  * @param {string} nombreCompleto - Nombre del empleado
  * @param {string} rol - Rol asignado (ADMIN/VENDEDOR)
+ * @param {string} [clientOrigin] - Origen del cliente web
  */
-async function sendNewEmployeePasswordEmail(email, token, nombreCompleto, rol) {
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${token}&welcome=1`;
+async function sendNewEmployeePasswordEmail(email, token, nombreCompleto, rol, clientOrigin) {
+    const baseUrl = getFrontendUrl(clientOrigin);
+    const resetUrl = `${baseUrl}/reset-password.html?token=${token}&welcome=1`;
 
     const rolNombres = {
         'ADMIN': 'Administrador',
@@ -593,7 +613,7 @@ async function sendPedidoPendienteEmail(email, nombreCliente, numeroFactura, tot
             <li>Verificaremos tu pago en menos de <strong>2 horas hábiles</strong></li>
         </ol>
         <div style="text-align:center;margin:24px 0">
-            <a href="${process.env.FRONTEND_URL}/Store/views/order-confirmation.html?order=${numeroFactura.replace('WEB-','')}"
+            <a href="${getFrontendUrl()}/Store/views/order-confirmation.html?order=${numeroFactura.replace('WEB-','')}"
                style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">
                 📎 Subir Comprobante de Pago
             </a>

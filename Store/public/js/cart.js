@@ -15,6 +15,16 @@ function formatPrice(price) {
     return 'C$' + parseFloat(price).toFixed(2);
 }
 
+function resolveProductImageUrl(imageUrl) {
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://') || imageUrl.startsWith('data:')) {
+        return imageUrl;
+    }
+    const cleanPath = imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl;
+    const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '' && window.location.port !== '3001';
+    return isLocal ? `http://localhost:3001/${cleanPath}` : `/${cleanPath}`;
+}
+
 function getGradientForProduct(id) {
     const gradients = [
         'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -147,7 +157,7 @@ function renderCart() {
         // Determinar si mostrar imagen o placeholder
         let imageContent;
         if (item.imageUrl) {
-            imageContent = `<img src="http://localhost:3001/${item.imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" />`;
+            imageContent = `<img src="${resolveProductImageUrl(item.imageUrl)}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" />`;
         } else {
             imageContent = `<i class="fas fa-laptop"></i>`;
         }

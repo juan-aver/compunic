@@ -5,7 +5,7 @@
 
 const CajaApp = {
     sesionActual: null,
-    apiBase: (window.API_BASE_URL || `http://${window.location.hostname}:3001/api`) + '/caja',
+    apiBase: ((typeof API_BASE !== 'undefined' ? API_BASE : (window.API_BASE_URL || '/api')).replace(/\/+$/, '')) + '/caja',
 
     /**
      * Inicialización del módulo

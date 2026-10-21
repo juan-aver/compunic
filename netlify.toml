@@ -6,3 +6,9 @@
   to = "https://compunic-production.up.railway.app/api/:splat"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/uploads/*"
+  to = "https://compunic-production.up.railway.app/uploads/:splat"
+  status = 200
+  force = true

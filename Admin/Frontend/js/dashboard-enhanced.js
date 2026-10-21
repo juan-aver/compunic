@@ -309,7 +309,7 @@ const DashboardEnhanced = {
         let cantidades = [0, 0, 0];
 
         try {
-            const response = await fetch(`${typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:3000/api'}/dashboard/servicios-por-estado`);
+            const response = await fetch(`${typeof API_BASE !== 'undefined' ? API_BASE : '/api'}/dashboard/servicios-por-estado`);
             const data = await response.json();
             if (data && data.length > 0) {
                 estados = data.map(d => d.ESTADO);
@@ -348,7 +348,7 @@ const DashboardEnhanced = {
                         modal.style.display = 'flex';
 
                         try {
-                            const baseUrl = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:3000/api';
+                            const baseUrl = typeof API_BASE !== 'undefined' ? API_BASE : '/api';
                             const res = await fetch(`${baseUrl}/servicios`);
                             const servicios = await res.json();
                             

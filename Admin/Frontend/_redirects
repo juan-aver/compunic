@@ -1,1 +1,2 @@
 /api/*  https://compunic-production.up.railway.app/api/:splat  200
+/uploads/*  https://compunic-production.up.railway.app/uploads/:splat  200

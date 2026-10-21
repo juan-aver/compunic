@@ -96,15 +96,24 @@ const AuthController = {
             // Por seguridad, siempre retornamos el mismo mensaje
             // No revelamos si el email existe o no
             if (result) {
-                console.log('📨 Intentando enviar correo...');
+                // Detectar origen del cliente web (ej: https://compunic.netlify.app)
+                let clientOrigin = req.get('origin');
+                if (!clientOrigin && req.get('referer')) {
+                    try {
+                        const parsedUrl = new URL(req.get('referer'));
+                        clientOrigin = parsedUrl.origin;
+                    } catch (e) {}
+                }
+
                 // Enviar correo con el token
                 const nombreCompleto = `${result.empleado.nombre} ${result.empleado.apellido}`;
                 await EmailService.sendPasswordResetEmail(
                     result.empleado.email,
                     result.token,
-                    nombreCompleto
+                    nombreCompleto,
+                    clientOrigin
                 );
-                console.log('✅ Correo enviado exitosamente');
+                console.log('✅ Correo enviado exitosamente con origen:', clientOrigin || 'default');
             }
 
             res.json({

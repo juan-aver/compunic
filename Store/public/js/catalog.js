@@ -19,6 +19,16 @@ let isGridView = true;
 // ============================================
 // UTILIDADES
 // ============================================
+function resolveProductImageUrl(imageUrl) {
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://') || imageUrl.startsWith('data:')) {
+        return imageUrl;
+    }
+    const cleanPath = imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl;
+    const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '' && window.location.port !== '3001';
+    return isLocal ? `http://localhost:3001/${cleanPath}` : `/${cleanPath}`;
+}
+
 function getGradientForProduct(id) {
     const gradients = [
         'linear-gradient(135deg, #162427 0%, #145D90 100%)',
@@ -262,7 +272,7 @@ function renderProducts(products) {
         const stockStatus = getStockStatus(product.stock);
         const gradient = getGradientForProduct(product.id);
         const imageContent = product.imageUrl
-            ? `<img src="http://localhost:3001/${product.imageUrl}" alt="${product.name}" loading="lazy" />`
+            ? `<img src="${resolveProductImageUrl(product.imageUrl)}" alt="${product.name}" loading="lazy" />`
             : `<div style="font-size: 4rem; color: rgba(255,255,255,0.2);"><i class="fas fa-laptop"></i></div>`;
             
         const isSeminuevo = product.name.toLowerCase().includes('(seminuevo)') || (product.categories && product.categories.toLowerCase().includes('seminuevo'));
@@ -334,7 +344,7 @@ function openProductModal(productId) {
 
     const imageWrap = document.getElementById('modalImageWrap');
     imageWrap.innerHTML = product.imageUrl
-        ? `<img src="http://localhost:3001/${product.imageUrl}" alt="${product.name}" />`
+        ? `<img src="${resolveProductImageUrl(product.imageUrl)}" alt="${product.name}" />`
         : `<div class="modal-image-placeholder"><i class="fas fa-laptop"></i></div>`;
 
     const buyBtn = document.getElementById('modalBuyBtn');

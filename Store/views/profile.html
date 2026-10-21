@@ -194,7 +194,7 @@
 
             // Load profile data
             try {
-                const res = await StoreAuth.fetchProtected('http://localhost:3001/api/store/auth/me');
+                const res = await StoreAuth.fetchProtected(`${StoreAuth.API_URL}/me`);
                 const data = await res.json();
 
                 if (data.success) {
@@ -208,7 +208,7 @@
 
             // Load history
             try {
-                const res = await StoreAuth.fetchProtected('http://localhost:3001/api/store/auth/compras');
+                const res = await StoreAuth.fetchProtected(`${StoreAuth.API_URL}/compras`);
                 const data = await res.json();
                 const tbody = document.getElementById('comprasTableBody');
 
