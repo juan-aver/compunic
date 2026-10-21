@@ -77,13 +77,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const totalConIVA = parseFloat(venta.TOTAL);
             const subtotalSinIVA = totalConIVA / 1.15;
             const montoIVA = totalConIVA - subtotalSinIVA;
+            const tasaCambio = parseFloat(venta.TASA_CAMBIO) || (typeof Divisas !== 'undefined' ? Divisas.getTasa() : 36.6243);
+            const totalUSD = (totalConIVA / tasaCambio).toFixed(2);
 
             const valoresTotal = document.querySelectorAll('.area-totales .valor-total');
             if (valoresTotal.length >= 4) {
                 valoresTotal[0].textContent = `C$ ${subtotalSinIVA.toFixed(2)}`;
                 valoresTotal[1].textContent = `C$ ${montoIVA.toFixed(2)}`;
                 valoresTotal[2].textContent = `C$ ${totalConIVA.toFixed(2)}`;
-                valoresTotal[3].textContent = ``;
+                valoresTotal[3].textContent = `${tasaCambio.toFixed(2)} ($${totalUSD} USD)`;
             }
 
             // Mostrar forma de pago en la sección de observaciones de la factura

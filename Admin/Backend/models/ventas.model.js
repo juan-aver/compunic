@@ -2,6 +2,7 @@
 // ventas.model.js
 
 const db = require('../config/db');
+const DivisasService = require('../services/divisas.service');
 
 const Ventas = {
   // Obtener todas las ventas (Adaptado al esquema proporcionado)
@@ -200,6 +201,15 @@ const Ventas = {
 
     const [productos] = await db.query(queryProductos, [id]);
     venta.items = productos;
+
+    try {
+      const infoTasa = await DivisasService.getTasaCambio();
+      venta.TASA_CAMBIO = infoTasa.tasa;
+      venta.TOTAL_USD = Math.round((parseFloat(venta.TOTAL) / infoTasa.tasa) * 100) / 100;
+    } catch (e) {
+      venta.TASA_CAMBIO = 36.6243;
+      venta.TOTAL_USD = Math.round((parseFloat(venta.TOTAL) / 36.6243) * 100) / 100;
+    }
 
     return venta;
   },

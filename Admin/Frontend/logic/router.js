@@ -318,6 +318,10 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         // 7. Renderizar grid POS de productos directamente
                         if (typeof renderVentasPOSGrid === 'function') renderVentasPOSGrid();
 
+                        if (typeof Divisas !== 'undefined') {
+                            Divisas.actualizarWidgetsEnPantalla();
+                        }
+
                         console.log('✅ Vista de Ventas cargada completamente');
 
                         // SEARCH LOGIC FOR SALES

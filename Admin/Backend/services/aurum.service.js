@@ -103,6 +103,23 @@ const aurumTools = [
                 name: "obtener_auditoria",
                 description: "Obtiene las acciones de auditoría o historial de actividad de usuarios más recientes del sistema (eliminaciones, modificaciones, logins, etc.).",
             },
+            {
+                name: "obtener_tasa_cambio",
+                description: "Obtiene la tasa de cambio oficial de Córdobas a Dólares (USD/NIO) configurada en el sistema.",
+            },
+            {
+                name: "convertir_divisas",
+                description: "Convierte automáticamente un monto entre Córdobas (NIO) y Dólares (USD) usando la tasa de cambio oficial.",
+                parameters: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                        monto: { type: SchemaType.NUMBER, description: "Cantidad numérica a convertir" },
+                        de: { type: SchemaType.STRING, description: "Moneda de origen: 'NIO' (Córdobas) o 'USD' (Dólares)" },
+                        a: { type: SchemaType.STRING, description: "Moneda de destino: 'USD' (Dólares) o 'NIO' (Córdobas)" },
+                    },
+                    required: ["monto"],
+                },
+            },
         ],
     },
 ];
@@ -375,6 +392,24 @@ const functionExecutors = {
             return audits;
         } catch (err) {
             return { error: `Error al obtener auditoría: ${err.message}` };
+        }
+    },
+
+    obtener_tasa_cambio: async () => {
+        try {
+            const DivisasService = require('./divisas.service');
+            return await DivisasService.getTasaCambio();
+        } catch (err) {
+            return { error: `Error al consultar tasa de cambio: ${err.message}` };
+        }
+    },
+
+    convertir_divisas: async (args) => {
+        try {
+            const DivisasService = require('./divisas.service');
+            return await DivisasService.convertir(args.monto, args.de || 'NIO', args.a || 'USD');
+        } catch (err) {
+            return { error: `Error en conversión de divisas: ${err.message}` };
         }
     }
 };

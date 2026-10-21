@@ -104,6 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const totTot = document.getElementById('tot-total');
             if (totTot) totTot.textContent = `C$ ${total.toFixed(2)}`;
 
+            const totUsd = document.getElementById('tot-usd');
+            const tasa = (typeof Divisas !== 'undefined') ? Divisas.getTasa() : 36.6243;
+            if (totUsd) {
+                const totalUSD = (total / tasa).toFixed(2);
+                totUsd.textContent = `$ ${totalUSD} USD (T/C: ${tasa.toFixed(2)})`;
+            }
+
             // 7. Configurar Botones
             configurarBotonPDF(cotizacion.NUMERO_COTIZACION);
             configurarBotonEmail(cotizacion);

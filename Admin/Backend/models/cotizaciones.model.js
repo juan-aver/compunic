@@ -4,6 +4,7 @@
  * IMPORTANTE: No descuenta stock ni genera movimientos de inventario.
  */
 const db = require('../config/db');
+const DivisasService = require('../services/divisas.service');
 
 const Cotizaciones = {
   // Crear una nueva cotización / proforma
@@ -167,6 +168,16 @@ const Cotizaciones = {
     );
 
     cotizacion.items = items;
+
+    try {
+      const infoTasa = await DivisasService.getTasaCambio();
+      cotizacion.TASA_CAMBIO = infoTasa.tasa;
+      cotizacion.TOTAL_USD = Math.round((parseFloat(cotizacion.TOTAL) / infoTasa.tasa) * 100) / 100;
+    } catch (e) {
+      cotizacion.TASA_CAMBIO = 36.6243;
+      cotizacion.TOTAL_USD = Math.round((parseFloat(cotizacion.TOTAL) / 36.6243) * 100) / 100;
+    }
+
     return cotizacion;
   },
 

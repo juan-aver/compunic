@@ -172,7 +172,9 @@ window.copyAccount   = copyAccount;
 // ============================================
 
 function formatPrice(price) {
-    return 'C$' + parseFloat(price).toFixed(2);
+    const p = parseFloat(price) || 0;
+    const usd = (p / 36.6243).toFixed(2);
+    return `C$${p.toFixed(2)} ($${usd} USD)`;
 }
 
 function updateCartCount() {

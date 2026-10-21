@@ -91,7 +91,9 @@ function renderizarItemsVentaNew() {
             const card = document.createElement('div');
             card.className = 'cart-item-card';
             const imgPath = imgUrl && imgUrl.startsWith('http') ? imgUrl : `${SERVER_URL}/${imgUrl}`;
-            card.innerHTML = `
+                    const tasaItem = (typeof Divisas !== 'undefined') ? Divisas.getTasa() : 36.6243;
+                    const subtotalUSD = (item.subtotal / tasaItem).toFixed(2);
+                    card.innerHTML = `
                 ${imgUrl
                     ? `<img src="${imgPath}" class="cart-item-img" alt="">`
                     : `<div class="cart-item-img-placeholder"><i class="fas fa-box-open"></i></div>`
@@ -99,7 +101,7 @@ function renderizarItemsVentaNew() {
                 <div class="cart-item-details">
                     <p class="cart-item-name" title="${item.nombre}">${item.nombre}</p>
                     <div class="cart-item-price-row">
-                        C$${item.precio_unitario.toFixed(2)} × ${item.cantidad} = <span class="price-highlight">C$${item.subtotal.toFixed(2)}</span>
+                        C$${item.precio_unitario.toFixed(2)} × ${item.cantidad} = <span class="price-highlight">C$${item.subtotal.toFixed(2)}</span> <span style="color:#0284c7; font-size:0.8rem; font-weight:700; margin-left:4px;">($${subtotalUSD})</span>
                     </div>
                     <div class="cart-item-footer">
                         <div class="cart-item-controls">
@@ -121,6 +123,19 @@ function renderizarItemsVentaNew() {
     if (subtotalDisplay) subtotalDisplay.textContent = `C$${subtotal.toFixed(2)}`;
     if (ivaDisplay) ivaDisplay.textContent = `C$${iva.toFixed(2)}`;
     if (totalDisplay) totalDisplay.textContent = `C$${total.toFixed(2)}`;
+
+    // Conversión automática a Dólares (Divisas)
+    const totalUSDDisplay = document.getElementById('total-usd-venta-display');
+    const tcDisplay = document.getElementById('tc-venta-display');
+    const tasa = (typeof Divisas !== 'undefined') ? Divisas.getTasa() : 36.6243;
+    const totalUSD = total / tasa;
+
+    if (totalUSDDisplay) {
+        totalUSDDisplay.textContent = (typeof Divisas !== 'undefined') ? Divisas.formatUSD(totalUSD) : `$${totalUSD.toFixed(2)} USD`;
+    }
+    if (tcDisplay) {
+        tcDisplay.textContent = tasa.toFixed(2);
+    }
 
     // Re-render POS grid (uses cache) to keep card badges and overlays updated
     if (typeof renderVentasPOSGrid === 'function') {
@@ -200,7 +215,9 @@ function renderGridHTML(productos) {
             `;
         }
 
-        card.innerHTML = `
+            const tasaCard = (typeof Divisas !== 'undefined') ? Divisas.getTasa() : 36.6243;
+            const precioUSD = (precioVenta / tasaCard).toFixed(2);
+            card.innerHTML = `
             ${badgeHtml}
             ${imagenUrl
                 ? `<img src="${imgPath}" alt="" onerror="this.onerror=null; this.outerHTML='<div class=\\'pos-card-placeholder\\'><i class=\\'fas fa-box-open\\'></i></div>';">`
@@ -208,7 +225,7 @@ function renderGridHTML(productos) {
             }
             <div class="pos-card-body">
                 <p class="pos-card-name" title="${nombre}">${nombre}</p>
-                <span class="pos-card-price">C$${precioVenta.toFixed(2)}</span>
+                <span class="pos-card-price">C$${precioVenta.toFixed(2)} <small style="font-size:0.75rem; color:#0284c7; font-weight:700;">($${precioUSD})</small></span>
                 <span class="pos-card-stock ${stock === 0 ? 'stock-zero' : ''}"><i class="fas fa-cube"></i> ${stock}</span>
             </div>
             ${overlayHtml}

@@ -43,7 +43,11 @@ function getGradientForProduct(id) {
     return gradients[id % gradients.length];
 }
 
-function formatPrice(price) { return `C$${parseFloat(price).toFixed(2)}`; }
+function formatPrice(price) {
+    const p = parseFloat(price) || 0;
+    const usd = (p / 36.6243).toFixed(2);
+    return `C$${p.toFixed(2)} <span style="font-size:0.8em; color:#0284c7; font-weight:600;">($${usd})</span>`;
+}
 
 function getStockStatus(stock) {
     if (stock === 0) return { text: 'Agotado', class: 'out-of-stock', icon: 'times-circle', color: '#ef4444' };

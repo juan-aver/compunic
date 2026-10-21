@@ -36,6 +36,7 @@ const cotizacionesRoutes = require('./routes/cotizaciones.routes.js');
 const devolucionesProveedoresRoutes = require('./routes/devoluciones_proveedores.routes.js');
 const reportesRoutes = require('./routes/reportes.routes.js');
 const cajaRoutes = require('./routes/caja.routes.js');
+const divisasRoutes = require('./routes/divisas.routes.js');
 
 
 const app = express();
@@ -91,6 +92,7 @@ app.use('/api/reportes', reportesRoutes);
 app.use('/api/series', seriesRoutes);
 app.use('/api/mermas', mermasRoutes);
 app.use('/api/caja', cajaRoutes);
+app.use('/api/divisas', divisasRoutes);
 
 
 
