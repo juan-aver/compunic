@@ -295,16 +295,39 @@
   </div>
 
   <!-- Controles de Tabla Mejorados -->
-  <div class="table-controls" style="margin-bottom: 20px;">
-    <div class="search-enhanced-container" style="width: 100%;">
+  <div class="table-controls" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+    <div class="search-enhanced-container" style="flex: 1; min-width: 260px;">
       <!-- Input de búsqueda en tiempo real -->
-      <div class="search-input-wrapper" style="display: flex; gap: 15px; align-items: center; width: 100%;">
+      <div class="search-input-wrapper" style="display: flex; gap: 10px; align-items: center; width: 100%;">
         <input type="text" id="buscar_tabla" class="filter-search"
           placeholder="Buscar por nombre, modelo, descripción o marca..." style="flex: 1; padding: 10px 15px;">
         <button class="btn-clear-filters" onclick="clearProductosFilters()" style="white-space: nowrap;">
           <i class="fas fa-times"></i> Limpiar
         </button>
       </div>
+    </div>
+
+    <!-- Selector de cantidad -->
+    <div class="table-per-page" style="display: flex; align-items: center; gap: 8px;">
+      <label style="font-size: 0.85rem; font-weight: 600; color: #64748b;">Mostrar:</label>
+      <select class="per-page-select" id="productos-per-page" onchange="cambiarProductosPerPage(this.value)">
+        <option value="15" selected>15</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="999999">Todos</option>
+      </select>
+    </div>
+
+    <!-- View Toggle (Cuadrícula / Lista) -->
+    <div class="view-toggle-container" style="display: flex; align-items: center; gap: 6px;">
+      <button class="view-toggle-btn active" id="btn-view-cards" title="Vista de Cuadrícula"
+        onclick="switchProductView('cards')">
+        <i class="fas fa-th-large"></i>
+      </button>
+      <button class="view-toggle-btn" id="btn-view-table" title="Vista de Lista" onclick="switchProductView('table')">
+        <i class="fas fa-list"></i>
+      </button>
     </div>
   </div>
 
@@ -313,7 +336,28 @@
     <!-- Cards rendered by JS -->
   </div>
 
-
+  <!-- Table View (hidden by default) -->
+  <div id="tablaProductosContainer" style="display: none; width: 100%; overflow-x: auto;">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 50px; text-align: center;">ID</th>
+          <th>Nombre</th>
+          <th>Modelo</th>
+          <th style="width: 130px; text-align: center;">Acciones</th>
+          <th>Categoría</th>
+          <th>Marca</th>
+          <th>Proveedor</th>
+          <th>Gar. Cliente</th>
+          <th>Gar. Proveedor</th>
+          <th style="text-align: center;">Stock</th>
+          <th style="text-align: right;">P. Compra</th>
+          <th style="text-align: right;">P. Venta</th>
+        </tr>
+      </thead>
+      <tbody id="tablaProductos"></tbody>
+    </table>
+  </div>
 
   <!-- Pagination Controls -->
   <div id="productos-pagination" class="pagination-controls" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px; align-items: center;"></div>
@@ -399,7 +443,8 @@
       if (typeof poblarSelectProveedores === 'function') poblarSelectProveedores();
       if (typeof poblarSelectGarantiaTipos === 'function') poblarSelectGarantiaTipos();
       
-
+      const currentView = localStorage.getItem('compunic_product_view') || 'cards';
+      if (typeof switchProductView === 'function') switchProductView(currentView, true);
     }, 500);
   });
 </script>

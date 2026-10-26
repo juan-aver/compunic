@@ -176,6 +176,10 @@ function cargarProductos() {
         .then(data => {
             window._allProductos = data;
             window._filteredProductos = data;
+            const savedView = localStorage.getItem('compunic_product_view') || 'cards';
+            if (typeof switchProductView === 'function') {
+                switchProductView(savedView, true);
+            }
             renderProductosPaginated();
         })
         .catch(err => {
@@ -189,8 +193,13 @@ function renderProductosPaginated() {
     const endIndex = startIndex + window._productosPerPage;
     const paginatedData = window._filteredProductos.slice(startIndex, endIndex);
     
-    // Always render cards view
-    renderProductCards(paginatedData);
+    // Check saved view
+    const currentView = localStorage.getItem('compunic_product_view') || 'cards';
+    if (currentView === 'table' || currentView === 'list') {
+        renderProductTable(paginatedData);
+    } else {
+        renderProductCards(paginatedData);
+    }
     
     // Render pagination controls
     renderPaginationControls(window._filteredProductos.length);
@@ -311,14 +320,156 @@ function renderProductCards(paginatedData) {
     });
 }
 
+function renderProductTable(paginatedData) {
+    const tbody = document.getElementById('tablaProductos');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
+    if (!paginatedData || paginatedData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 30px; color: #64748b;"><i class="fas fa-box-open" style="font-size: 2rem; display: block; margin-bottom: 8px;"></i>No hay productos encontrados</td></tr>';
+        return;
+    }
+
+    paginatedData.forEach(producto => {
+        const gIndex = window._allProductos.indexOf(producto);
+        const id = producto.id_producto ?? producto.ID_PRODUCTO ?? producto.id ?? '';
+        const nombre = producto.nombre ?? producto.NOMBRE ?? producto.NOMBRE_PRODUCTO ?? 'Sin nombre';
+        const modelo = producto.modelo ?? producto.MODELO ?? '-';
+        const precioCompra = parseFloat(producto.precio_compra ?? producto.PRECIO_COMPRA ?? 0);
+        const precioVenta = parseFloat(producto.precio_venta ?? producto.PRECIO_VENTA ?? 0);
+        const garantia = producto.garantia_meses ?? producto.GARANTIA_MESES ?? producto.ID_GARANTIAS ?? producto.id_garantias ?? '-';
+        const valGp = producto.garantia_proveedor ?? producto.GARANTIA_PROVEEDOR ?? 0;
+        const garantiaProv = valGp ? `${valGp} meses` : 'Sin Garantía';
+        const stock = Number(producto.stock ?? producto.stock_actual_calculado ?? producto.STOCK ?? 0) || 0;
+        const categoria = producto.nombre_categoria ?? producto.NOMBRE_CATEGORIA ?? producto.CATEGORIA ?? '-';
+        const marcaName = producto.nombre_marca ?? producto.NOMBRE_MARCA ?? producto.MARCA ?? '-';
+        const proveedorName = producto.nombre_proveedor ?? producto.NOMBRE_PROVEEDOR ?? producto.PROVEEDOR ?? '-';
+        const activo = producto.activo !== undefined ? Number(producto.activo) : 1;
+
+        const fila = document.createElement('tr');
+        if (activo === 0) {
+            fila.style.opacity = '0.65';
+            fila.style.background = '#fef2f2';
+        }
+
+        // Badges para el nombre
+        let badgesHtml = '';
+        if (nombre.includes('(Seminuevo)')) {
+            badgesHtml += ' <span class="badge" style="background: #e67e22; color: white; padding: 2px 6px; font-size: 0.72rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;"><i class="fas fa-recycle"></i> Seminuevo</span>';
+        }
+        if (activo === 0) {
+            badgesHtml += ' <span class="badge" style="background: #ef4444; color: white; padding: 2px 6px; font-size: 0.72rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;"><i class="fas fa-ban"></i> Baja</span>';
+        }
+
+        // Series badges
+        const seriesNuevas = Number(producto.series_nuevas || 0);
+        const seriesSeminuevas = Number(producto.series_seminuevas || 0);
+        if (seriesNuevas > 0) badgesHtml += ` <span class="badge" style="background: #27ae60; color: white; padding: 2px 6px; font-size: 0.72rem; border-radius: 4px;">N: ${seriesNuevas}</span>`;
+        if (seriesSeminuevas > 0) badgesHtml += ` <span class="badge" style="background: #e67e22; color: white; padding: 2px 6px; font-size: 0.72rem; border-radius: 4px;">S: ${seriesSeminuevas}</span>`;
+
+        // Stock badge
+        let stockHtml = `<span>${stock}</span>`;
+        if (activo === 0 || stock === 0) {
+            stockHtml = `<span style="background: #fee2e2; color: #dc2626; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 0.8rem;">0</span>`;
+        } else if (stock < 5) {
+            stockHtml = `<span style="background: #fef3c7; color: #d97706; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 0.8rem;">${stock}</span>`;
+        } else {
+            stockHtml = `<span style="background: #dcfce7; color: #16a34a; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 0.8rem;">${stock}</span>`;
+        }
+
+        fila.innerHTML = `
+            <td style="text-align: center; font-weight: 600; color: #64748b;">${id}</td>
+            <td title="${nombre}">
+                <div style="font-weight: 600; color: inherit;">${nombre}</div>
+                ${badgesHtml ? `<div style="margin-top: 3px; display: flex; gap: 4px; flex-wrap: wrap;">${badgesHtml}</div>` : ''}
+            </td>
+            <td>${modelo}</td>
+            <td style="text-align: center;">
+                <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
+                    <button type="button" class="btn-tbl-action" title="Ver Detalles" onclick="event.stopPropagation(); mostrarDetalleProducto(window._allProductos[${gIndex}])" 
+                        style="background: #6366f1; color: white; border: none; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" class="btn-tbl-action" title="Gestión de Series" onclick="event.stopPropagation(); abrirModalSeries(window._allProductos[${gIndex}])" 
+                        style="background: #8b5cf6; color: white; border: none; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">
+                        <i class="fas fa-barcode"></i>
+                    </button>
+                    <button type="button" class="btn-tbl-action" title="Registrar Merma" onclick="event.stopPropagation(); abrirModalMerma(window._allProductos[${gIndex}].id_producto || window._allProductos[${gIndex}].ID_PRODUCTO)" 
+                        style="background: #ef4444; color: white; border: none; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </button>
+                    <button type="button" class="btn-tbl-action" title="Editar Producto" onclick="event.stopPropagation(); seleccionarProducto(window._allProductos[${gIndex}])" 
+                        style="background: #0284c7; color: white; border: none; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+            </td>
+            <td>${categoria}</td>
+            <td>${marcaName}</td>
+            <td>${proveedorName}</td>
+            <td>${garantia}</td>
+            <td>${garantiaProv}</td>
+            <td style="text-align: center;">${stockHtml}</td>
+            <td style="text-align: right; font-weight: 500;">C$${precioCompra.toFixed(2)}</td>
+            <td style="text-align: right; font-weight: 700; color: #0284c7;">${activo === 0 ? '<s>C$' + precioVenta.toFixed(2) + '</s>' : 'C$' + precioVenta.toFixed(2)}</td>
+        `;
+
+        fila.style.cursor = 'pointer';
+        fila.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+                seleccionarProducto(producto, fila);
+            }
+        });
+        tbody.appendChild(fila);
+    });
+}
+window.renderProductTable = renderProductTable;
+
+// Toggle between cards and table view
+function switchProductView(view, skipRender) {
+    const validView = (view === 'table' || view === 'list') ? 'table' : 'cards';
+    localStorage.setItem('compunic_product_view', validView);
+
+    const cardsBtn = document.getElementById('btn-view-cards');
+    const tableBtn = document.getElementById('btn-view-table');
+    const grid = document.getElementById('productosGrid');
+    const tableContainer = document.getElementById('tablaProductosContainer');
+
+    if (cardsBtn) cardsBtn.classList.toggle('active', validView === 'cards');
+    if (tableBtn) tableBtn.classList.toggle('active', validView === 'table');
+
+    if (grid) grid.style.display = (validView === 'cards') ? 'grid' : 'none';
+    if (tableContainer) tableContainer.style.display = (validView === 'table') ? 'block' : 'none';
+
+    if (!skipRender) {
+        renderProductosPaginated();
+    }
+}
+window.switchProductView = switchProductView;
+
+function cambiarProductosPerPage(val) {
+    window._productosPerPage = parseInt(val) || 15;
+    window._productosCurrentPage = 1;
+    renderProductosPaginated();
+}
+window.cambiarProductosPerPage = cambiarProductosPerPage;
+
+function clearProductosFilters() {
+    const input = document.getElementById('buscar_tabla');
+    if (input) input.value = '';
+    window._productosSearchQuery = '';
+    window._filteredProductos = window._allProductos || [];
+    window._productosCurrentPage = 1;
+    renderProductosPaginated();
+}
+window.clearProductosFilters = clearProductosFilters;
 
 // Card search filter
 function initCardSearch() {
     const input = document.getElementById('buscar_tabla');
     if (!input) return;
 
-    input.addEventListener('keyup', function () {
+    const handleSearch = function () {
         window._productosSearchQuery = this.value.toLowerCase();
         
         if (!window._productosSearchQuery) {
@@ -338,7 +489,10 @@ function initCardSearch() {
         
         window._productosCurrentPage = 1;
         renderProductosPaginated();
-    });
+    };
+
+    input.addEventListener('keyup', handleSearch);
+    input.addEventListener('input', handleSearch);
 }
 window.initCardSearch = initCardSearch;
 

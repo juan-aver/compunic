@@ -2449,10 +2449,46 @@ textarea[readonly] {
 
 #tablaProductosContainer table {
   width: 100%;
+  min-width: 950px;
   table-layout: fixed;
   /* Fuerza a la tabla a encajar estrictamente dentro de su contenedor */
   border-collapse: separate;
   border-spacing: 0 6px;
+}
+
+.btn-tbl-action {
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.btn-tbl-action:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.12);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+.table-per-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.per-page-select {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  color: #374151;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.per-page-select:focus {
+  border-color: #145D90;
+  box-shadow: 0 0 0 2px rgba(20, 93, 144, 0.15);
 }
 
 #tablaProductosContainer th,
