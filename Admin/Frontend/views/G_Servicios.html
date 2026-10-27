@@ -130,42 +130,40 @@
                                 placeholder="Detalles de reparación, componentes reemplazados, observaciones técnicas..." style="width: 100%;"></textarea>
                         </div>
 
-                        <!-- Fila 7: Evidencia Fotográfica -->
-                        <div class="evidencia-upload-section" style="margin-bottom: 15px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                        <!-- Fila 7: Evidencia Fotográfica del Técnico (Solo lectura/visualización del trabajo cumplido) -->
+                        <div id="seccion-evidencia-form" class="evidencia-upload-section" style="margin-bottom: 15px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1; display: none;">
                             <label style="font-weight: 600; display: block; margin-bottom: 6px; color: #1e293b;">
-                                <i class="fas fa-camera"></i> Evidencia Fotográfica (Antes / Después):
+                                <i class="fas fa-camera"></i> Evidencia Fotográfica Registrada por el Técnico:
                             </label>
-                            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                                <input type="file" id="evidencia_file" name="evidencia" accept="image/jpeg,image/png,image/webp,image/gif" class="form-control" style="flex: 1; min-width: 200px;">
-                                <input type="hidden" id="evidencia_url" name="evidencia_url">
+                            <input type="hidden" id="evidencia_url" name="evidencia_url">
+                            <!-- Contenedor de visualización -->
+                            <div id="evidencia-preview-box" style="display: none; margin-top: 5px;">
+                                <img id="evidencia-img-preview" src="" alt="Evidencia de servicio" onclick="abrirVisorEvidencia(this.src, document.getElementById('descripcion')?.value)" style="max-height: 140px; border-radius: 8px; border: 1px solid #cbd5e1; object-fit: cover; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.12);" title="Click para ver en tamaño completo">
+                                <p style="font-size: 0.8rem; color: #64748b; margin-top: 4px;"><i class="fas fa-info-circle"></i> Click en la foto para ampliarla.</p>
                             </div>
-                            <!-- Contenedor de vista previa -->
-                            <div id="evidencia-preview-box" style="display: none; margin-top: 10px; position: relative; width: fit-content;">
-                                <img id="evidencia-img-preview" src="" alt="Vista previa de evidencia" style="max-height: 120px; border-radius: 6px; border: 1px solid #e2e8f0; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                                <button type="button" onclick="quitarEvidenciaPreview()" title="Quitar imagen" style="position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                            <div id="evidencia-sin-foto-msg" style="display: none; color: #94a3b8; font-size: 0.88rem; font-style: italic;">
+                                <i class="fas fa-camera-slash"></i> El técnico aún no ha adjuntado foto de evidencia.
                             </div>
                         </div>
 
-                        <!-- Fila 8: Calificación y Opinión del Cliente -->
-                        <div class="calificacion-cliente-section" style="padding: 12px; background: #fefce8; border-radius: 8px; border: 1px solid #fef08a; margin-bottom: 10px;">
+                        <!-- Fila 8: Calificación y Opinión del Cliente (Solo lectura para ver feedback del cliente) -->
+                        <div id="seccion-calificacion-form" class="calificacion-cliente-section" style="padding: 12px; background: #fefce8; border-radius: 8px; border: 1px solid #fef08a; margin-bottom: 10px; display: none;">
                             <label style="font-weight: 600; display: block; margin-bottom: 6px; color: #854d0e;">
-                                <i class="fas fa-star" style="color: #eab308;"></i> Calificación y Reseña del Cliente:
+                                <i class="fas fa-star" style="color: #eab308;"></i> Calificación y Reseña del Cliente (Solo Lectura):
                             </label>
                             <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 8px;">
-                                <div class="star-rating-widget" id="star-rating-form">
-                                    <i class="fas fa-star star-item" data-val="1" onclick="setStarRating(1)"></i>
-                                    <i class="fas fa-star star-item" data-val="2" onclick="setStarRating(2)"></i>
-                                    <i class="fas fa-star star-item" data-val="3" onclick="setStarRating(3)"></i>
-                                    <i class="fas fa-star star-item" data-val="4" onclick="setStarRating(4)"></i>
-                                    <i class="fas fa-star star-item" data-val="5" onclick="setStarRating(5)"></i>
+                                <div class="star-rating-widget" id="star-rating-form" style="pointer-events: none;">
+                                    <i class="fas fa-star star-item" data-val="1"></i>
+                                    <i class="fas fa-star star-item" data-val="2"></i>
+                                    <i class="fas fa-star star-item" data-val="3"></i>
+                                    <i class="fas fa-star star-item" data-val="4"></i>
+                                    <i class="fas fa-star star-item" data-val="5"></i>
                                 </div>
                                 <span id="star-rating-text" style="font-weight: 600; color: #a16207; font-size: 0.9rem;">Sin calificar</span>
                                 <input type="hidden" id="calificacion" name="calificacion" value="">
                             </div>
-                            <textarea id="opinion_cliente" name="opinion_cliente" rows="2" class="form-control"
-                                placeholder="Comentarios u opinión expresada por el cliente sobre el servicio..." style="width: 100%;"></textarea>
+                            <textarea id="opinion_cliente" name="opinion_cliente" rows="2" class="form-control" readonly
+                                placeholder="El cliente aún no ha emitido opinión." style="width: 100%; background: #fffbeb; cursor: default;"></textarea>
                         </div>
 
                         <!-- ID temporal oculto para edición -->

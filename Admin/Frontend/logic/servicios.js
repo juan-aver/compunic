@@ -24,10 +24,12 @@ function abrirModalServicio(servicio) {
     const btnGuardar = document.getElementById('btn-guardar-servicio');
     const btnModificar = document.getElementById('btn-modificar-servicio');
     const btnEliminar = document.getElementById('btn-eliminar-servicio');
+    const secEvidencia = document.getElementById('seccion-evidencia-form');
+    const secCalificacion = document.getElementById('seccion-calificacion-form');
 
     if (servicio) {
-        // Modo edición
-        if (title) title.innerHTML = '<i class="fas fa-edit"></i> Editar Servicio Técnico';
+        // Modo edición / ver trabajo
+        if (title) title.innerHTML = '<i class="fas fa-edit"></i> Ver / Modificar Servicio Técnico';
         if (btnGuardar) btnGuardar.style.display = 'none';
         if (btnModificar) {
             btnModificar.style.display = 'flex';
@@ -37,8 +39,12 @@ function abrirModalServicio(servicio) {
             btnEliminar.style.display = 'flex';
             btnEliminar.onclick = eliminarServicio;
         }
+
+        // Mostrar secciones de evidencia y calificación para visualización
+        if (secEvidencia) secEvidencia.style.display = 'block';
+        if (secCalificacion) secCalificacion.style.display = 'block';
     } else {
-        // Modo nuevo
+        // Modo nuevo: Asignación inicial de trabajo (sin evidencia ni reseña)
         if (title) title.innerHTML = '<i class="fas fa-plus-circle"></i> Nuevo Servicio Técnico';
         const form = document.getElementById('formularioServicio');
         if (form) form.reset();
@@ -46,6 +52,10 @@ function abrirModalServicio(servicio) {
         document.getElementById('id_servicio').value = '';
         quitarEvidenciaPreview();
         setStarRating(0);
+
+        // Ocultar evidencia y calificación al crear nuevo servicio
+        if (secEvidencia) secEvidencia.style.display = 'none';
+        if (secCalificacion) secCalificacion.style.display = 'none';
 
         if (btnGuardar) {
             btnGuardar.style.display = 'flex';
@@ -307,25 +317,23 @@ function cargarServicios() {
                     evidenciaHTML = '<span class="evidencia-empty"><i class="fas fa-camera-slash"></i> Sin foto</span>';
                 }
 
-                // Calificación por Estrellas
+                // Calificación por Estrellas (Solo Lectura)
                 let calificacionHTML = '';
-                const descForModal = `${s.DESCRIPCION ? s.DESCRIPCION.substring(0, 40) : 'Servicio'} - Cliente: ${cliente}`.replace(/'/g, "\\'");
-                const opinionClean = (s.OPINION_CLIENTE || '').replace(/'/g, "\\'");
-                
                 if (s.CALIFICACION && s.CALIFICACION > 0) {
                     const starsStr = '★'.repeat(s.CALIFICACION) + '☆'.repeat(5 - s.CALIFICACION);
+                    const tooltipText = s.OPINION_CLIENTE 
+                        ? `Calificación: ${s.CALIFICACION}/5 | Opinión: ${s.OPINION_CLIENTE}`
+                        : `Calificación: ${s.CALIFICACION}/5 estrellas`;
                     calificacionHTML = `
-                        <span class="rating-badge" title="${s.OPINION_CLIENTE ? 'Opinión: ' + s.OPINION_CLIENTE : 'Calificación: ' + s.CALIFICACION + '/5'}"
-                              onclick="abrirModalCalificar(${s.ID_SERVICIO}, ${s.CALIFICACION}, '${opinionClean}', '${descForModal}')">
-                            <span style="color: #f59e0b;">${starsStr}</span>
-                            <span style="font-size: 0.78rem;">(${s.CALIFICACION}/5)</span>
+                        <span class="rating-badge" title="${tooltipText.replace(/"/g, '&quot;')}" style="cursor: default;">
+                            <span style="color: #f59e0b; letter-spacing: 1px;">${starsStr}</span>
+                            <span style="font-size: 0.78rem; font-weight: 600;">(${s.CALIFICACION}/5)</span>
                         </span>
                     `;
                 } else {
                     calificacionHTML = `
-                        <span class="rating-badge-none" title="Registrar calificación del cliente"
-                              onclick="abrirModalCalificar(${s.ID_SERVICIO}, 0, '', '${descForModal}')">
-                            <i class="far fa-star"></i> Calificar
+                        <span class="rating-badge-none" title="Servicio aún sin calificar por el cliente" style="cursor: default; opacity: 0.75;">
+                            <i class="far fa-star"></i> Pendiente
                         </span>
                     `;
                 }
@@ -595,19 +603,23 @@ function seleccionarServicio(s) {
     const calificacionVal = s.calificacion ?? s.CALIFICACION ?? 0;
     setStarRating(calificacionVal);
 
-    // Evidencia fotográfica previa
+    // Evidencia fotográfica del técnico (visualización)
     const urlEvidencia = s.evidencia_url ?? s.EVIDENCIA_URL ?? '';
     const urlInput = document.getElementById('evidencia_url');
     if (urlInput) urlInput.value = urlEvidencia;
 
     const previewBox = document.getElementById('evidencia-preview-box');
     const previewImg = document.getElementById('evidencia-img-preview');
+    const sinFotoMsg = document.getElementById('evidencia-sin-foto-msg');
+
     if (urlEvidencia && previewImg && previewBox) {
         previewImg.src = getFullImageUrl(urlEvidencia);
         previewBox.style.display = 'block';
+        if (sinFotoMsg) sinFotoMsg.style.display = 'none';
     } else {
         if (previewBox) previewBox.style.display = 'none';
         if (previewImg) previewImg.src = '';
+        if (sinFotoMsg) sinFotoMsg.style.display = 'block';
     }
 
     const temporalInput = document.getElementById('id_temporal');
