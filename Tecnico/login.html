@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Acceso Técnico | Compunic</title>
+  <link rel="icon" type="image/png" href="../Admin/Frontend/assets/logo.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Compunic Técnico">
+  
+  <!-- Fuentes e Iconos -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --accent: #06b6d4;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 20px;
+      user-select: none;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .brand-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .brand-icon-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: #ffffff;
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4);
+      margin-bottom: 16px;
+    }
+
+    .brand-header h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .brand-header p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .login-card {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 26px 22px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0 14px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    }
+
+    .input-wrapper i {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-right: 12px;
+    }
+
+    .input-wrapper input {
+      width: 100%;
+      padding: 14px 0;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    .input-wrapper input::placeholder {
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    .btn-toggle-pass {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1rem;
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.85rem;
+      margin-bottom: 18px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border: none;
+      border-radius: 14px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(37, 99, 235, 0.4);
+      transition: transform 0.15s ease, opacity 0.2s ease;
+    }
+
+    .btn-submit:active {
+      transform: scale(0.97);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .install-pwa-banner {
+      margin-top: 24px;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .install-pwa-banner span {
+      font-size: 0.8rem;
+      color: #a5f3fc;
+      font-weight: 600;
+    }
+
+    .btn-install {
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="brand-header">
+      <div class="brand-icon-circle">
+        <i class="fas fa-toolbox"></i>
+      </div>
+      <h1>Portal Técnico</h1>
+      <p>Gestión móvil de órdenes de servicio</p>
+    </div>
+
+    <div class="login-card">
+      <div class="alert-error" id="error-alert">
+        <i class="fas fa-circle-exclamation"></i>
+        <span id="error-text">Credenciales incorrectas</span>
+      </div>
+
+      <form id="form-login-tecnico" onsubmit="iniciarSesion(event)">
+        <div class="form-group">
+          <label class="form-label" for="username">Usuario o Empleado</label>
+          <div class="input-wrapper">
+            <i class="fas fa-user-gear"></i>
+            <input type="text" id="username" placeholder="Tu usuario asignado" required autocomplete="username" autocapitalize="none">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Contraseña</label>
+          <div class="input-wrapper">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" class="btn-toggle-pass" onclick="togglePass()">
+              <i class="fas fa-eye" id="pass-icon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btn-submit">
+          <span>Ingresar a mis órdenes</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </form>
+    </div>
+
+    <!-- Banner para instalar app en celular -->
+    <div class="install-pwa-banner" id="pwa-banner">
+      <span><i class="fas fa-mobile-screen-button"></i> Instalar app en tu teléfono</span>
+      <button class="btn-install" id="btn-install-app">Instalar</button>
+    </div>
+  </div>
+
+  <script>
+    const AUTH_KEY = 'compunic_session';
+    const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '';
+    const API_BASE = isLocal ? 'http://localhost:3001/api' : '/api';
+
+    // Verificar si ya tiene sesión activa
+    document.addEventListener('DOMContentLoaded', () => {
+      const session = sessionStorage.getItem(AUTH_KEY);
+      if (session) {
+        window.location.href = 'index.html';
+      }
+    });
+
+    function togglePass() {
+      const input = document.getElementById('password');
+      const icon = document.getElementById('pass-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+      }
+    }
+
+    async function iniciarSesion(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('btn-submit');
+      const errorAlert = document.getElementById('error-alert');
+      const errorText = document.getElementById('error-text');
+
+      errorAlert.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || 'Credenciales incorrectas');
+        }
+
+        // Guardar sesión
+        const session = {
+          user: data.user.username,
+          nombre: data.user.nombre,
+          apellido: data.user.apellido,
+          rol: data.user.rol.toLowerCase(),
+          id_empleado: data.user.id_empleado,
+          email: data.user.email,
+          timestamp: new Date().getTime()
+        };
+
+        sessionStorage.setItem(AUTH_KEY, JSON.stringify(session));
+
+        // Enviar directo al portal de tareas
+        window.location.href = 'index.html';
+
+      } catch (err) {
+        errorText.textContent = err.message;
+        errorAlert.style.display = 'flex';
+        btn.disabled = false;
+        btn.innerHTML = '<span>Ingresar a mis órdenes</span> <i class="fas fa-arrow-right"></i>';
+      }
+    }
+
+    // Soporte PWA (Instalar en la pantalla de inicio del teléfono)
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const banner = document.getElementById('pwa-banner');
+      if (banner) banner.style.display = 'flex';
+    });
+
+    document.getElementById('btn-install-app')?.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        document.getElementById('pwa-banner').style.display = 'none';
+      }
+      deferredPrompt = null;
+    });
+  </script>
+</body>
+</html>

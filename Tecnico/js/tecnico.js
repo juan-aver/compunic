@@ -28,8 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function verificarSesion() {
   const sessionStr = sessionStorage.getItem(AUTH_KEY);
   if (!sessionStr) {
-    // Si no hay sesión, enviar al login del ERP
-    window.location.href = '/index.html';
+    // Si no hay sesión, enviar al login independiente de técnicos
+    window.location.href = 'login.html';
     return;
   }
 
@@ -64,7 +64,7 @@ function cerrarSesion() {
   }).then((result) => {
     if (result.isConfirmed) {
       sessionStorage.removeItem(AUTH_KEY);
-      window.location.href = '/index.html';
+      window.location.href = 'login.html';
     }
   });
 }

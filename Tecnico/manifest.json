@@ -1,0 +1,24 @@
+{
+  "name": "Compunic Técnico",
+  "short_name": "Técnico",
+  "description": "Portal móvil de servicio técnico y soporte de Compunic",
+  "start_url": "/Tecnico/index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
