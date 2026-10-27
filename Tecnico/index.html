@@ -224,20 +224,18 @@
           </div>
         </div>
 
-        <!-- Inputs ocultos: uno forzado a cámara y otro para galería de fotos -->
-        <input type="file" id="input-camara-directa" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(event)">
-        <input type="file" id="input-galeria" accept="image/*" style="display: none;" onchange="procesarFotoEvidencia(event)">
-
-        <!-- Botones de acción directa para máxima compatibilidad móvil -->
+        <!-- Botones NATIVOS directos: las etiquetas <label> disparan la cámara/galería por hardware sin bloqueos -->
         <div class="photo-action-buttons-grid">
-          <button type="button" class="btn-photo-action btn-take-photo" onclick="abrirCamaraDirecta()">
+          <label class="btn-photo-action btn-take-photo">
             <i class="fas fa-camera"></i>
             <span>Tomar Foto</span>
-          </button>
-          <button type="button" class="btn-photo-action btn-choose-gallery" onclick="abrirGaleriaDirecta()">
+            <input type="file" id="input-camara-directa" accept="image/*" capture="environment" style="position: absolute; opacity: 0; width: 0.1px; height: 0.1px; overflow: hidden;" onchange="procesarFotoEvidencia(event)">
+          </label>
+          <label class="btn-photo-action btn-choose-gallery">
             <i class="fas fa-images"></i>
             <span>Galería</span>
-          </button>
+            <input type="file" id="input-galeria" accept="image/*" style="position: absolute; opacity: 0; width: 0.1px; height: 0.1px; overflow: hidden;" onchange="procesarFotoEvidencia(event)">
+          </label>
         </div>
 
         <!-- Zona de previsualización o placeholder -->

@@ -1097,6 +1097,10 @@ body {
   justify-content: center;
   gap: 10px;
   cursor: pointer;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: rgba(86, 165, 221, 0.2);
   transition: transform 0.15s ease, opacity 0.2s ease;
 }
 
