@@ -1,0 +1,57 @@
+<!-- 
+  ========================================== 
+  MÓDULO: G_Devoluciones_Clientes.html
+  PROPÓSITO: Historial y Gestión de Devoluciones de Clientes (Administración).
+  ========================================== 
+-->
+<link rel="stylesheet" href="css/views/G_Devoluciones.css">
+<link rel="stylesheet" href="css/views/dark-mode.css">
+<link rel="stylesheet" href="css/views/enhanced-animations.css">
+
+<div id="message-container" class="message-container"></div>
+
+<div id="app" class="max-w-7xl mx-auto p-4 sm:p-8">
+  <div style="margin-bottom: 25px;">
+    <div>
+      <h1 class="main-title" style="margin: 0; text-align: left;">
+        <i class="fas fa-users" style="color: #2563eb;"></i> Devoluciones de Clientes
+      </h1>
+      <p class="text-muted" style="margin: 5px 0 0; font-size: 0.95rem;">
+        Historial de solicitudes, inspección de productos devueltos y confirmación de reingresos al inventario.
+      </p>
+    </div>
+  </div>
+
+  <!-- TABLA DE HISTORIAL DE DEVOLUCIONES DE CLIENTES -->
+  <div class="card devolutions-record-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+      <h2 class="card-title" style="margin: 0; border: none;"><i class="fas fa-list-check"></i> Solicitudes de Devolución de Clientes</h2>
+      <input type="text" id="buscar-dev-cliente" oninput="filtrarDevolucionesClientes(this.value)" placeholder="Buscar por factura, producto, serie o motivo..." style="max-width: 350px; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--border-color, #cbd5e1); font-size: 13px;">
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="text-left">ID</th>
+            <th class="text-left">Factura</th>
+            <th class="text-left">Producto</th>
+            <th class="text-center">Cant.</th>
+            <th class="text-left">Serie(s)</th>
+            <th class="text-left">Motivo de Devolución</th>
+            <th class="text-center">Fecha</th>
+            <th class="text-center">Estado</th>
+            <th class="text-center" style="min-width: 220px;">Gestión / Autorización</th>
+          </tr>
+        </thead>
+        <tbody id="devolutions-table-body">
+          <tr>
+            <td colspan="9" class="text-center italic text-gray">
+              Cargando devoluciones...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -17,16 +17,24 @@ const Devoluciones = {
           d.ID_VENTA,
           d.ID_PRODUCTO,
           d.CANTIDAD,
+          d.MOTIVO,
           d.ACCION,
+          COALESCE(d.ESTADO_SOLICITUD, 'Pendiente') AS ESTADO_SOLICITUD,
+          d.MOTIVO_RECHAZO,
+          d.FECHA_RESOLUCION,
           d.REINGRESO_CONFIRMADO,
           d.NUMERO_SERIE,
+          d.ID_PRODUCTO_REEMPLAZO,
+          d.SERIES_REEMPLAZO,
           d.FECHA_DEVOLUCION,
           COALESCE(v.FACTURA, CONCAT('FAC-V', LPAD(v.ID_VENTA, 3, '0'))) AS FACTURA,
           p.NOMBRE_PRODUCTO,
+          pr.NOMBRE_PRODUCTO AS NOMBRE_PRODUCTO_REEMPLAZO,
           vp.cantidad_neta AS CANTIDAD_VENDIDA
         FROM DEVOLUCIONES d
         INNER JOIN VENTAS v ON d.ID_VENTA = v.ID_VENTA
         INNER JOIN PRODUCTOS p ON d.ID_PRODUCTO = p.ID_PRODUCTO
+        LEFT JOIN PRODUCTOS pr ON d.ID_PRODUCTO_REEMPLAZO = pr.ID_PRODUCTO
         LEFT JOIN VENTAS_PRODUCTOS vp ON d.ID_VENTA = vp.ID_VENTA AND d.ID_PRODUCTO = vp.ID_PRODUCTO
         ORDER BY d.FECHA_DEVOLUCION DESC
       `;
@@ -144,20 +152,18 @@ const Devoluciones = {
                 }
             }
 
-            // 1. Insertar la devolución
+            // 1. Insertar la solicitud de devolución
             const sqlInsert = `
-        INSERT INTO DEVOLUCIONES(ID_VENTA, ID_PRODUCTO, CANTIDAD, MOTIVO, ACCION, NUMERO_SERIE, ID_PRODUCTO_REEMPLAZO, SERIES_REEMPLAZO)
-            VALUES(?, ?, ?, ?, ?, ?, ?, ?)
-      `;
+                INSERT INTO DEVOLUCIONES(ID_VENTA, ID_PRODUCTO, CANTIDAD, MOTIVO, ACCION, NUMERO_SERIE, ESTADO_SOLICITUD)
+                VALUES(?, ?, ?, ?, ?, ?, 'Pendiente')
+            `;
             const [result] = await connection.query(sqlInsert, [
                 id_venta,
                 id_producto,
                 cantidad,
                 motivo,
-                accion,
-                numero_serie || null,
-                id_producto_reemplazo,
-                series_reemplazo || null
+                accion || 'garantia',
+                numero_serie || null
             ]);
 
             const idDevolucion = result.insertId;
@@ -175,63 +181,6 @@ const Devoluciones = {
                     );
                 }
             }
-
-            // 1.8 Actualizar PRODUCTO_SERIES del equipo de reemplazo entregado
-            if (series_reemplazo) {
-                const sReemplazoArray = series_reemplazo.split(',').map(s => s.trim()).filter(s => s);
-                if (sReemplazoArray.length > 0) {
-                    const placeholdersR = sReemplazoArray.map(() => '?').join(',');
-                    await connection.query(
-                        `UPDATE PRODUCTO_SERIES 
-                         SET ESTADO = 'vendido', ID_VENTA = ?, NOTAS = CONCAT(COALESCE(NOTAS, ''), ' | Entregado como reemplazo de garantía') 
-                         WHERE ID_PRODUCTO = ? AND NUMERO_SERIE IN (${placeholdersR})`,
-                        [id_venta, id_producto_reemplazo, ...sReemplazoArray]
-                    );
-                }
-            }
-
-            // 2. Obtener información del producto de reemplazo para el registro
-            const [prodInfo] = await connection.query(
-                'SELECT NOMBRE_PRODUCTO FROM PRODUCTOS WHERE ID_PRODUCTO = ?',
-                [id_producto_reemplazo]
-            );
-            const nombreProductoReemplazo = prodInfo[0]?.NOMBRE_PRODUCTO || 'Producto de Reemplazo';
-
-            // 3. Obtener factura de la venta
-            const [ventaInfo] = await connection.query(
-                "SELECT FACTURA FROM VENTAS WHERE ID_VENTA = ?",
-                [id_venta]
-            );
-            const factura = ventaInfo[0]?.FACTURA || `FAC-V${String(id_venta).padStart(3, '0')}`;
-
-            // 4. Obtener stock actual del producto de reemplazo (calculado)
-            const [stockInfo] = await connection.query(
-                `SELECT (
-                    COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = ?), 0) - 
-                    COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp JOIN VENTAS v ON vp.ID_VENTA = v.ID_VENTA WHERE vp.ID_PRODUCTO = ? AND v.ESTADO != 'Rechazado'), 0) -
-                    COALESCE((SELECT SUM(d.CANTIDAD) FROM DEVOLUCIONES d WHERE d.ID_PRODUCTO_REEMPLAZO = ?), 0)
-                ) AS stock_actual`,
-                [id_producto_reemplazo, id_producto_reemplazo, id_producto_reemplazo]
-            );
-            const stockActual = stockInfo[0]?.stock_actual || 0;
-
-            // 5. Registrar movimiento de salida (producto de reemplazo)
-            const stockDespuesSalida = stockActual; // Ya está descontado por la consulta dinámica anterior si asume el INSERT previo, PERO espera, la consulta anterior se ejecuta DESPUES del insert?
-            // El INSERT a DEVOLUCIONES ya ocurrió, así que la suma de devoluciones ya incluye esta cantidad.
-            // Por lo tanto, stock_actual YA TIENE la resta hecha!
-            
-            await connection.query(
-                `INSERT INTO MOVIMIENTOS_STOCK 
-         (ID_PRODUCTO, NOMBRE_PRODUCTO, TIPO_MOVIMIENTO, MOTIVO, CANTIDAD, STOCK_RESULTANTE)
-         VALUES (?, ?, 'salida', ?, ?, ?)`,
-                [
-                    id_producto_reemplazo,
-                    nombreProductoReemplazo,
-                    `Devolución ${factura} - Equipo de reemplazo entregado al cliente`,
-                    cantidad,
-                    stockDespuesSalida
-                ]
-            );
 
             await connection.commit();
             return idDevolucion;
@@ -429,6 +378,129 @@ const Devoluciones = {
             return result;
         } catch (err) {
             throw new Error('Error al eliminar devolución: ' + err.message);
+        }
+    },
+
+    // Autorizar solicitud de devolución
+    autorizar: async (id) => {
+        try {
+            const sql = `
+                UPDATE DEVOLUCIONES 
+                SET ESTADO_SOLICITUD = 'Aprobada', FECHA_RESOLUCION = NOW() 
+                WHERE ID_DEVOLUCION = ?
+            `;
+            const [result] = await db.query(sql, [id]);
+            return result;
+        } catch (err) {
+            throw new Error('Error al autorizar devolución: ' + err.message);
+        }
+    },
+
+    // Rechazar solicitud de devolución con motivo
+    rechazar: async (id, motivoRechazo) => {
+        try {
+            const sql = `
+                UPDATE DEVOLUCIONES 
+                SET ESTADO_SOLICITUD = 'Rechazada', MOTIVO_RECHAZO = ?, FECHA_RESOLUCION = NOW() 
+                WHERE ID_DEVOLUCION = ?
+            `;
+            const [result] = await db.query(sql, [motivoRechazo || 'Rechazada por administración', id]);
+            return result;
+        } catch (err) {
+            throw new Error('Error al rechazar devolución: ' + err.message);
+        }
+    },
+
+    // Completar devolución entregando producto de reemplazo y descontando stock/series
+    completarDevolucion: async (id, datosReemplazo) => {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            const { id_producto_reemplazo, series_reemplazo } = datosReemplazo;
+
+            // 1. Obtener la devolución actual
+            const [devRows] = await connection.query(
+                'SELECT * FROM DEVOLUCIONES WHERE ID_DEVOLUCION = ?',
+                [id]
+            );
+            if (devRows.length === 0) {
+                throw new Error('Devolución no encontrada');
+            }
+            const devolucion = devRows[0];
+            const cantidad = devolucion.CANTIDAD;
+            const idVenta = devolucion.ID_VENTA;
+
+            // 2. Si se ingresaron series de reemplazo, validar y actualizar su estado a 'vendido'
+            if (series_reemplazo) {
+                const sReemplazoArray = series_reemplazo.split(',').map(s => s.trim()).filter(s => s);
+                if (sReemplazoArray.length > 0) {
+                    const placeholdersR = sReemplazoArray.map(() => '?').join(',');
+                    await connection.query(
+                        `UPDATE PRODUCTO_SERIES 
+                         SET ESTADO = 'vendido', ID_VENTA = ?, NOTAS = CONCAT(COALESCE(NOTAS, ''), ' | Entregado como reemplazo devolución #${id}') 
+                         WHERE ID_PRODUCTO = ? AND NUMERO_SERIE IN (${placeholdersR})`,
+                        [idVenta, id_producto_reemplazo, ...sReemplazoArray]
+                    );
+                }
+            }
+
+            // 3. Actualizar la devolución con los datos de reemplazo y marcar como Completada
+            await connection.query(
+                `UPDATE DEVOLUCIONES 
+                 SET ID_PRODUCTO_REEMPLAZO = ?, 
+                     SERIES_REEMPLAZO = ?, 
+                     ESTADO_SOLICITUD = 'Completada', 
+                     FECHA_RESOLUCION = NOW() 
+                 WHERE ID_DEVOLUCION = ?`,
+                [id_producto_reemplazo, series_reemplazo || null, id]
+            );
+
+            // 4. Obtener información de producto y factura para el movimiento de inventario
+            const [prodInfo] = await connection.query(
+                'SELECT NOMBRE_PRODUCTO FROM PRODUCTOS WHERE ID_PRODUCTO = ?',
+                [id_producto_reemplazo]
+            );
+            const nombreProductoReemplazo = prodInfo[0]?.NOMBRE_PRODUCTO || 'Producto de Reemplazo';
+
+            const [ventaInfo] = await connection.query(
+                'SELECT FACTURA FROM VENTAS WHERE ID_VENTA = ?',
+                [idVenta]
+            );
+            const factura = ventaInfo[0]?.FACTURA || `FAC-V${String(idVenta).padStart(3, '0')}`;
+
+            // 5. Calcular stock resultante
+            const [stockInfo] = await connection.query(
+                `SELECT (
+                    COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = ?), 0) - 
+                    COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp JOIN VENTAS v ON vp.ID_VENTA = v.ID_VENTA WHERE vp.ID_PRODUCTO = ? AND v.ESTADO != 'Rechazado'), 0) -
+                    COALESCE((SELECT SUM(d.CANTIDAD) FROM DEVOLUCIONES d WHERE d.ID_PRODUCTO_REEMPLAZO = ?), 0)
+                ) AS stock_actual`,
+                [id_producto_reemplazo, id_producto_reemplazo, id_producto_reemplazo]
+            );
+            const stockActual = stockInfo[0]?.stock_actual || 0;
+
+            // 6. Registrar movimiento de stock de salida
+            await connection.query(
+                `INSERT INTO MOVIMIENTOS_STOCK 
+                 (ID_PRODUCTO, NOMBRE_PRODUCTO, TIPO_MOVIMIENTO, MOTIVO, CANTIDAD, STOCK_RESULTANTE)
+                 VALUES (?, ?, 'salida', ?, ?, ?)`,
+                [
+                    id_producto_reemplazo,
+                    nombreProductoReemplazo,
+                    `Devolución #${id} (Factura ${factura}) - Equipo de reemplazo entregado`,
+                    cantidad,
+                    stockActual
+                ]
+            );
+
+            await connection.commit();
+            return { id, estado: 'Completada', producto_reemplazo: nombreProductoReemplazo };
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
         }
     }
 };

@@ -295,7 +295,19 @@ function agregarEmpleado() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos)
     })
-        .then(res => res.json())
+        .then(async res => {
+            const rawText = await res.text();
+            let data = {};
+            try {
+                data = JSON.parse(rawText);
+            } catch (e) {
+                data = { message: rawText };
+            }
+            if (!res.ok) {
+                throw new Error(data.message || data.error || rawText || `Error del servidor (${res.status})`);
+            }
+            return data;
+        })
         .then(data => {
             if (data.correoEnviado) {
                 Alerta.exito(data.mensaje || 'Se envió un correo al empleado para que cree su contraseña.', '¡Empleado Agregado!');
@@ -308,8 +320,8 @@ function agregarEmpleado() {
             cargarEmpleados();
         })
         .catch(err => {
-            console.error(err);
-            Alerta.error('Ocurrió un error al agregar el empleado.');
+            console.error('Error al agregar empleado:', err);
+            Alerta.error(err.message || 'Ocurrió un error al agregar el empleado.', 'Error al Registrar');
         });
 }
 

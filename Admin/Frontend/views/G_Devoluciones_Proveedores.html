@@ -1,0 +1,139 @@
+<!-- 
+  ========================================== 
+  MÓDULO: G_Devoluciones_Proveedores.html
+  PROPÓSITO: Registro y Gestión de Devoluciones a Proveedores (Administración).
+  ========================================== 
+-->
+<link rel="stylesheet" href="css/views/G_Devoluciones.css">
+<link rel="stylesheet" href="css/views/dark-mode.css">
+<link rel="stylesheet" href="css/views/enhanced-animations.css">
+
+<div id="message-container" class="message-container"></div>
+
+<div id="app" class="max-w-7xl mx-auto p-4 sm:p-8">
+  <div style="margin-bottom: 25px;">
+    <h1 class="main-title" style="margin: 0; text-align: left; color: #0284c7;">
+      <i class="fas fa-truck-loading"></i> Devoluciones a Proveedores
+    </h1>
+    <p class="text-muted" style="margin: 5px 0 0; font-size: 0.95rem;">
+      Registro y seguimiento de productos defectuosos devueltos a proveedores para crédito, garantía o cambio.
+    </p>
+  </div>
+
+  <!-- FORMULARIO DEVOLUCIÓN A PROVEEDOR -->
+  <div class="card devolution-register-card">
+    <h2 class="card-title" style="color: #0284c7;"><i class="fas fa-plus-circle"></i> Registrar Devolución a Proveedor</h2>
+
+    <form id="form-devolucion-proveedor" onsubmit="guardarDevolucionProveedor(event)">
+      <div class="section-container border-bottom">
+        <h3 class="section-subtitle" style="color: #0284c7;">Datos del Proveedor y Producto a Devolver</h3>
+        <div class="grid-layout three-cols">
+
+          <!-- Proveedor -->
+          <div class="form-group">
+            <label for="prov-select-dev">Proveedor *</label>
+            <select id="prov-select-dev" required onchange="cargarComprasDeProveedor(this.value)">
+              <option value="" disabled selected>Seleccione un Proveedor</option>
+            </select>
+          </div>
+
+          <!-- Factura de Compra Relacionada (Opcional) -->
+          <div class="form-group">
+            <label for="compra-prov-select">Factura de Compra (Opcional)</label>
+            <select id="compra-prov-select">
+              <option value="">Sin vincular a factura específica</option>
+            </select>
+          </div>
+
+          <!-- Producto a Devolver -->
+          <div class="form-group">
+            <label for="prod-prov-dev-select">Producto a Devolver *</label>
+            <select id="prod-prov-dev-select" required onchange="actualizarStockDisponibleProv(this)">
+              <option value="" disabled selected>Seleccione un Producto</option>
+            </select>
+          </div>
+
+          <!-- Cantidad -->
+          <div class="form-group">
+            <label for="cant-prov-dev">Cantidad a Devolver *</label>
+            <div class="input-with-icon">
+              <span class="input-icon">📦</span>
+              <input type="number" id="cant-prov-dev" min="1" value="1" required>
+            </div>
+            <small class="text-muted" id="stock-disp-prov-info" style="font-weight: 600;"></small>
+          </div>
+
+          <!-- Estado Inicial -->
+          <div class="form-group">
+            <label for="estado-prov-dev">Estado de la Devolución *</label>
+            <select id="estado-prov-dev" required>
+              <option value="Pendiente" selected>⏳ Pendiente (En trámite con proveedor)</option>
+              <option value="Aprobada">✅ Aprobada (Aceptada por proveedor)</option>
+            </select>
+          </div>
+
+          <!-- Motivo de Devolución -->
+          <div class="form-group col-span-2">
+            <label for="motivo-prov-dev">Motivo de Devolución al Proveedor *</label>
+            <textarea id="motivo-prov-dev" rows="3" required
+              placeholder="Especifique la falla técnica, defecto de fábrica, daño o lote incorrecto..."></textarea>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- INFORMACIÓN DE IMPACTO DE INVENTARIO -->
+      <div class="info-box" style="border-left-color: #0284c7; background: #f0f9ff;">
+        <i class="fas fa-info-circle" style="color: #0284c7; font-size: 20px;"></i>
+        <div>
+          <strong style="color: #0369a1;">Control de Inventario Automático:</strong>
+          <p style="margin: 4px 0 0; color: #0c4a6e; font-size: 0.85rem;">
+            Al registrar la devolución a proveedor, las unidades se descuentan temporalmente del stock disponible. Si el proveedor envía un <strong>Reemplazo Recibido</strong> o si la devolución es <strong>Rechazada</strong>, el sistema reingresará automáticamente las unidades al inventario.
+          </p>
+        </div>
+      </div>
+
+      <div class="form-actions" style="margin-top: 20px;">
+        <button type="submit" class="btn btn-success" style="background: #0284c7; border-color: #0284c7;">
+          <i class="fas fa-paper-plane"></i> Registrar Devolución al Proveedor
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="limpiarFormularioDevolucionProveedor()">
+          Limpiar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- TABLA HISTORIAL DE DEVOLUCIONES A PROVEEDORES -->
+  <div class="card devolutions-record-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+      <h2 class="card-title" style="margin: 0; border: none; color: #0284c7;"><i class="fas fa-history"></i> Historial de Devoluciones a Proveedores</h2>
+      <input type="text" id="buscar-dev-proveedor" oninput="filtrarDevolucionesProveedores(this.value)" placeholder="Buscar por proveedor, producto, motivo..." style="max-width: 320px; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--border-color, #cbd5e1); font-size: 13px;">
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="text-left">ID</th>
+            <th class="text-left">Proveedor</th>
+            <th class="text-left">Factura Compra</th>
+            <th class="text-left">Producto</th>
+            <th class="text-center">Cantidad</th>
+            <th class="text-left">Motivo</th>
+            <th class="text-left">Fecha</th>
+            <th class="text-center">Estado de Resolución</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="devoluciones-prov-table-body">
+          <tr>
+            <td colspan="9" class="text-center italic text-gray">
+              Cargando devoluciones a proveedores...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

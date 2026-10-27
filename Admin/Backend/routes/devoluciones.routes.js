@@ -34,8 +34,21 @@ router.put('/:id', devolucionesController.update);
 // POST http://localhost:3001/api/devoluciones/:id/confirmar-reingreso
 router.post('/:id/confirmar-reingreso', devolucionesController.confirmarReingreso);
 
+// Ruta para autorizar solicitud de devolución
+// POST http://localhost:3001/api/devoluciones/:id/autorizar
+router.post('/:id/autorizar', devolucionesController.autorizar);
+
+// Ruta para rechazar solicitud de devolución
+// POST http://localhost:3001/api/devoluciones/:id/rechazar
+router.post('/:id/rechazar', devolucionesController.rechazar);
+
+// Ruta para completar devolución con reemplazo
+// POST http://localhost:3001/api/devoluciones/:id/completar
+router.post('/:id/completar', devolucionesController.completar);
+
 // Ruta para eliminar una devolución
 // DELETE http://localhost:3001/api/devoluciones/:id
 router.delete('/:id', devolucionesController.delete);
 
 module.exports = router;
+

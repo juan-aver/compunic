@@ -69,17 +69,10 @@ function obtenerVistasPermitidasPorRol(role) {
         'vendedor': [
             'gestion-ventas',
             'gestion-lista-ventas',
-            'gestion-clientes',
-            'gestion-garantias',
             'gestion-devoluciones'
         ],
         'cajero': [
-            'gestion-caja',
-            'gestion-ventas',
-            'gestion-lista-ventas',
-            'gestion-devoluciones',
-            'gestion-pagos-web',
-            'gestion-clientes'
+            'gestion-caja'
         ],
         'tecnico': [
             'gestion-servicios',
@@ -125,6 +118,8 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
         'gestion-garantias': { html: 'views/S_Garantias.html', css: 'css/views/S_Garantias.css' },
         'gestion-servicios': { html: 'views/G_Servicios.html', css: 'css/views/G_Servicios.css' },
         'gestion-devoluciones': { html: 'views/G_Devoluciones.html', css: 'css/views/G_Devoluciones.css' },
+        'devoluciones-clientes': { html: 'views/G_Devoluciones_Clientes.html', css: 'css/views/G_Devoluciones.css' },
+        'devoluciones-proveedores': { html: 'views/G_Devoluciones_Proveedores.html', css: 'css/views/G_Devoluciones.css' },
         'gestion-pagos-web':     { html: 'views/G_Pagos_Web.html',  css: '' },
         'gestion-caja':          { html: 'views/G_Caja.html',       css: 'css/views/G_Caja.css' },
         'gestion-auditoria':     { html: 'views/G_Auditorias.html', css: 'css/views/G_Auditorias.css' },
@@ -355,6 +350,7 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                         // Inicializar módulo de devoluciones
                         if (typeof cargarDevoluciones === 'function') cargarDevoluciones();
                         if (typeof poblarSelectVentas === 'function') poblarSelectVentas();
+                        if (typeof cargarSeguimientoSolicitudesVentas === 'function') cargarSeguimientoSolicitudesVentas();
 
                         // Event listener para cambio de venta  
                         const ventaSelect = document.getElementById('venta-select');
@@ -366,18 +362,6 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                             });
                         }
 
-                        // Inicializar reemplazos
-                        if (typeof poblarSelectProductosReemplazo === 'function') {
-                            poblarSelectProductosReemplazo();
-                        }
-                        const cantInput = document.getElementById('cantidad-devolucion');
-                        if (cantInput) {
-                            cantInput.addEventListener('input', function() {
-                                if (typeof verificarSeleccionSeriesReemplazo === 'function') {
-                                    verificarSeleccionSeriesReemplazo();
-                                }
-                            });
-                        }
 
                         // Event listener para submit del formulario
                         const devolutionForm = document.getElementById('devolution-form');
@@ -388,6 +372,12 @@ function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedor
                                 }
                             });
                         }
+                    } else if (nombreVista === 'devoluciones-clientes') {
+                        if (typeof cargarDevoluciones === 'function') cargarDevoluciones();
+                    } else if (nombreVista === 'devoluciones-proveedores') {
+                        if (typeof cargarDevolucionesProveedores === 'function') cargarDevolucionesProveedores();
+                        if (typeof poblarSelectProveedoresDev === 'function') poblarSelectProveedoresDev();
+                        if (typeof poblarSelectProductosProvDev === 'function') poblarSelectProductosProvDev();
                     } else if (nombreVista === 'gestion-pagos-web') {
                         // Pagos de la tienda web — la lógica se carga desde logic/pagos_web.js
                         if (typeof window.initPagos === 'function') window.initPagos();

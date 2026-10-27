@@ -1,7 +1,7 @@
 <!-- 
   ========================================== 
   MÓDULO: G_Devoluciones.html
-  PROPÓSITO: Gestión integral de Devoluciones de Clientes y Devoluciones a Proveedores (REQ-FR-31, UR-03, UR-11).
+  PROPÓSITO: Solicitar Devolución de Cliente (Ventas).
   ========================================== 
 -->
 <link rel="stylesheet" href="css/views/G_Devoluciones.css">
@@ -12,280 +12,129 @@
 <div id="message-container" class="message-container"></div>
 
 <div id="app" class="max-w-7xl mx-auto p-4 sm:p-8">
-  <h1 class="main-title">
-    Gestión de Devoluciones y Garantías
-  </h1>
-
-  <!-- PESTAÑAS DE NAVEGACIÓN MODULAR (CLIENTES vs PROVEEDORES) -->
-  <div class="tabs-nav-devoluciones" style="display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap;">
-    <button type="button" id="tab-btn-clientes" class="btn-tab-dev active" onclick="cambiarTabDevolucion('clientes')" style="padding: 10px 22px; font-size: 15px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; background: #2563eb; color: white; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      <i class="fas fa-users"></i> Devoluciones de Clientes
-    </button>
-    <button type="button" id="tab-btn-proveedores" class="btn-tab-dev" onclick="cambiarTabDevolucion('proveedores')" style="padding: 10px 22px; font-size: 15px; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-color, #cbd5e1); cursor: pointer; display: flex; align-items: center; gap: 8px; background: var(--bg-card, #ffffff); color: var(--text-color, #475569); transition: all 0.2s;">
-      <i class="fas fa-truck-loading"></i> Devoluciones a Proveedores
-    </button>
+  <div style="margin-bottom: 25px;">
+    <h1 class="main-title" style="margin: 0; text-align: left;">
+      <i class="fas fa-undo-alt" style="color: #2563eb;"></i> Solicitar Devolución
+    </h1>
+    <p class="text-muted" style="margin: 5px 0 0; font-size: 0.95rem;">
+      Registre la solicitud de devolución del cliente para su posterior revisión técnica y autorización.
+    </p>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- 1. PANEL DEVOLUCIONES DE CLIENTES -->
-  <!-- ========================================================================= -->
-  <div id="panel-devoluciones-clientes">
-    <!-- FORMULARIO DE NUEVA DEVOLUCIÓN DE CLIENTE -->
-    <div class="card devolution-register-card">
-      <h2 class="card-title">Registrar Devolución de Cliente</h2>
+  <!-- FORMULARIO DE NUEVA DEVOLUCIÓN DE CLIENTE -->
+  <div class="card devolution-register-card">
+    <h2 class="card-title">Datos de la Solicitud</h2>
 
-      <form id="devolution-form">
+    <form id="devolution-form">
 
-        <div class="section-container border-bottom">
-          <h3 class="section-subtitle primary-color">Información de la Devolución</h3>
-          <div class="grid-layout three-cols">
+      <div class="section-container border-bottom">
+        <h3 class="section-subtitle primary-color">Información de la Solicitud</h3>
+        <div class="grid-layout two-cols">
 
-            <div class="form-group">
-              <label for="venta-select">Venta / Factura *</label>
-              <select id="venta-select" required>
-                <option value="" disabled selected>Seleccione una Venta</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="producto-devolucion-select">Producto *</label>
-              <select id="producto-devolucion-select" required disabled>
-                <option value="" disabled selected>Seleccione una venta primero</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="cantidad-devolucion">Cantidad *</label>
-              <div class="input-with-icon">
-                <span class="input-icon">🔢</span>
-                <input type="number" id="cantidad-devolucion" min="1" value="1" required>
-              </div>
-              <small class="text-muted" id="cantidad-disponible-info"></small>
-            </div>
-
-            <div class="form-group col-span-2">
-              <label for="motivo-devolucion">Motivo de la Devolución</label>
-              <textarea id="motivo-devolucion" rows="3"
-                placeholder="Describa el motivo de la devolución (defecto, falla, etc.)"></textarea>
-            </div>
-
-            <div class="form-group col-span-2">
-              <label for="serie-devolucion">Número(s) de Serie de producto(s) devuelto(s)</label>
-              <input type="text" id="serie-devolucion" placeholder="Ej: SN-123, SN-124 (Opcional, separados por coma)" class="form-input">
-              <small class="text-muted">La serie volverá al stock como Seminuevo si se confirma reingreso.</small>
-            </div>
-
-            <div class="form-group">
-              <label for="accion-select">Acción *</label>
-              <select id="accion-select" required>
-                <option value="" disabled selected>Seleccione una acción</option>
-                <option value="reingreso">Reingreso (Reparación)</option>
-                <option value="garantia">Garantía Proveedor</option>
-                <option value="desecho">Desecho</option>
-              </select>
-              <small class="text-muted">Reingreso: producto reparado vuelve al stock</small>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- SECCIÓN DE PRODUCTO DE REEMPLAZO -->
-        <div class="section-container border-bottom" style="margin-top: 20px; background-color: var(--bg-card-alt, #f8fafc); border-radius: 8px; padding: 15px;">
-          <h3 class="section-subtitle" style="color: var(--text-color, #0f172a);">📦 Producto de Reemplazo a Entregar</h3>
-          <p class="text-muted" style="margin-bottom: 15px; font-size: 0.85rem;">Seleccione el equipo que le entregará al cliente. El sistema descontará este producto de su stock actual.</p>
-          
-          <div class="grid-layout two-cols">
-            <div class="form-group">
-              <label for="producto-reemplazo-select">Equipo de Reemplazo *</label>
-              <select id="producto-reemplazo-select" required>
-                <option value="" disabled selected>Cargando productos...</option>
-              </select>
-            </div>
+          <div class="form-group">
+            <label for="venta-select">Seleccionar Factura *</label>
+            <select id="venta-select" required>
+              <option value="" disabled selected>Seleccione una Factura / Venta</option>
+            </select>
           </div>
 
-          <div class="form-group" style="margin-top: 15px;" id="series-reemplazo-container">
-            <label>Número(s) de Serie del equipo nuevo a entregar *</label>
-            <div id="series-reemplazo-list" class="series-checkbox-list" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color, #e2e8f0); padding: 10px; border-radius: 6px; background: var(--bg-input, white); margin-top: 5px;">
-              <span class="text-muted text-sm">Seleccione un producto para ver sus series disponibles...</span>
+          <div class="form-group">
+            <label for="producto-devolucion-select">Seleccionar Producto de la Factura *</label>
+            <select id="producto-devolucion-select" required disabled>
+              <option value="" disabled selected>Seleccione una factura primero</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="cantidad-devolucion">Cantidad *</label>
+            <div class="input-with-icon">
+              <span class="input-icon">🔢</span>
+              <input type="number" id="cantidad-devolucion" min="1" value="1" required>
             </div>
-            <small class="text-muted" id="series-reemplazo-info" style="display: block; margin-top: 5px;">Debe seleccionar exactamente <span id="cant-req-reemplazo">1</span> serie(s).</small>
+            <small class="text-muted" id="cantidad-disponible-info"></small>
           </div>
-        </div>
 
-        <!-- INFORMACIÓN IMPORTANTE -->
-        <div class="info-box">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
-          <div>
-            <strong>Proceso de Devolución al Cliente:</strong>
-            <p>Al registrar una devolución, se entregará un producto de reemplazo al cliente (se descuenta del stock). El producto devuelto se registrará según la acción seleccionada: reparación y reingreso, garantía de proveedor, o desecho.</p>
+          <div class="form-group">
+            <label for="serie-devolucion">Número(s) de Serie de producto(s) devuelto(s)</label>
+            <input type="text" id="serie-devolucion" placeholder="Ej: SN-123, SN-124 (separados por coma)" class="form-input">
+            <small class="text-muted">Ingrese los números de serie correspondientes al producto a devolver.</small>
           </div>
-        </div>
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-success">
-            Registrar Devolución
-          </button>
-          <button type="button" class="btn btn-secondary" onclick="limpiarFormularioDevolucion()">
-            Limpiar
-          </button>
-        </div>
-      </form>
-    </div>
+          <div class="form-group col-span-2">
+            <label for="motivo-devolucion">Motivo de la Devolución *</label>
+            <textarea id="motivo-devolucion" rows="3" required
+              placeholder="Describa el motivo de la devolución (defecto, falla de fábrica, etc.)"></textarea>
+          </div>
 
-    <!-- TABLA DE DEVOLUCIONES DE CLIENTES -->
-    <div class="card devolutions-record-card">
-      <h2 class="card-title border-bottom">Historial de Devoluciones de Clientes</h2>
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th class="text-left">ID</th>
-              <th class="text-left">Factura</th>
-              <th class="text-left">Producto</th>
-              <th class="text-center">Cantidad</th>
-              <th class="text-left">Motivo</th>
-              <th class="text-center">Acción</th>
-              <th class="text-left">Fecha</th>
-              <th class="text-center">Opciones</th>
-            </tr>
-          </thead>
-          <tbody id="devolutions-table-body">
-            <tr>
-              <td colspan="8" class="text-center italic text-gray">
-                Cargando devoluciones...
-              </td>
-            </tr>
-          </tbody>
-        </table>
+          <!-- Acción oculta por defecto para compatibilidad backend -->
+          <input type="hidden" id="accion-select" value="garantia">
+
+        </div>
       </div>
-    </div>
+
+
+
+      <div class="form-actions" style="margin-top: 20px;">
+        <button type="submit" class="btn btn-success" id="btn-solicitar-devolucion">
+          <i class="fas fa-paper-plane"></i> Solicitar Devolución
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="limpiarFormularioDevolucion()">
+          Limpiar
+        </button>
+      </div>
+    </form>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- 2. PANEL DEVOLUCIONES A PROVEEDORES (REQ-FR-31) -->
-  <!-- ========================================================================= -->
-  <div id="panel-devoluciones-proveedores" style="display: none;">
-    <!-- FORMULARIO DEVOLUCIÓN A PROVEEDOR -->
-    <div class="card devolution-register-card">
-      <h2 class="card-title" style="color: #0284c7;"><i class="fas fa-truck-loading"></i> Registrar Devolución a Proveedor</h2>
+  <!-- TABLA DE SEGUIMIENTO DE SOLICITUDES (VENTAS) -->
+  <div class="card devolutions-record-card" style="margin-top: 25px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+      <div>
+        <h2 class="card-title" style="margin: 0; border: none;">
+          <i class="fas fa-tasks" style="color: #2563eb;"></i> Seguimiento de Solicitudes de Devolución
+        </h2>
+        <p class="text-muted" style="margin: 4px 0 0; font-size: 0.85rem;">
+          Consulte el estado de las solicitudes enviadas a administración.
+        </p>
+      </div>
 
-      <form id="form-devolucion-proveedor" onsubmit="guardarDevolucionProveedor(event)">
-        <div class="section-container border-bottom">
-          <h3 class="section-subtitle" style="color: #0284c7;">Datos del Proveedor y Producto a Devolver</h3>
-          <div class="grid-layout three-cols">
-
-            <!-- Proveedor -->
-            <div class="form-group">
-              <label for="prov-select-dev">Proveedor *</label>
-              <select id="prov-select-dev" required onchange="cargarComprasDeProveedor(this.value)">
-                <option value="" disabled selected>Seleccione un Proveedor</option>
-              </select>
-            </div>
-
-            <!-- Factura de Compra Relacionada (Opcional) -->
-            <div class="form-group">
-              <label for="compra-prov-select">Factura de Compra (Opcional)</label>
-              <select id="compra-prov-select">
-                <option value="">Sin vincular a factura específica</option>
-              </select>
-            </div>
-
-            <!-- Producto a Devolver -->
-            <div class="form-group">
-              <label for="prod-prov-dev-select">Producto a Devolver *</label>
-              <select id="prod-prov-dev-select" required onchange="actualizarStockDisponibleProv(this)">
-                <option value="" disabled selected>Seleccione un Producto</option>
-              </select>
-            </div>
-
-            <!-- Cantidad -->
-            <div class="form-group">
-              <label for="cant-prov-dev">Cantidad a Devolver *</label>
-              <div class="input-with-icon">
-                <span class="input-icon">📦</span>
-                <input type="number" id="cant-prov-dev" min="1" value="1" required>
-              </div>
-              <small class="text-muted" id="stock-disp-prov-info" style="font-weight: 600;"></small>
-            </div>
-
-            <!-- Estado Inicial -->
-            <div class="form-group">
-              <label for="estado-prov-dev">Estado de la Devolución *</label>
-              <select id="estado-prov-dev" required>
-                <option value="Pendiente" selected>⏳ Pendiente (En trámite con proveedor)</option>
-                <option value="Aprobada">✅ Aprobada (Aceptada por proveedor)</option>
-              </select>
-            </div>
-
-            <!-- Motivo de Devolución -->
-            <div class="form-group col-span-2">
-              <label for="motivo-prov-dev">Motivo de Devolución al Proveedor *</label>
-              <textarea id="motivo-prov-dev" rows="3" required
-                placeholder="Especifique la falla técnica, defecto de fábrica, daño o lote incorrecto..."></textarea>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- INFORMACIÓN DE IMPACTO DE INVENTARIO -->
-        <div class="info-box" style="border-left-color: #0284c7; background: #f0f9ff;">
-          <i class="fas fa-info-circle" style="color: #0284c7; font-size: 20px;"></i>
-          <div>
-            <strong style="color: #0369a1;">Control de Inventario Automático:</strong>
-            <p style="margin: 4px 0 0; color: #0c4a6e; font-size: 0.85rem;">
-              Al registrar la devolución a proveedor, las unidades se descuentan temporalmente del stock disponible. Si el proveedor envía un <strong>Reemplazo Recibido</strong> o si la devolución es <strong>Rechazada</strong>, el sistema reingresará automáticamente las unidades al inventario.
-            </p>
-          </div>
-        </div>
-
-        <div class="form-actions" style="margin-top: 20px;">
-          <button type="submit" class="btn btn-success" style="background: #0284c7; border-color: #0284c7;">
-            <i class="fas fa-paper-plane"></i> Registrar Devolución al Proveedor
+      <!-- FILTRO DE ESTADO Y BUSCADOR -->
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <div class="btn-group-filtros" style="display: flex; background: var(--bg-card-alt, #f1f5f9); border-radius: 8px; padding: 3px;">
+          <button type="button" id="filtro-sol-pendientes" class="btn-filtro-sol active" onclick="filtrarSolicitudesVentas('Pendiente')" style="border:none; padding: 6px 12px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; background: #2563eb; color: white;">
+            ⏳ Pendientes
           </button>
-          <button type="button" class="btn btn-secondary" onclick="limpiarFormularioDevolucionProveedor()">
-            Limpiar
+          <button type="button" id="filtro-sol-todas" class="btn-filtro-sol" onclick="filtrarSolicitudesVentas('todas')" style="border:none; padding: 6px 12px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; background: transparent; color: var(--text-color, #475569);">
+            📋 Todas
           </button>
         </div>
-      </form>
+
+        <input type="text" id="buscar-solicitudes-ventas" oninput="buscarEnSolicitudesVentas(this.value)" placeholder="Buscar por factura, serie..." style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color, #cbd5e1); font-size: 13px; max-width: 220px;">
+      </div>
     </div>
 
-    <!-- TABLA HISTORIAL DE DEVOLUCIONES A PROVEEDORES -->
-    <div class="card devolutions-record-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-        <h2 class="card-title" style="margin: 0; border: none; color: #0284c7;"><i class="fas fa-history"></i> Historial de Devoluciones a Proveedores</h2>
-        <input type="text" id="buscar-dev-proveedor" oninput="filtrarDevolucionesProveedores(this.value)" placeholder="Buscar por proveedor, producto, motivo..." style="max-width: 320px; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--border-color, #cbd5e1); font-size: 13px;">
-      </div>
-
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th class="text-left">ID</th>
-              <th class="text-left">Proveedor</th>
-              <th class="text-left">Factura Compra</th>
-              <th class="text-left">Producto</th>
-              <th class="text-center">Cantidad</th>
-              <th class="text-left">Motivo</th>
-              <th class="text-left">Fecha</th>
-              <th class="text-center">Estado de Resolución</th>
-              <th class="text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="devoluciones-prov-table-body">
-            <tr>
-              <td colspan="9" class="text-center italic text-gray">
-                Cargando devoluciones a proveedores...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="text-left">ID</th>
+            <th class="text-left">Factura</th>
+            <th class="text-left">Producto</th>
+            <th class="text-center">Cant.</th>
+            <th class="text-left">Serie(s)</th>
+            <th class="text-left">Motivo Solicitud</th>
+            <th class="text-center">Fecha</th>
+            <th class="text-center">Estado / Resolución</th>
+            <th class="text-center" style="min-width: 170px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-solicitudes-ventas-body">
+          <tr>
+            <td colspan="9" class="text-center italic text-gray" style="padding: 20px;">
+              Cargando solicitudes...
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
-
 </div>

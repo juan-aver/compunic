@@ -66,67 +66,70 @@
 
       // Referencias a elementos del menú principal
       const navInventario = document.getElementById('nav-inventario');
+      const navVentas = document.getElementById('nav-ventas');
       const navServicios = document.getElementById('nav-servicios');
       const navCompras = document.getElementById('nav-compras');
       const navAdmin = document.getElementById('nav-administracion');
+      const navCaja = document.getElementById('nav-caja');
 
       const subProductos = document.getElementById('nav-sub-productos');
       const subCategorias = document.getElementById('nav-sub-categorias');
       const subHistorialStock = document.getElementById('nav-sub-historial-stock');
       const subGarantias = document.getElementById('nav-sub-garantias');
-      const subServicios = document.getElementById('nav-sub-servicios');
       const subVentas = document.getElementById('nav-sub-ventas');
       const subListaVentas = document.getElementById('nav-sub-lista-ventas');
       const subDevoluciones = document.getElementById('nav-sub-devoluciones');
       const subEmpleados = document.getElementById('nav-sub-empleados');
       const subClientes = document.getElementById('nav-sub-clientes');
       const subPagosWeb = document.getElementById('nav-sub-pagos-web');
-      const subCaja = document.getElementById('nav-sub-caja');
+      const subReportes = document.getElementById('nav-sub-reportes');
       const subAuditoria = document.getElementById('nav-sub-auditoria');
 
       if (role === 'admin') {
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
       } else if (role === 'vendedor') {
+        const navInicio = document.getElementById('nav-inicio');
+        if (navInicio) navInicio.style.display = 'none';
         if (navInventario) navInventario.style.display = 'none';
         if (navCompras) navCompras.style.display = 'none';
-        if (navAdmin) {
-          if (subCaja) subCaja.style.display = 'none';
-          if (subEmpleados) subEmpleados.style.display = 'none';
-          if (subPagosWeb) subPagosWeb.style.display = 'none';
-          if (subAuditoria) subAuditoria.style.display = 'none';
-        }
-        if (subServicios) subServicios.style.display = 'none';
+        if (navCaja) navCaja.style.display = 'none';
+        if (navServicios) navServicios.style.display = 'none';
+        if (navAdmin) navAdmin.style.display = 'none';
 
         document.querySelectorAll('.vendedor-only').forEach(el => el.style.display = '');
         const greetingName = document.getElementById('vendedor-nombre-greeting');
         if (greetingName && user) greetingName.textContent = user.split(' ')[0] || user;
       } else if (role === 'cajero') {
+        const navInicio = document.getElementById('nav-inicio');
+        if (navInicio) navInicio.style.display = 'none';
         if (navInventario) navInventario.style.display = 'none';
+        if (navVentas) navVentas.style.display = 'none';
         if (navCompras) navCompras.style.display = 'none';
-        if (navAdmin) {
-          if (subEmpleados) subEmpleados.style.display = 'none';
-          if (subAuditoria) subAuditoria.style.display = 'none';
-        }
-        if (subServicios) subServicios.style.display = 'none';
-        if (subGarantias) subGarantias.style.display = 'none';
+        if (navServicios) navServicios.style.display = 'none';
+        if (navAdmin) navAdmin.style.display = 'none';
 
         document.querySelectorAll('.cajero-only').forEach(el => el.style.display = '');
         const greetingName = document.getElementById('cajero-nombre-greeting');
         if (greetingName && user) greetingName.textContent = user.split(' ')[0] || user;
       } else if (role === 'tecnico') {
         if (navCompras) navCompras.style.display = 'none';
-        if (navAdmin) navAdmin.style.display = 'none';
+        if (navCaja) navCaja.style.display = 'none';
         if (navInventario) {
           if (subProductos) subProductos.style.display = ''; // Catálogo de Inventario visible
           if (subCategorias) subCategorias.style.display = 'none';
           if (subHistorialStock) subHistorialStock.style.display = 'none'; // Historial de Stock oculto
         }
-        if (navServicios) {
+        if (navVentas) {
           if (subVentas) subVentas.style.display = 'none';
           if (subListaVentas) subListaVentas.style.display = 'none';
           if (subDevoluciones) subDevoluciones.style.display = 'none';
-          if (subServicios) subServicios.style.display = '';
-          if (subGarantias) subGarantias.style.display = '';
+        }
+        if (navAdmin) {
+          if (subEmpleados) subEmpleados.style.display = 'none';
+          if (subClientes) subClientes.style.display = 'none';
+          if (subPagosWeb) subPagosWeb.style.display = 'none';
+          if (subAuditoria) subAuditoria.style.display = 'none';
+          if (subReportes) subReportes.style.display = 'none';
         }
 
         // Ocultar métricas privadas del dashboard (ganancias y clientes)
@@ -138,18 +141,23 @@
         if (greetingName && user) greetingName.textContent = user.split(' ')[0] || user;
       } else if (role === 'temporal') {
         if (navCompras) navCompras.style.display = 'none';
-        if (navAdmin) navAdmin.style.display = 'none';
+        if (navCaja) navCaja.style.display = 'none';
         if (navInventario) {
           if (subProductos) subProductos.style.display = ''; // Catálogo de Inventario visible
           if (subCategorias) subCategorias.style.display = 'none';
           if (subHistorialStock) subHistorialStock.style.display = 'none'; // Historial de Stock oculto
         }
-        if (navServicios) {
+        if (navVentas) {
           if (subVentas) subVentas.style.display = 'none';
           if (subListaVentas) subListaVentas.style.display = 'none';
           if (subDevoluciones) subDevoluciones.style.display = 'none';
-          if (subServicios) subServicios.style.display = '';
-          if (subGarantias) subGarantias.style.display = '';
+        }
+        if (navAdmin) {
+          if (subEmpleados) subEmpleados.style.display = 'none';
+          if (subClientes) subClientes.style.display = 'none';
+          if (subPagosWeb) subPagosWeb.style.display = 'none';
+          if (subAuditoria) subAuditoria.style.display = 'none';
+          if (subReportes) subReportes.style.display = 'none';
         }
 
         // Ocultar métricas privadas del dashboard (ganancias y clientes)
@@ -168,7 +176,9 @@
 
       document.querySelectorAll('.mobile-menu-item').forEach(item => {
         const vista = item.dataset.vista;
-        if (vista && vista !== 'inicio' && vista !== 'aurum-tutorial') {
+        if (vista === 'inicio' && (role === 'vendedor' || role === 'cajero')) {
+          item.style.display = 'none';
+        } else if (vista && vista !== 'inicio' && vista !== 'aurum-tutorial') {
           if (!permitidas.includes('*') && !permitidas.includes(vista)) {
             item.style.display = 'none';
           }
@@ -180,11 +190,23 @@
     document.addEventListener('DOMContentLoaded', () => {
       aplicarConfiguracionRol();
 
-      // Cargar estadísticas del dashboard
-      cargarEstadisticasDashboard();
+      const role = (Auth.getRole() || '').toLowerCase();
+
+      // Carga directa según rol
+      if (role === 'vendedor') {
+        if (typeof cargarVista === 'function') {
+          cargarVista('gestion-ventas');
+        }
+      } else if (role === 'cajero') {
+        if (typeof cargarVista === 'function') {
+          cargarVista('gestion-caja');
+        }
+      } else {
+        // Cargar estadísticas del dashboard para roles con acceso al inicio
+        cargarEstadisticasDashboard();
+      }
 
       // Auto-iniciar el tutorial interactivo de AURUM si no se ha completado
-      const role = (Auth.getRole() || '').toLowerCase();
       if (['admin', 'vendedor', 'cajero', 'tecnico', 'temporal'].includes(role)) {
         setTimeout(() => {
           if (typeof AurumTutorial !== 'undefined') {
@@ -257,14 +279,12 @@
             <li id="nav-sub-historial-stock"><a href="#" onclick="cargarVista('historial-stock')">Historial de stock</a></li>
           </ul>
         </li>
-        <li class="nav-item-dropdown" id="nav-servicios">
-          <a href="#" class="nav-link">Servicios</a>
+        <li class="nav-item-dropdown" id="nav-ventas">
+          <a href="#" class="nav-link">Ventas</a>
           <ul class="dropdown-menu glass">
-            <li id="nav-sub-garantias"><a href="#" onclick="cargarVista('gestion-garantias')">Garantías</a></li>
-            <li id="nav-sub-servicios"><a href="#" onclick="cargarVista('gestion-servicios')">Servicios</a></li>
             <li id="nav-sub-ventas"><a href="#" onclick="cargarVista('gestion-ventas')">Generar Venta</a></li>
             <li id="nav-sub-lista-ventas"><a href="#" onclick="cargarVista('gestion-lista-ventas')">Listado de Ventas</a></li>
-            <li id="nav-sub-devoluciones"><a href="#" onclick="cargarVista('gestion-devoluciones')">Devoluciones</a></li>
+            <li id="nav-sub-devoluciones"><a href="#" onclick="cargarVista('gestion-devoluciones')">Solicitar Devolución</a></li>
           </ul>
         </li>
         <li class="nav-item-dropdown" id="nav-compras">
@@ -275,10 +295,22 @@
             <li id="nav-sub-proveedores"><a href="#" onclick="cargarVista('gestion-proveedores')">Proveedores</a></li>
           </ul>
         </li>
+        <li id="nav-caja"><a href="#" class="nav-link" onclick="cargarVista('gestion-caja')"><i class="fas fa-cash-register"></i> Control de Caja y Arqueo</a></li>
+        <li id="nav-servicios"><a href="#" class="nav-link" onclick="cargarVista('gestion-servicios')"><i class="fas fa-tools"></i> Servicios</a></li>
         <li class="nav-item-dropdown" id="nav-administracion">
           <a href="#" class="nav-link">Administración</a>
           <ul class="dropdown-menu glass">
-            <li id="nav-sub-caja"><a href="#" onclick="cargarVista('gestion-caja')" style="color:#059669; font-weight:700;"><i class="fas fa-cash-register"></i> Control de Caja y Arqueo</a></li>
+            <li id="nav-sub-garantias"><a href="#" onclick="cargarVista('gestion-garantias')"><i class="fas fa-shield-alt"></i> Garantías</a></li>
+            <li class="dropdown-submenu" id="nav-sub-devoluciones-admin">
+              <a href="javascript:void(0)" class="submenu-toggle" style="color:#2563eb; font-weight:700; display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="fas fa-undo-alt"></i> Devoluciones</span>
+                <i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>
+              </a>
+              <ul class="dropdown-menu-nested glass">
+                <li id="nav-sub-dev-clientes"><a href="#" onclick="cargarVista('devoluciones-clientes')"><i class="fas fa-users"></i> Devolución a Clientes</a></li>
+                <li id="nav-sub-dev-proveedores"><a href="#" onclick="cargarVista('devoluciones-proveedores')"><i class="fas fa-truck-loading"></i> Devolución a Proveedores</a></li>
+              </ul>
+            </li>
             <li id="nav-sub-reportes"><a href="#" onclick="cargarVista('gestion-reportes')" style="color:#10b981; font-weight:700;"><i class="fas fa-chart-line"></i> Reportes y Estadísticas</a></li>
             <li id="nav-sub-empleados"><a href="#" onclick="cargarVista('gestion-empleados')">Personal / Empleados</a></li>
             <li id="nav-sub-temporales"><a href="#" onclick="cargarVista('gestion-temporales')" style="color:#ea580c; font-weight:700;"><i class="fas fa-wrench"></i> Técnicos Temporales</a></li>
@@ -365,6 +397,12 @@
           <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-lista-ventas')">
             <span class="mobile-menu-icon">📋</span>
             Lista Ventas
+          </a>
+        </li>
+        <li class="mobile-menu-item" data-vista="gestion-devoluciones">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('gestion-devoluciones')">
+            <span class="mobile-menu-icon">↩️</span>
+            Solicitar Devolución
           </a>
         </li>
         <li class="mobile-menu-item" data-vista="gestion-compra">

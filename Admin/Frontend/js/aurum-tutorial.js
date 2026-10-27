@@ -131,103 +131,102 @@
     // Definición de Pasos para Vendedores
     const vendorSteps = [
         {
-            title: "¡Bienvenido al Equipo de Ventas! 💼",
-            subtitle: "Introducción para Vendedores",
-            body: "<p>Hola, soy <strong>AURUM</strong>, tu asistente del sistema. Te guiaré en este tutorial rápido para que aprendas a realizar ventas y dar soporte técnico en Compunic.</p><p>¿Iniciamos la guía?</p>",
+            title: "¡Bienvenido al Punto de Venta! 💼",
+            subtitle: "Tu Guía de Ventas con AURUM",
+            body: "<p>Hola, soy <strong>AURUM</strong>, tu asistente virtual. Te acompañaré paso a paso para que aprendas a:</p><ol style='margin: 8px 0; padding-left: 20px; line-height: 1.6;'><li><strong>Registrar un cliente nuevo</strong>.</li><li><strong>Realizar tu primera venta</strong> agregando productos y cobrando.</li><li><strong>Solicitar una devolución</strong> de producto a administración.</li></ol><p>¿Comenzamos?</p>",
             target: null,
             placement: "center"
         },
         {
-            title: "Tu Panel Resumido 📊",
-            subtitle: "Monitoreo Diario",
-            body: "<p>Como vendedor, aquí verás tus métricas personales: ingresos del mes, cantidad de ventas que has realizado y los tickets de soporte técnico pendientes.</p>",
-            target: ".dashboard-grid",
+            title: "Tu Módulo de Ventas 🧭",
+            subtitle: "Área de Trabajo",
+            body: "<p>Como vendedor, tu sistema está optimizado para que accedas directamente a **Ventas**. Desde aquí gestionas tus facturas, consultas el historial y tramitas devoluciones.</p>",
+            target: "#nav-ventas",
             placement: "bottom"
         },
         {
-            title: "Paso 1: Módulo de Servicios 🧭",
-            subtitle: "Menú de Navegación",
-            body: "<p>Como vendedor, la mayoría de tus herramientas diarias (Ventas, Reparaciones y Garantías) están agrupadas dentro del menú desplegable **Servicios** en la barra superior.</p>",
-            target: "#nav-servicios",
-            placement: "bottom"
-        },
-        {
-            title: "Generar una Venta 💰",
-            subtitle: "Submenú de Servicios",
-            body: "<p>Haz clic en el sub-botón **Generar Venta** para entrar al panel de facturación de artículos.</p>",
-            target: '#nav-servicios a[onclick="cargarVista(\'gestion-ventas\')"]',
-            placement: "bottom"
-        },
-        {
-            title: "Generar Ventas (Punto de Venta POS) 💰",
-            subtitle: "Facturación al Cliente",
-            body: "<p>Te he redirigido al módulo <strong>Generar Venta</strong>. Aquí harás la facturación. El número de factura se autogenera y el sistema te asigna como el vendedor activo de forma automática.</p>",
-            target: "#seccion-formulario-venta",
-            placement: "top",
+            title: "Paso 1: Registrar un Cliente Nuevo 👤➕",
+            subtitle: "Creación Rápida de Clientes",
+            body: "<p>Para asociar la venta a un cliente que aún no está en el sistema, haz clic en el botón <strong>+ Nuevo</strong> junto al selector de cliente. Podrás ingresar su nombre, teléfono y cédula al instante sin salir de la factura.</p>",
+            target: ".btn-nuevo-cliente-link",
+            placement: "bottom",
             action: () => {
-                window.cargarVista('gestion-ventas');
+                if (typeof window.cargarVista === 'function') window.cargarVista('gestion-ventas');
             }
         },
         {
-            title: "Seleccionar Artículos 📦",
-            subtitle: "Tu Lista de Inventario",
-            body: "<p>En esta sección de la izquierda puedes buscar productos por nombre o código. Haz clic sobre cualquier producto para añadirlo al carrito de compras.</p>",
+            title: "Selección de Cliente Existente u Ocasional 🏷️",
+            subtitle: "Asignación en Factura",
+            body: "<p>También puedes buscar clientes ya registrados en este menú desplegable, o seleccionar <strong>👤 Cliente Ocasional / Sin Registro</strong> si es una venta rápida de mostrador.</p>",
+            target: "#cliente-select",
+            placement: "bottom",
+            action: () => {
+                if (typeof window.cargarVista === 'function') window.cargarVista('gestion-ventas');
+            }
+        },
+        {
+            title: "Paso 2: Buscar y Elegir Artículos 🔍📦",
+            subtitle: "Catálogo en Vivo",
+            body: "<p>Usa la barra de búsqueda para localizar productos rápidamente por nombre o código de barra. Al hacer clic sobre cualquier producto, se agregará de inmediato a tu carrito de venta.</p>",
             target: ".ventas-product-list",
             placement: "right",
             action: () => {
-                window.cargarVista('gestion-ventas');
+                if (typeof window.cargarVista === 'function') window.cargarVista('gestion-ventas');
             }
         },
         {
-            title: "Confirmar y Cobrar 💳",
-            subtitle: "Detalle de Factura",
-            body: "<p>En esta columna verás el desglose del subtotal, IVA (15%) y total de la factura. Haz clic en el botón <strong>Guardar Venta</strong> para finalizar el cobro.</p>",
+            title: "Configurar Método de Pago 💳💵",
+            subtitle: "Efectivo, Tarjeta o Transferencia",
+            body: "<p>Selecciona la forma de pago del cliente. Si paga por <strong>Transferencia</strong>, se habilitará un campo para ingresar el número de referencia o voucher bancario.</p>",
+            target: "#metodo-pago-select",
+            placement: "bottom"
+        },
+        {
+            title: "Detalle, Totales y Guardar Venta 💰✅",
+            subtitle: "Finalizar tu Primera Venta",
+            body: "<p>En este panel lateral revisas el subtotal, el IVA y la conversión a dólares (USD). Finalmente, presiona <strong>Guardar Venta</strong> para emitir la factura e imprimir el ticket o comprobante.</p>",
             target: ".ventas-cart-section",
-            placement: "left",
+            placement: "left"
+        },
+        {
+            title: "Paso 3: Solicitar Devolución de Producto ↩️📋",
+            subtitle: "Gestión de Garantías y Reclamos",
+            body: "<p>Si un cliente regresa un producto por defecto o garantía, dirígete a **Solicitar Devolución**. Vamos a conocer esa pantalla.</p>",
+            target: '#nav-ventas a[onclick="cargarVista(\'gestion-devoluciones\')"]',
+            placement: "bottom",
             action: () => {
-                window.cargarVista('gestion-ventas');
+                if (typeof window.cargarVista === 'function') window.cargarVista('gestion-devoluciones');
             }
         },
         {
-            title: "Abrir Servicios Técnicos 🔧",
-            subtitle: "Submenú de Servicios",
-            body: "<p>Para registrar el ingreso de un dispositivo a mantenimiento o reparación técnica, abre el menú de **Servicios** y haz clic en el sub-botón **Servicios**.</p>",
-            target: '#nav-servicios a[onclick="cargarVista(\'gestion-servicios\')"]',
-            placement: "bottom"
-        },
-        {
-            title: "Registro de Servicios Técnicos 🔧",
-            subtitle: "Atención y Soporte",
-            body: "<p>Cuando un cliente traiga un equipo para reparación, ve al módulo de **Servicios** y presiona **+ Nuevo Servicio**. Registra el cliente, tipo de reparación y pon el estado en <em>En Diagnóstico</em>.</p>",
-            target: "#content",
+            title: "Formulario de Solicitud de Devolución 📝",
+            subtitle: "Envío a Autorización Técnica",
+            body: "<p>Aquí seleccionas el <strong>número de factura</strong> del cliente, el <strong>producto</strong> devuelto, su <strong>número de serie</strong> y el <strong>motivo</strong> del reclamo. Al hacer clic en <strong>Solicitar Devolución</strong>, la solicitud queda registrada en estado <em>Pendiente</em> para aprobación de administración.</p>",
+            target: "#devolution-form",
             placement: "top",
             action: () => {
-                window.cargarVista('gestion-servicios');
+                if (typeof window.cargarVista === 'function') window.cargarVista('gestion-devoluciones');
             }
         },
         {
-            title: "Abrir Garantías 🛡️",
-            subtitle: "Submenú de Servicios",
-            body: "<p>Para procesar el cambio o revisión de artículos defectuosos bajo cobertura de fábrica, abre el menú de **Servicios** y haz clic en **Garantías**.</p>",
-            target: '#nav-servicios a[onclick="cargarVista(\'gestion-garantias\')"]',
-            placement: "bottom"
-        },
-        {
-            title: "Garantías de Clientes 🛡️",
-            subtitle: "Resguardo de Compras",
-            body: "<p>Desde el módulo de <strong>Garantías</strong> registras los tickets de productos que presentan fallas de fábrica y que requieren reemplazo o reparación gratuita.</p>",
-            target: "#content",
+            title: "Seguimiento en Tiempo Real 📊",
+            subtitle: "Historial de Solicitudes",
+            body: "<p>En esta tabla inferior puedes monitorear el progreso de tus devoluciones (<strong>Pendientes</strong>, <strong>Aprobadas</strong> o <strong>Rechazadas</strong>), e incluso completar la entrega de equipos de reemplazo autorizados.</p>",
+            target: ".devolutions-record-card",
             placement: "top",
             action: () => {
-                window.cargarVista('gestion-garantias');
+                if (typeof window.cargarVista === 'function') window.cargarVista('gestion-devoluciones');
             }
         },
         {
-            title: "¡Listo para Vender! 🚀",
-            subtitle: "Operaciones Diarias Completas",
-            body: "<p>Has completado el onboarding de Ventas. Ya puedes iniciar tus labores cotidianas.</p><p>¡Mucho éxito con tus ventas de hoy!</p>",
+            title: "¡Todo Listo para Vender! 🚀🎉",
+            subtitle: "Capacitación de Ventas Completada",
+            body: "<p>¡Excelente! Ya dominas la creación de clientes, la emisión de ventas y el trámite de devoluciones. Si tienes dudas durante tu turno, puedes consultar conmigo en cualquier momento desde el chat flotante.</p><p>¡Mucho éxito con tus ventas de hoy!</p>",
             target: null,
-            placement: "center"
+            placement: "center",
+            action: () => {
+                if (typeof window.cargarVista === 'function') window.cargarVista('gestion-ventas');
+            }
         }
     ];
 
@@ -235,36 +234,22 @@
     const cajeroSteps = [
         {
             title: "¡Bienvenido al Control de Caja! 💵",
-            subtitle: "Gestión de Turnos y Cobros",
-            body: "<p>Hola, soy <strong>AURUM</strong>, tu asistente del sistema. Te acompañaré en este tutorial rápido para que aprendas a abrir tu turno de caja, cobrar en punto de venta, validar pagos web y realizar arqueos.</p><p>¿Iniciamos la guía?</p>",
+            subtitle: "Gestión de Turnos y Arqueos",
+            body: "<p>Hola, soy <strong>AURUM</strong>, tu asistente del sistema. Te acompañaré en este tutorial rápido para que aprendas a abrir tu turno de caja, registrar movimientos y realizar tus arqueos diarios.</p><p>¿Iniciamos la guía?</p>",
             target: null,
             placement: "center"
         },
         {
-            title: "Tu Centro de Cobros 📊",
-            subtitle: "Accesos Rápidos del Cajero",
-            body: "<p>Este es tu panel principal como cajero. Tienes acceso inmediato a 5 operaciones clave: <strong>Caja & Turnos</strong>, <strong>Punto de Venta POS</strong>, <strong>Comprobantes Web</strong>, <strong>Facturas del Día</strong> y <strong>Devoluciones</strong>.</p>",
-            target: ".cajero-only .dashboard-grid",
-            placement: "bottom"
-        },
-        {
-            title: "Paso 1: Módulo de Caja 🧭",
-            subtitle: "Menú de Navegación",
-            body: "<p>Para gestionar aperturas de turno, fondos de cambio y arqueos de efectivo, abre el menú **Administración** en la barra superior.</p>",
-            target: "#nav-administracion",
-            placement: "bottom"
-        },
-        {
-            title: "Control de Caja y Arqueo 💵",
-            subtitle: "Submenú de Administración",
-            body: "<p>Haz clic en el sub-botón **Control de Caja y Arqueo** para entrar al módulo financiero de turnos y movimientos.</p>",
-            target: '#nav-administracion a[onclick="cargarVista(\'gestion-caja\')"]',
+            title: "Control de Caja y Arqueo 🧭",
+            subtitle: "Menú Principal",
+            body: "<p>Tu módulo principal de operaciones es **Control de Caja y Arqueo**, ubicado en la barra superior.</p>",
+            target: "#nav-caja",
             placement: "bottom"
         },
         {
             title: "Apertura de Turno y Cuadre de Caja 🪙",
-            subtitle: "Arqueo Diario",
-            body: "<p>¡He abierto el módulo de <strong>Caja</strong>! Aquí debes iniciar turno declarando tu **Fondo Inicial** (fondo de cambio). Durante el día verás el balance en vivo de ventas en efectivo vs transferencias, y al finalizar podrás registrar tu **Cierre de Caja** con el conteo físico de dinero.</p>",
+            subtitle: "Arqueo y Movimientos",
+            body: "<p>Aquí debes iniciar tu turno declarando tu **Fondo Inicial** (fondo de cambio). Durante el día podrás registrar entradas y salidas de dinero, monitorear el balance en vivo y al terminar registrar tu **Cierre de Caja** con el conteo físico de dinero.</p>",
             target: "#content",
             placement: "top",
             action: () => {
@@ -272,57 +257,9 @@
             }
         },
         {
-            title: "Paso 2: Cobros y Facturación 🧭",
-            subtitle: "Menú de Navegación",
-            body: "<p>Cuando un cliente se acerque a pagar sus compras, dirígete al menú superior **Servicios**.</p>",
-            target: "#nav-servicios",
-            placement: "bottom"
-        },
-        {
-            title: "Punto de Venta POS 💰",
-            subtitle: "Submenú de Servicios",
-            body: "<p>Haz clic en el sub-botón **Generar Venta** para ingresar al punto de cobro y emitir facturas.</p>",
-            target: '#nav-servicios a[onclick="cargarVista(\'gestion-ventas\')"]',
-            placement: "bottom"
-        },
-        {
-            title: "Cobro y Facturación Rápida 💳",
-            subtitle: "Punto de Venta POS",
-            body: "<p>En esta pantalla agregas los artículos del cliente, seleccionas el método de pago (Efectivo o Transferencia) y confirmas el cobro. Cada venta impactará de forma inmediata en tu turno de caja activo.</p>",
-            target: "#content",
-            placement: "top",
-            action: () => {
-                window.cargarVista('gestion-ventas');
-            }
-        },
-        {
-            title: "Paso 3: Validar Pagos Tienda Web 🌐",
-            subtitle: "Submenú de Administración",
-            body: "<p>Los pedidos realizados por clientes desde la tienda en línea requieren tu verificación. Abre **Administración** y haz clic en **💳 Pagos Tienda Web**.</p>",
-            target: '#nav-administracion a[onclick="cargarVista(\'gestion-pagos-web\')"]',
-            placement: "bottom"
-        },
-        {
-            title: "Aprobación de Transferencias Online 📱",
-            subtitle: "Tienda en Línea",
-            body: "<p>En el módulo de <strong>Pagos Web</strong> puedes inspeccionar el comprobante bancario subido por el cliente, cotejar la transacción con la cuenta bancaria y aprobar o rechazar la compra.</p>",
-            target: "#content",
-            placement: "top",
-            action: () => {
-                window.cargarVista('gestion-pagos-web');
-            }
-        },
-        {
-            title: "Paso 4: Devoluciones y Reversiones 🔄",
-            subtitle: "Submenú de Servicios",
-            body: "<p>Si un cliente solicita una devolución o cambio con nota de crédito, accede a **Devoluciones** dentro del menú Servicios para procesar el reintegro.</p>",
-            target: '#nav-servicios a[onclick="cargarVista(\'gestion-devoluciones\')"]',
-            placement: "bottom"
-        },
-        {
-            title: "¡Turno Listo para Operar! 🎉",
-            subtitle: "Control Financiero Impecable",
-            body: "<p>Has completado el tutorial de Cajero. Recuerda siempre abrir tu turno con el fondo de cambio exacto y registrar los arqueos antes de salir.</p><p>¡Mucho éxito en tus cobros!</p>",
+            title: "¡Listo para Operar! 🎉",
+            subtitle: "Control de Caja Exclusivo",
+            body: "<p>Has completado el recorrido de Cajero. Recuerda siempre abrir tu turno con el fondo de cambio exacto y registrar los arqueos antes de salir.</p><p>¡Mucho éxito en tu jornada!</p>",
             target: null,
             placement: "center"
         }
@@ -347,15 +284,15 @@
         {
             title: "Paso 1: Módulo de Servicios 🧭",
             subtitle: "Menú de Navegación",
-            body: "<p>Tus trabajos asignados y equipos en reparación se encuentran dentro del menú desplegable **Servicios** en la barra superior.</p>",
+            body: "<p>Tus trabajos asignados y equipos en reparación se encuentran directamente en el botón **Servicios** en la barra superior.</p>",
             target: "#nav-servicios",
             placement: "bottom"
         },
         {
             title: "Tickets de Soporte Técnico 🔧",
-            subtitle: "Submenú de Servicios",
-            body: "<p>Haz clic en el sub-botón **Servicios** para ver y gestionar la lista de equipos en taller.</p>",
-            target: '#nav-servicios a[onclick="cargarVista(\'gestion-servicios\')"]',
+            subtitle: "Barra Superior",
+            body: "<p>Haz clic en **Servicios** para ver y gestionar la lista de equipos en taller.</p>",
+            target: '#nav-servicios a',
             placement: "bottom"
         },
         {
@@ -377,9 +314,9 @@
         },
         {
             title: "Paso 2: Garantías de Clientes 🛡️",
-            subtitle: "Submenú de Servicios",
-            body: "<p>Para validar si un equipo con fallas califica para reparación o sustitución bajo garantía de fábrica, abre el menú **Servicios** y selecciona **Garantías**.</p>",
-            target: '#nav-servicios a[onclick="cargarVista(\'gestion-garantias\')"]',
+            subtitle: "Submenú de Administración",
+            body: "<p>Para validar si un equipo con fallas califica para reparación o sustitución bajo garantía de fábrica, abre el menú **Administración** y selecciona **Garantías**.</p>",
+            target: '#nav-administracion a[onclick="cargarVista(\'gestion-garantias\')"]',
             placement: "bottom"
         },
         {
@@ -444,15 +381,15 @@
         {
             title: "Paso 1: Módulo de Servicios 🧭",
             subtitle: "Menú de Navegación",
-            body: "<p>Tus trabajos técnicos asignados y equipos en reparación se encuentran dentro del menú desplegable **Servicios** en la barra superior.</p>",
+            body: "<p>Tus trabajos técnicos asignados y equipos en reparación se encuentran directamente en el botón **Servicios** en la barra superior.</p>",
             target: "#nav-servicios",
             placement: "bottom"
         },
         {
             title: "Tickets de Soporte Técnico 🔧",
-            subtitle: "Submenú de Servicios",
-            body: "<p>Haz clic en el sub-botón **Servicios** para ver y gestionar la lista de equipos en taller.</p>",
-            target: '#nav-servicios a[onclick="cargarVista(\'gestion-servicios\')"]',
+            subtitle: "Barra Superior",
+            body: "<p>Haz clic en **Servicios** para ver y gestionar la lista de equipos en taller.</p>",
+            target: '#nav-servicios a',
             placement: "bottom"
         },
         {
@@ -474,9 +411,9 @@
         },
         {
             title: "Paso 2: Garantías y Tipos de Cobertura 🛡️",
-            subtitle: "Submenú de Servicios",
-            body: "<p>Para validar si un equipo califica para reparación o sustitución, abre el menú **Servicios** y selecciona **Garantías**.</p>",
-            target: '#nav-servicios a[onclick="cargarVista(\'gestion-garantias\')"]',
+            subtitle: "Submenú de Administración",
+            body: "<p>Para validar si un equipo califica para reparación o sustitución, abre el menú **Administración** y selecciona **Garantías**.</p>",
+            target: '#nav-administracion a[onclick="cargarVista(\'gestion-garantias\')"]',
             placement: "bottom"
         },
         {
@@ -766,15 +703,6 @@
                 return;
             }
 
-            // Si no estamos en el Dashboard de inicio, redirigir recargando la página una única vez.
-            const isOnDashboard = document.querySelector('.dashboard-grid') !== null;
-            if (!isOnDashboard) {
-                sessionStorage.setItem('aurum_tutorial_start_on_load', 'true');
-                console.log('[AurumTutorial] Redirigiendo al inicio para comenzar el tutorial...');
-                window.location.reload();
-                return;
-            }
-
             console.log(`✨ [AurumTutorial] Iniciando tutorial para el rol: ${role}`);
 
             // Seleccionar pasos correspondientes según el rol
@@ -853,10 +781,6 @@
             }
 
             this.cleanup();
-
-            // Recargar para volver al dashboard en estado limpio e inicial
-            console.log('[AurumTutorial] Recargando dashboard finalizado...');
-            window.location.reload();
         },
 
         cleanup: function () {
