@@ -981,7 +981,12 @@
 
       if (loginSuccess) {
         resetearIntentos();
-        window.location.href = 'dashboard.html';
+        const session = Auth.getSession();
+        if (session && session.rol === 'tecnico') {
+          window.location.href = '/Tecnico/index.html';
+        } else {
+          window.location.href = 'dashboard.html';
+        }
       } else {
         const intentos = incrementarIntentos();
         const intentosRestantes = MAX_INTENTOS - intentos;

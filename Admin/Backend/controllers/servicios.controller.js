@@ -228,6 +228,112 @@ const serviciosController = {
         }
     },
 
+    getMisServicios: async (req, res) => {
+        try {
+            // Se puede recibir idEmpleado por query o req.userId
+            const idEmpleado = req.query.id_empleado || req.userId;
+            if (!idEmpleado) {
+                return res.status(400).json({ error: 'Se requiere ID de empleado/técnico' });
+            }
+            const servicios = await Servicio.obtenerPorTecnico(idEmpleado);
+            res.json(servicios);
+        } catch (err) {
+            console.error('Error al obtener servicios del técnico:', err);
+            res.status(500).json({ error: err.message });
+        }
+    },
+
+    iniciar: async (req, res) => {
+        try {
+            const id = req.params.id;
+            const result = await Servicio.iniciarServicio(id);
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: 'Servicio no encontrado' });
+            }
+            res.json({ message: 'Servicio iniciado con éxito', id_servicio_estado: 2 });
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Técnico',
+                accion: 'MODIFICAR',
+                tabla: 'SERVICIOS',
+                descripcion: `Técnico inició el servicio ID: ${id}`
+            }).catch(e => console.error('Audit log error:', e));
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    },
+
+    pausar: async (req, res) => {
+        try {
+            const id = req.params.id;
+            const { motivo_pausa } = req.body;
+            const result = await Servicio.pausarServicio(id, motivo_pausa);
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: 'Servicio no encontrado' });
+            }
+            res.json({ message: 'Servicio puesto en pausa', id_servicio_estado: 4, motivo_pausa });
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Técnico',
+                accion: 'MODIFICAR',
+                tabla: 'SERVICIOS',
+                descripcion: `Técnico pausó el servicio ID: ${id}. Motivo: ${motivo_pausa || 'Sin motivo'}`
+            }).catch(e => console.error('Audit log error:', e));
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    },
+
+    finalizar: async (req, res) => {
+        try {
+            const id = req.params.id;
+            const { notas_tecnicas } = req.body;
+
+            if (!req.file) {
+                return res.status(400).json({ error: 'Es estrictamente obligatorio subir una foto de evidencia para finalizar el servicio.' });
+            }
+
+            let evidenciaUrl;
+            if (isR2Configured()) {
+                evidenciaUrl = await subirArchivoR2({
+                    buffer: req.file.buffer,
+                    originalname: req.file.originalname,
+                    mimetype: req.file.mimetype,
+                    carpeta: 'servicios'
+                });
+            } else if (process.env.IMGBB_API_KEY) {
+                evidenciaUrl = await subirAImgBB(req.file.buffer, req.file.originalname);
+            } else {
+                evidenciaUrl = `/uploads/servicios/${req.file.filename}`;
+            }
+
+            const result = await Servicio.finalizarServicio(id, evidenciaUrl, notas_tecnicas);
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: 'Servicio no encontrado' });
+            }
+
+            res.json({ 
+                message: 'Servicio finalizado con éxito', 
+                id_servicio_estado: 1, 
+                evidencia_url: evidenciaUrl,
+                notas_tecnicas 
+            });
+
+            AuditoriaModel.registrar({
+                id_empleado: req.userId || null,
+                username: req.username || 'Técnico',
+                accion: 'MODIFICAR',
+                tabla: 'SERVICIOS',
+                descripcion: `Técnico finalizó el servicio ID: ${id} con evidencia fotográfica adjunta`
+            }).catch(e => console.error('Audit log error:', e));
+        } catch (err) {
+            console.error('Error al finalizar servicio:', err);
+            res.status(500).json({ error: err.message });
+        }
+    },
+
     subirEvidencia: async (req, res) => {
         try {
             const idServicio = req.params.id;

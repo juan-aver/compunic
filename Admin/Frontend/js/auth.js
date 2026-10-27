@@ -94,8 +94,15 @@ const Auth = {
     },
 
     checkLoginRedirect: function () {
-        const session = sessionStorage.getItem(AUTH_KEY);
-        if (session) {
+        const sessionStr = sessionStorage.getItem(AUTH_KEY);
+        if (sessionStr) {
+            try {
+                const s = JSON.parse(sessionStr);
+                if (s.rol === 'tecnico') {
+                    window.location.href = '/Tecnico/index.html';
+                    return;
+                }
+            } catch (e) {}
             window.location.href = 'dashboard.html';
         }
     },

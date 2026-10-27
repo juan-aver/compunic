@@ -1,6 +1,11 @@
 [build]
-  command = "rm -rf dist && mkdir -p dist/Store && cp -r Admin/Frontend/. dist/ && cp -r Store/. dist/Store/"
+  command = "rm -rf dist && mkdir -p dist/Store dist/Tecnico && cp -r Admin/Frontend/. dist/ && cp -r Store/. dist/Store/ && cp -r Tecnico/. dist/Tecnico/"
   publish = "dist"
+
+[[redirects]]
+  from = "/tecnico"
+  to = "/Tecnico/index.html"
+  status = 301
 
 [[redirects]]
   from = "/store"

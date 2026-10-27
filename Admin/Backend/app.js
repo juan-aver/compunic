@@ -57,6 +57,7 @@ app.use((req, res, next) => {
 if (!process.env.NETLIFY) {
     app.use(express.static(path.join(__dirname, '..', 'Frontend')));
     app.use('/Store', express.static(path.join(__dirname, '..', '..', 'Store')));
+    app.use('/Tecnico', express.static(path.join(__dirname, '..', '..', 'Tecnico')));
     app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
     app.use('/uploads/comprobantes', express.static(path.join(__dirname, 'uploads', 'comprobantes')));
 }
@@ -133,6 +134,32 @@ movimientosStockModel.sincronizarSiEstaVacio();
         }
     } catch (err) {
         console.error('⚠️ Auto-migración DEVOLUCIONES:', err.message);
+    }
+})();
+
+// Auto-verificar y migrar columnas de SERVICIOS y SERVICIO_ESTADOS (para Railway y local)
+(async () => {
+    try {
+        const pool = require('./config/db');
+        
+        // 1. Asegurar estado 'En Pausa' (ID 4)
+        await pool.query(`
+            INSERT INTO SERVICIO_ESTADOS (ID_SERVICIO_ESTADO, ESTADO) VALUES (4, 'En Pausa')
+            ON DUPLICATE KEY UPDATE ESTADO = VALUES(ESTADO)
+        `);
+
+        // 2. Asegurar MOTIVO_PAUSA en SERVICIOS
+        const [servCols] = await pool.query('SHOW COLUMNS FROM SERVICIOS');
+        const servColNames = servCols.map(c => c.Field);
+        if (!servColNames.includes('MOTIVO_PAUSA')) {
+            await pool.query(`
+                ALTER TABLE SERVICIOS 
+                ADD COLUMN MOTIVO_PAUSA VARCHAR(500) NULL AFTER NOTAS_TECNICAS
+            `);
+            console.log('✅ Auto-migración: MOTIVO_PAUSA agregado a SERVICIOS.');
+        }
+    } catch (err) {
+        console.error('⚠️ Auto-migración SERVICIOS:', err.message);
     }
 })();
 

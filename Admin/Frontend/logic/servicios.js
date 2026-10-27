@@ -367,9 +367,13 @@ function cargarServicios() {
                         });
                     }
 
+                    const motivoPausaTag = (s.ID_SERVICIO_ESTADO === 4 && s.MOTIVO_PAUSA)
+                        ? `<br><small style="color: #8b5cf6; font-weight: 600;"><i class="fas fa-pause-circle"></i> Pausa: ${s.MOTIVO_PAUSA}</small>`
+                        : '';
+
                     tr.innerHTML = `
                         <td><strong>#${s.ID_SERVICIO || s.id_servicio}</strong></td>
-                        <td title="${s.NOTAS_TECNICAS ? 'Notas: ' + s.NOTAS_TECNICAS : ''}">${s.DESCRIPCION || s.descripcion || '-'}</td>
+                        <td title="${s.NOTAS_TECNICAS ? 'Notas: ' + s.NOTAS_TECNICAS : ''}">${s.DESCRIPCION || s.descripcion || '-'}${motivoPausaTag}</td>
                         <td>${cliente}</td>
                         <td>${tecnico}</td>
                         <td>${tipo}</td>

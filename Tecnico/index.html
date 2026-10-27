@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Compunic | Portal Técnico</title>
+  <!-- Favicon y fuentes -->
+  <link rel="icon" type="image/png" href="../Admin/Frontend/assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Estilos Mobile App -->
+  <link rel="stylesheet" href="css/tecnico.css">
+</head>
+<body>
+
+  <!-- Top App Bar -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="user-avatar-circle" id="user-avatar-init">T</div>
+      <div class="header-user-info">
+        <span class="greeting-text">Servicio Técnico</span>
+        <h1 class="user-fullname" id="user-fullname">Cargando...</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon" id="btn-sync" title="Actualizar datos" onclick="cargarServiciosTecnico(true)">
+        <i class="fas fa-rotate"></i>
+      </button>
+      <button class="btn-icon btn-logout" id="btn-logout" title="Cerrar sesión" onclick="cerrarSesion()">
+        <i class="fas fa-arrow-right-from-bracket"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Filtro de Tabs / Pestañas de Estado -->
+  <nav class="status-tabs-container">
+    <button class="tab-chip active" data-tab="pendientes" onclick="cambiarTab('pendientes')">
+      <i class="fas fa-clock"></i> Pendientes
+      <span class="badge-count" id="count-pendientes">0</span>
+    </button>
+    <button class="tab-chip" data-tab="progreso" onclick="cambiarTab('progreso')">
+      <i class="fas fa-wrench"></i> En Progreso
+      <span class="badge-count" id="count-progreso">0</span>
+    </button>
+    <button class="tab-chip" data-tab="pausados" onclick="cambiarTab('pausados')">
+      <i class="fas fa-pause-circle"></i> En Pausa
+      <span class="badge-count" id="count-pausados">0</span>
+    </button>
+    <button class="tab-chip" data-tab="terminados" onclick="cambiarTab('terminados')">
+      <i class="fas fa-check-double"></i> Terminados
+      <span class="badge-count" id="count-terminados">0</span>
+    </button>
+  </nav>
+
+  <!-- Buscador rápido en smartphone -->
+  <section class="search-section">
+    <div class="search-box">
+      <i class="fas fa-magnifying-glass"></i>
+      <input type="text" id="input-busqueda" placeholder="Buscar por cliente, teléfono o falla..." oninput="filtrarServicios()">
+      <button class="clear-search-btn" id="btn-clear-search" onclick="limpiarBusqueda()" style="display: none;">
+        <i class="fas fa-xmark"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- Lista de Tareas / Cards de Servicios -->
+  <main class="main-content" id="contenedor-servicios">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando tus tareas asignadas...</p>
+    </div>
+  </main>
+
+  <!-- MODAL: DETALLES DEL TRABAJO -->
+  <div class="mobile-modal" id="modal-detalle">
+    <div class="modal-backdrop" onclick="cerrarModalDetalle()"></div>
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title-group">
+          <span class="service-id-pill" id="det-id">#000</span>
+          <h2 id="det-tipo">Servicio Técnico</h2>
+        </div>
+        <button class="btn-close-sheet" onclick="cerrarModalDetalle()">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="sheet-body" id="sheet-body-content">
+        <!-- Badge de Estado -->
+        <div class="detail-state-banner" id="det-estado-banner">
+          <span id="det-estado-texto">Pendiente</span>
+        </div>
+
+        <!-- Alerta de Motivo de Pausa (si aplica) -->
+        <div class="pause-reason-alert" id="det-pausa-container" style="display: none;">
+          <i class="fas fa-info-circle"></i>
+          <div>
+            <strong>Motivo de pausa actual:</strong>
+            <p id="det-motivo-pausa">-</p>
+          </div>
+        </div>
+
+        <!-- Información del Cliente con llamadas y WhatsApp directo -->
+        <div class="detail-card">
+          <div class="card-subtitle"><i class="fas fa-user"></i> Cliente</div>
+          <h3 class="client-name" id="det-cliente-nombre">Juan Pérez</h3>
+          <p class="client-contact" id="det-cliente-telefono"><i class="fas fa-phone"></i> +505 0000 0000</p>
+          <div class="client-quick-actions" id="client-actions-container">
+            <a href="#" class="btn-action-client btn-call" id="btn-call-client">
+              <i class="fas fa-phone-volume"></i> Llamar
+            </a>
+            <a href="#" target="_blank" class="btn-action-client btn-whatsapp" id="btn-whatsapp-client">
+              <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+          </div>
+        </div>
+
+        <!-- Descripción del Trabajo / Equipo -->
+        <div class="detail-card">
+          <div class="card-subtitle"><i class="fas fa-laptop-medical"></i> Trabajo Solicitado</div>
+          <p class="service-description" id="det-descripcion">Descripción del equipo y falla reportada.</p>
+          <div class="service-meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Fecha Solicitud</span>
+              <span class="meta-val" id="det-fecha-solicitud">-</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Costo Presupuestado</span>
+              <span class="meta-val highlight" id="det-costo">C$0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Evidencia fotográfica si ya está terminado -->
+        <div class="detail-card" id="card-evidencia-completado" style="display: none;">
+          <div class="card-subtitle"><i class="fas fa-camera"></i> Evidencia del Trabajo</div>
+          <img src="" id="det-evidencia-img" alt="Evidencia de Servicio" class="evidence-preview-full" onclick="verFotoGrande(this.src)">
+          <div class="meta-item" style="margin-top: 10px;">
+            <span class="meta-label">Notas Técnicas Registradas:</span>
+            <p id="det-notas-registradas" class="notes-text">-</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer de acciones dinámicas según estado -->
+      <div class="sheet-footer" id="sheet-actions-footer">
+        <!-- Se inyectan botones según estado: Iniciar, Pausar, Reanudar, Finalizar -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PAUSAR TRABAJO -->
+  <div class="mobile-modal" id="modal-pausar">
+    <div class="modal-backdrop" onclick="cerrarModalPausar()"></div>
+    <div class="modal-sheet modal-sheet-compact">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h2>Pausar Servicio</h2>
+        <button class="btn-close-sheet" onclick="cerrarModalPausar()">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+      <div class="sheet-body">
+        <p class="modal-instruction">Indica el motivo por el cual detienes temporalmente este trabajo:</p>
+        <div class="pause-chips">
+          <button type="button" class="pause-chip" onclick="seleccionarMotivoChip('Esperando repuesto / pieza')">Esperando repuesto</button>
+          <button type="button" class="pause-chip" onclick="seleccionarMotivoChip('Esperando autorización del cliente')">Autorización de cliente</button>
+          <button type="button" class="pause-chip" onclick="seleccionarMotivoChip('Equipo en prueba / diagnóstico prolongado')">En pruebas / benchmark</button>
+          <button type="button" class="pause-chip" onclick="seleccionarMotivoChip('Falta de insumos / herramientas')">Falta de insumo</button>
+        </div>
+        <textarea id="input-motivo-pausa" rows="3" class="mobile-textarea" placeholder="Escribe el motivo detallado..."></textarea>
+      </div>
+      <div class="sheet-footer">
+        <button class="btn-modal btn-cancel" onclick="cerrarModalPausar()">Cancelar</button>
+        <button class="btn-modal btn-warning" id="btn-confirmar-pausa" onclick="confirmarPausarServicio()">
+          <i class="fas fa-pause"></i> Confirmar Pausa
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: FINALIZAR TRABAJO (CÁMARA OBLIGATORIA) -->
+  <div class="mobile-modal" id="modal-finalizar">
+    <div class="modal-backdrop" onclick="cerrarModalFinalizar()"></div>
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h2>Finalizar Trabajo</h2>
+        <button class="btn-close-sheet" onclick="cerrarModalFinalizar()">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+      <div class="sheet-body">
+        <div class="camera-mandatory-banner">
+          <i class="fas fa-camera"></i>
+          <div>
+            <strong>Foto de evidencia obligatoria</strong>
+            <p>Toma una foto clara del equipo reparado o trabajo concluido.</p>
+          </div>
+        </div>
+
+        <!-- Zona para tomar foto o seleccionar archivo -->
+        <div class="photo-capture-box" id="photo-box" onclick="document.getElementById('input-camara').click()">
+          <input type="file" id="input-camara" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(event)">
+          <div class="photo-placeholder" id="photo-placeholder">
+            <div class="icon-camera-circle">
+              <i class="fas fa-camera"></i>
+            </div>
+            <span class="photo-instruction-text">Tocar aquí para abrir la cámara</span>
+            <span class="photo-subtext">JPG, PNG o WEBP</span>
+          </div>
+          <div class="photo-preview-wrap" id="photo-preview-wrap" style="display: none;">
+            <img src="" id="img-evidencia-preview" alt="Foto capturada">
+            <button type="button" class="btn-retake" onclick="retomarFoto(event)">
+              <i class="fas fa-rotate-left"></i> Cambiar foto
+            </button>
+          </div>
+        </div>
+
+        <!-- Notas técnicas opcionales -->
+        <div class="form-group" style="margin-top: 15px;">
+          <label class="form-label" for="input-notas-final">Notas y observaciones técnicas:</label>
+          <textarea id="input-notas-final" rows="3" class="mobile-textarea" placeholder="Ej: Se cambió pasta térmica, se limpiaron ventiladores y se reinstaló SO Windows 11..."></textarea>
+        </div>
+      </div>
+      <div class="sheet-footer">
+        <button class="btn-modal btn-cancel" onclick="cerrarModalFinalizar()">Volver</button>
+        <button class="btn-modal btn-success" id="btn-confirmar-finalizar" onclick="confirmarFinalizarServicio()">
+          <i class="fas fa-check-circle"></i> Completar y Enviar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISOR DE FOTO FULLSCREEN -->
+  <div class="fullscreen-image-viewer" id="fullscreen-viewer" onclick="cerrarFotoGrande()">
+    <button class="btn-close-viewer"><i class="fas fa-xmark"></i></button>
+    <img src="" id="fullscreen-img" alt="Foto ampliada">
+  </div>
+
+  <!-- Lógica Técnica -->
+  <script src="js/tecnico.js"></script>
+</body>
+</html>
