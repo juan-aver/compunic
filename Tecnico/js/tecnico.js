@@ -29,7 +29,7 @@ function verificarSesion() {
   const sessionStr = sessionStorage.getItem(AUTH_KEY);
   if (!sessionStr) {
     // Si no hay sesión, enviar al login del ERP
-    window.location.href = '../Admin/Frontend/index.html';
+    window.location.href = '/index.html';
     return;
   }
 
@@ -64,7 +64,7 @@ function cerrarSesion() {
   }).then((result) => {
     if (result.isConfirmed) {
       sessionStorage.removeItem(AUTH_KEY);
-      window.location.href = '../Admin/Frontend/index.html';
+      window.location.href = '/index.html';
     }
   });
 }
