@@ -485,11 +485,16 @@
     const isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '';
     const API_BASE = isLocal ? 'http://localhost:3001/api' : '/api';
 
-    // Verificar si ya tiene sesión activa
+    // Verificar si ya tiene sesión activa de técnico
     document.addEventListener('DOMContentLoaded', () => {
-      const session = sessionStorage.getItem(AUTH_KEY);
-      if (session) {
-        window.location.href = 'index.html';
+      const sessionStr = sessionStorage.getItem(AUTH_KEY);
+      if (sessionStr) {
+        try {
+          const s = JSON.parse(sessionStr);
+          if (s.rol === 'tecnico') {
+            window.location.href = 'index.html';
+          }
+        } catch (e) {}
       }
     });
 
@@ -531,12 +536,17 @@
           throw new Error(data.message || 'Credenciales incorrectas');
         }
 
-        // Guardar sesión
+        const userRol = (data.user.rol || '').toLowerCase();
+        if (userRol !== 'tecnico') {
+          throw new Error('Acceso denegado: Este portal es exclusivo para personal de Servicio Técnico.');
+        }
+
+        // Guardar sesión exclusiva
         const session = {
           user: data.user.username,
           nombre: data.user.nombre,
           apellido: data.user.apellido,
-          rol: data.user.rol.toLowerCase(),
+          rol: userRol,
           id_empleado: data.user.id_empleado,
           email: data.user.email,
           timestamp: new Date().getTime()

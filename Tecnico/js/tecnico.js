@@ -36,7 +36,15 @@ function verificarSesion() {
   try {
     currentUser = JSON.parse(sessionStr);
     
-    // Si es admin o vendedor, igual puede ver o probar, pero idealmente técnico
+    // Validar estrictamente que el rol sea TECNICO
+    const rol = (currentUser.rol || '').toLowerCase();
+    if (rol !== 'tecnico') {
+      sessionStorage.removeItem(AUTH_KEY);
+      alert('Acceso no autorizado: Esta aplicación es de uso exclusivo para técnicos.');
+      window.location.href = 'login.html';
+      return;
+    }
+
     const nombreCompleto = currentUser.nombre ? `${currentUser.nombre} ${currentUser.apellido || ''}`.trim() : (currentUser.user || 'Técnico');
     document.getElementById('user-fullname').textContent = nombreCompleto;
     
@@ -45,7 +53,7 @@ function verificarSesion() {
 
   } catch (e) {
     console.error('Error parseando sesión:', e);
-    window.location.href = '../Admin/Frontend/index.html';
+    window.location.href = 'login.html';
   }
 }
 
@@ -82,10 +90,7 @@ async function cargarServiciosTecnico(mostrarFeedback = false) {
 
   try {
     const idEmpleado = currentUser.id_empleado;
-    // Si el usuario es ADMIN, podemos traer todos los servicios o los de él
-    const url = currentUser.rol === 'admin' 
-      ? `${API_BASE}/servicios` 
-      : `${API_BASE}/servicios/mis-servicios?id_empleado=${idEmpleado}`;
+    const url = `${API_BASE}/servicios/mis-servicios?id_empleado=${idEmpleado}`;
 
     const res = await fetch(url, {
       headers: {
