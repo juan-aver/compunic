@@ -225,14 +225,15 @@
         </div>
 
         <!-- Zona para tomar foto o seleccionar archivo -->
-        <div class="photo-capture-box" id="photo-box" onclick="document.getElementById('input-camara').click()">
-          <input type="file" id="input-camara" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(event)">
+        <input type="file" id="input-camara" accept="image/*" style="position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none;" onchange="procesarFotoEvidencia(event)">
+        
+        <label for="input-camara" class="photo-capture-box" id="photo-box">
           <div class="photo-placeholder" id="photo-placeholder">
             <div class="icon-camera-circle">
               <i class="fas fa-camera"></i>
             </div>
-            <span class="photo-instruction-text">Tocar aquí para abrir la cámara</span>
-            <span class="photo-subtext">JPG, PNG o WEBP</span>
+            <span class="photo-instruction-text">Tocar para tomar foto o elegir archivo</span>
+            <span class="photo-subtext">Cámara o Galería (JPG, PNG, WEBP)</span>
           </div>
           <div class="photo-preview-wrap" id="photo-preview-wrap" style="display: none;">
             <img src="" id="img-evidencia-preview" alt="Foto capturada">
@@ -240,7 +241,7 @@
               <i class="fas fa-rotate-left"></i> Cambiar foto
             </button>
           </div>
-        </div>
+        </label>
 
         <!-- Notas técnicas opcionales -->
         <div class="form-group" style="margin-top: 15px;">

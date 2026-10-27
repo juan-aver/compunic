@@ -659,13 +659,19 @@ function procesarFotoEvidencia(event) {
 }
 
 function retomarFoto(event) {
-  event.stopPropagation();
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
   archivoEvidenciaSeleccionado = null;
-  document.getElementById('input-camara').value = '';
+  const input = document.getElementById('input-camara');
+  if (input) input.value = '';
   document.getElementById('photo-placeholder').style.display = 'flex';
   document.getElementById('photo-preview-wrap').style.display = 'none';
   document.getElementById('img-evidencia-preview').src = '';
-  document.getElementById('input-camara').click();
+  setTimeout(() => {
+    if (input) input.click();
+  }, 50);
 }
 
 async function confirmarFinalizarServicio() {
