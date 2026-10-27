@@ -516,6 +516,32 @@
       transform: translateY(-1px);
     }
 
+    .btn-tecnico {
+      width: 100%;
+      padding: 0.85rem;
+      background: rgba(37, 99, 235, 0.12);
+      color: #60a5fa;
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-tecnico:hover {
+      background: rgba(37, 99, 235, 0.25);
+      border-color: rgba(37, 99, 235, 0.5);
+      color: #93c5fd;
+      transform: translateY(-1px);
+    }
+
     /* Divider */
     .divider {
       display: flex;
@@ -840,7 +866,15 @@
           <button type="button" class="btn-guest" onclick="window.location.href='/Store/views/index.html'">
             <i class="fas fa-shopping-cart"></i>
             Ir a la Tienda Web
-          </button>          <p id="errorMsg" class="error-msg">Credenciales incorrectas</p>
+          </button>
+
+          <!-- boton de acceso al portal tecnico -->
+          <button type="button" class="btn-tecnico" onclick="window.location.href='/Tecnico/login.html'">
+            <i class="fas fa-screwdriver-wrench"></i>
+            Apartado Técnico (Móvil)
+          </button>
+
+          <p id="errorMsg" class="error-msg">Credenciales incorrectas</p>
 
           <a href="forgot-password.html" class="forgot-link">¿Olvidaste tu contraseña?</a>
 
