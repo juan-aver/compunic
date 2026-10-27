@@ -33,6 +33,166 @@
   --safe-top: env(safe-area-inset-top, 0px);
 }
 
+/* ==========================================================================
+   Tema Claro Estilo Ajustes iOS / Android (Clean Light Theme)
+   ========================================================================== */
+body.light-theme {
+  --bg-app: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-subtle: #f8fafc;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: rgba(148, 163, 184, 0.25);
+  --border-subtle: rgba(148, 163, 184, 0.2);
+}
+
+body.light-theme .app-header {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+body.light-theme .greeting-text {
+  color: #145D90;
+}
+
+body.light-theme .status-tabs-container {
+  background: #f1f5f9;
+}
+
+body.light-theme .tab-chip {
+  background: #ffffff;
+  border-color: rgba(148, 163, 184, 0.3);
+  color: #64748b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .tab-chip .badge-count {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+body.light-theme .tab-chip.active {
+  background: var(--primary-gradient);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+body.light-theme .tab-chip.active .badge-count {
+  background: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+body.light-theme .search-box {
+  background: #ffffff;
+  border-color: rgba(148, 163, 184, 0.3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .search-box input {
+  color: #0f172a;
+}
+
+body.light-theme .service-card {
+  background: #ffffff;
+  border-color: rgba(148, 163, 184, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .service-card:active {
+  background: #f8fafc;
+}
+
+body.light-theme .card-client-preview {
+  color: #475569;
+}
+
+body.light-theme .card-bottom-row {
+  border-top-color: rgba(148, 163, 184, 0.15);
+}
+
+body.light-theme .modal-sheet {
+  background: #ffffff;
+  border-top-color: rgba(148, 163, 184, 0.3);
+}
+
+body.light-theme .sheet-handle {
+  background: #cbd5e1;
+}
+
+body.light-theme .sheet-header {
+  border-bottom-color: rgba(148, 163, 184, 0.2);
+}
+
+body.light-theme .detail-card {
+  background: #f8fafc;
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+body.light-theme .client-name {
+  color: #0f172a;
+}
+
+body.light-theme .client-contact {
+  color: #475569;
+}
+
+body.light-theme .service-description {
+  background: #ffffff;
+  color: #1e293b;
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+body.light-theme .meta-val {
+  color: #0f172a;
+}
+
+body.light-theme .notes-text {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+body.light-theme .sheet-footer {
+  background: #ffffff;
+  border-top-color: rgba(148, 163, 184, 0.2);
+}
+
+body.light-theme .btn-cancel {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+body.light-theme .mobile-textarea {
+  background: #ffffff;
+  border-color: rgba(148, 163, 184, 0.3);
+  color: #0f172a;
+}
+
+body.light-theme .pause-chip {
+  background: #ffffff;
+  border-color: rgba(148, 163, 184, 0.3);
+  color: #475569;
+}
+
+body.light-theme .photo-capture-box {
+  background: #f8fafc;
+  border-color: rgba(86, 165, 221, 0.5);
+}
+
+body.light-theme .photo-instruction-text {
+  color: #0f172a;
+}
+
+body.light-theme .btn-icon {
+  background: #f1f5f9;
+  border-color: rgba(148, 163, 184, 0.25);
+  color: #334155;
+}
+
+body.light-theme .btn-icon:active {
+  background: #e2e8f0;
+}
+
 * {
   margin: 0;
   padding: 0;

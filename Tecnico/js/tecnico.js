@@ -17,13 +17,46 @@ let servicioSeleccionado = null;
 let currentTab = 'pendientes';
 let archivoEvidenciaSeleccionado = null;
 
+const THEME_KEY = 'compunic_tecnico_theme';
+
 // ==========================================================================
-// 1. Inicialización y Autenticación
+// 1. Inicialización, Tema y Autenticación
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
+  aplicarTemaGuardado();
   verificarSesion();
   cargarServiciosTecnico();
 });
+
+function aplicarTemaGuardado() {
+  const guardado = localStorage.getItem(THEME_KEY);
+  const esClaro = guardado === 'light';
+  if (esClaro) {
+    document.body.classList.add('light-theme');
+  } else {
+    document.body.classList.remove('light-theme');
+  }
+  actualizarIconoTema(esClaro);
+}
+
+function alternarTema() {
+  const esClaro = document.body.classList.toggle('light-theme');
+  localStorage.setItem(THEME_KEY, esClaro ? 'light' : 'dark');
+  actualizarIconoTema(esClaro);
+}
+
+function actualizarIconoTema(esClaro) {
+  const icon = document.getElementById('theme-icon');
+  if (icon) {
+    if (esClaro) {
+      icon.className = 'fas fa-moon';
+      icon.parentElement.title = 'Cambiar a modo oscuro';
+    } else {
+      icon.className = 'fas fa-sun';
+      icon.parentElement.title = 'Cambiar a modo claro';
+    }
+  }
+}
 
 function verificarSesion() {
   const sessionStr = sessionStorage.getItem(AUTH_KEY);
