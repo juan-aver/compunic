@@ -611,10 +611,17 @@ body {
   color: var(--text-muted);
 }
 
-.card-cost {
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: #34d399;
+.card-tipo-pill {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 /* ==========================================================================

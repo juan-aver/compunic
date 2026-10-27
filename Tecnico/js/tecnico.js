@@ -329,7 +329,7 @@ function renderizarLista() {
 
         <div class="card-bottom-row">
           <span><i class="far fa-calendar"></i> ${fecha}</span>
-          <span class="card-cost">C$${costo}</span>
+          <span class="card-tipo-pill"><i class="fas fa-wrench"></i> ${s.TIPO_SERVICIO || 'Servicio'}</span>
         </div>
       </article>
     `;
@@ -409,10 +409,14 @@ function abrirModalDetalle(idServicio) {
     btnWa.style.display = 'none';
   }
 
-  // Descripción y Meta
+  // Descripción y Meta (enfocado en aspectos técnicos y garantía, sin precios)
   document.getElementById('det-descripcion').textContent = s.DESCRIPCION || 'Sin detalles proporcionados.';
   document.getElementById('det-fecha-solicitud').textContent = s.FECHA_SOLICITUD ? new Date(s.FECHA_SOLICITUD).toLocaleDateString() : '-';
-  document.getElementById('det-costo').textContent = `C$${parseFloat(s.COSTO || 0).toFixed(2)}`;
+  
+  const garantiaElem = document.getElementById('det-garantia');
+  if (garantiaElem) {
+    garantiaElem.textContent = s.NOMBRE_GARANTIA || 'Sin Garantía';
+  }
 
   // Dirección y Botón Google Maps
   const detDireccion = document.getElementById('det-direccion');
