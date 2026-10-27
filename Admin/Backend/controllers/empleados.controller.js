@@ -126,16 +126,16 @@ const EmpleadosController = {
             const estadoInicial = email ? 0 : 1;
 
             const datos = [
-                nombre || null, 
-                apellido || null, 
-                telefono || null, 
-                email || null, 
-                direccion || null, 
-                sexo || null, 
-                f_nacimiento || null, 
-                area || null, 
-                horario || null, 
-                username || null, 
+                nombre?.trim() || null, 
+                apellido?.trim() || null, 
+                telefono?.trim() || null, 
+                email?.trim() || null, 
+                direccion?.trim() || null, 
+                sexo?.trim() || null, 
+                f_nacimiento?.trim() || null, 
+                area?.trim() || null, 
+                horario?.trim() || null, 
+                username?.trim() || null, 
                 rol,
                 estadoInicial
             ];
@@ -200,7 +200,11 @@ const EmpleadosController = {
                 correoEnviado: false
             });
         } catch (error) {
-            res.status(500).send(error.message);
+            console.error('❌ Error al agregar empleado:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: error.message || 'Error al agregar empleado' 
+            });
         }
     },
 

@@ -81,17 +81,20 @@
     background-color: rgba(86, 165, 221, 0.1) !important;
 }
 
-[data-theme="dark"] .dropdown-menu {
+[data-theme="dark"] .dropdown-menu,
+[data-theme="dark"] .dropdown-menu-nested {
     background: var(--dark-bg-secondary) !important;
     border: 1px solid rgba(86, 165, 221, 0.12) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
 }
 
-[data-theme="dark"] .dropdown-menu li a {
+[data-theme="dark"] .dropdown-menu li a,
+[data-theme="dark"] .dropdown-menu-nested li a {
     color: var(--dark-text-secondary) !important;
 }
 
-[data-theme="dark"] .dropdown-menu li a:hover {
+[data-theme="dark"] .dropdown-menu li a:hover,
+[data-theme="dark"] .dropdown-menu-nested li a:hover {
     background-color: rgba(86, 165, 221, 0.1) !important;
     color: #56A5DD !important;
 }

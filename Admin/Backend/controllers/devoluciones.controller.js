@@ -202,3 +202,82 @@ exports.delete = async (req, res) => {
         });
     }
 };
+
+// Autorizar una solicitud de devolución
+exports.autorizar = async (req, res) => {
+    const id = req.params.id;
+    try {
+        await Devoluciones.autorizar(id);
+        AuditoriaModel.registrar({
+            id_empleado: req.userId || null,
+            username: req.username || 'Sistema',
+            accion: 'AUTORIZAR_DEVOLUCION',
+            tabla: 'DEVOLUCIONES',
+            descripcion: `Devolución #${id} autorizada por administración.`
+        }).catch(e => console.error('Audit log error:', e));
+
+        res.send({ message: 'Devolución autorizada exitosamente' });
+    } catch (err) {
+        console.error('Error al autorizar devolución:', err);
+        res.status(500).send({ message: err.message || 'Error al autorizar devolución' });
+    }
+};
+
+// Rechazar una solicitud de devolución
+exports.rechazar = async (req, res) => {
+    const id = req.params.id;
+    const { motivo_rechazo } = req.body;
+
+    if (!motivo_rechazo || !motivo_rechazo.trim()) {
+        return res.status(400).send({ message: 'Debe especificar el motivo del rechazo.' });
+    }
+
+    try {
+        await Devoluciones.rechazar(id, motivo_rechazo.trim());
+        AuditoriaModel.registrar({
+            id_empleado: req.userId || null,
+            username: req.username || 'Sistema',
+            accion: 'RECHAZAR_DEVOLUCION',
+            tabla: 'DEVOLUCIONES',
+            descripcion: `Devolución #${id} rechazada. Motivo: ${motivo_rechazo.trim()}`
+        }).catch(e => console.error('Audit log error:', e));
+
+        res.send({ message: 'Devolución rechazada correctamente' });
+    } catch (err) {
+        console.error('Error al rechazar devolución:', err);
+        res.status(500).send({ message: err.message || 'Error al rechazar devolución' });
+    }
+};
+
+// Completar devolución asignando producto de reemplazo y series
+exports.completar = async (req, res) => {
+    const id = req.params.id;
+    const { id_producto_reemplazo, series_reemplazo } = req.body;
+
+    if (!id_producto_reemplazo) {
+        return res.status(400).send({ message: 'Debe seleccionar el producto de reemplazo a entregar.' });
+    }
+
+    try {
+        const resultado = await Devoluciones.completarDevolucion(id, {
+            id_producto_reemplazo: parseInt(id_producto_reemplazo),
+            series_reemplazo: series_reemplazo || null
+        });
+
+        AuditoriaModel.registrar({
+            id_empleado: req.userId || null,
+            username: req.username || 'Sistema',
+            accion: 'COMPLETAR_DEVOLUCION',
+            tabla: 'DEVOLUCIONES',
+            descripcion: `Devolución #${id} completada. Entregado: ${resultado.producto_reemplazo}.`
+        }).catch(e => console.error('Audit log error:', e));
+
+        res.send({ 
+            message: 'Devolución completada y producto de reemplazo entregado exitosamente',
+            data: resultado 
+        });
+    } catch (err) {
+        console.error('Error al completar devolución:', err);
+        res.status(500).send({ message: err.message || 'Error al completar devolución' });
+    }
+};
