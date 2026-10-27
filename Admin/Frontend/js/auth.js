@@ -32,13 +32,21 @@ const Auth = {
                 return false;
             }
 
-            // Si la autenticación fue exitosa, guardar sesión
+            // Si la autenticación fue exitosa, verificar que NO sea rol Técnico
             if (data.success && data.user) {
+                const rol = (data.user.rol || '').toLowerCase();
+                
+                // 🔒 El rol Técnico tiene prohibido entrar al ERP principal
+                if (rol === 'tecnico') {
+                    // Devolver false para tratarlo exactamente como credenciales incorrectas
+                    return false;
+                }
+
                 const session = {
                     user: data.user.username,
                     nombre: data.user.nombre,
                     apellido: data.user.apellido,
-                    rol: data.user.rol.toLowerCase(), // 'ADMIN' -> 'admin', 'VENDEDOR' -> 'vendedor'
+                    rol: rol, // 'ADMIN' -> 'admin', 'VENDEDOR' -> 'vendedor'
                     id_empleado: data.user.id_empleado,
                     id_vendedor: data.user.id_empleado, // ⭐ IMPORTANTE: Para auto-asignar en ventas
                     area: data.user.area,
