@@ -57,15 +57,21 @@ window._todasDevClientes = [];
 
 function cargarDevoluciones() {
     fetch(`${API_BASE}/devoluciones`)
-        .then(res => res.json())
+        .then(async res => {
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.message || data.error || 'Error al obtener devoluciones del servidor');
+            }
+            return data;
+        })
         .then(devoluciones => {
-            window._todasDevClientes = devoluciones || [];
+            window._todasDevClientes = Array.isArray(devoluciones) ? devoluciones : [];
             renderizarTablaDevolucionesClientes(window._todasDevClientes);
         })
         .catch(err => {
             console.error('Error al cargar devoluciones:', err);
             const tbody = document.getElementById('devolutions-table-body');
-            if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center text-red-500">Error al cargar devoluciones: ${err.message}</td></tr>`;
+            if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center text-red-500" style="padding: 20px;">⚠️ ${err.message}</td></tr>`;
         });
 }
 
@@ -277,15 +283,21 @@ window._busquedaSolVentasQuery = '';
 
 function cargarSeguimientoSolicitudesVentas() {
     fetch(`${API_BASE}/devoluciones`)
-        .then(res => res.json())
+        .then(async res => {
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.message || data.error || 'Error al obtener solicitudes del servidor');
+            }
+            return data;
+        })
         .then(devoluciones => {
-            window._todasDevClientes = devoluciones || [];
+            window._todasDevClientes = Array.isArray(devoluciones) ? devoluciones : [];
             renderizarTablaSeguimientoVentas();
         })
         .catch(err => {
             console.error('Error al cargar seguimiento de solicitudes:', err);
             const tbody = document.getElementById('tabla-solicitudes-ventas-body');
-            if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center text-red-500">Error al cargar solicitudes: ${err.message}</td></tr>`;
+            if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center text-red-500" style="padding: 20px;">⚠️ ${err.message}</td></tr>`;
         });
 }
 window.cargarSeguimientoSolicitudesVentas = cargarSeguimientoSolicitudesVentas;

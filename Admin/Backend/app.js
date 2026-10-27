@@ -100,6 +100,42 @@ app.use('/api/divisas', divisasRoutes);
 // Esto se ejecutará en segundo plano cada vez que guardes o reinicies
 movimientosStockModel.sincronizarSiEstaVacio();
 
+// Auto-verificar y migrar columnas de DEVOLUCIONES en base de datos si faltan (para producción)
+(async () => {
+    try {
+        const pool = require('./config/db');
+        const [cols] = await pool.query('SHOW COLUMNS FROM DEVOLUCIONES');
+        const colNames = cols.map(c => c.Field);
+
+        if (!colNames.includes('ESTADO_SOLICITUD')) {
+            await pool.query(`
+                ALTER TABLE DEVOLUCIONES 
+                ADD COLUMN ESTADO_SOLICITUD ENUM('Pendiente', 'Aprobada', 'Rechazada', 'Completada') NOT NULL DEFAULT 'Pendiente',
+                ADD COLUMN MOTIVO_RECHAZO TEXT NULL,
+                ADD COLUMN FECHA_RESOLUCION DATETIME NULL
+            `);
+            console.log('✅ Auto-migración: Columnas de autorización agregadas a DEVOLUCIONES en producción.');
+        } else {
+            // Asegurar que el ENUM incluya 'Completada'
+            await pool.query(`
+                ALTER TABLE DEVOLUCIONES 
+                MODIFY COLUMN ESTADO_SOLICITUD ENUM('Pendiente', 'Aprobada', 'Rechazada', 'Completada') NOT NULL DEFAULT 'Pendiente'
+            `);
+        }
+
+        if (!colNames.includes('ID_PRODUCTO_REEMPLAZO')) {
+            await pool.query(`
+                ALTER TABLE DEVOLUCIONES 
+                ADD COLUMN ID_PRODUCTO_REEMPLAZO INT NULL,
+                ADD COLUMN SERIES_REEMPLAZO TEXT NULL
+            `);
+            console.log('✅ Auto-migración: Columnas de reemplazo agregadas a DEVOLUCIONES en producción.');
+        }
+    } catch (err) {
+        console.error('⚠️ Auto-migración DEVOLUCIONES:', err.message);
+    }
+})();
+
 // 3. Inicializar AURUM (Gemini IA)
 aurumService.inicializarGemini();
 
