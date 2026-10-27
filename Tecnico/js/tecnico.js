@@ -630,7 +630,11 @@ async function confirmarPausarServicio() {
 // ==========================================================================
 function abrirModalFinalizar() {
   archivoEvidenciaSeleccionado = null;
-  document.getElementById('input-camara').value = '';
+  const inCam = document.getElementById('input-camara-directa');
+  const inGal = document.getElementById('input-galeria');
+  if (inCam) inCam.value = '';
+  if (inGal) inGal.value = '';
+
   document.getElementById('input-notas-final').value = '';
   document.getElementById('photo-placeholder').style.display = 'flex';
   document.getElementById('photo-preview-wrap').style.display = 'none';
@@ -641,6 +645,22 @@ function abrirModalFinalizar() {
 
 function cerrarModalFinalizar() {
   document.getElementById('modal-finalizar').classList.remove('open');
+}
+
+function abrirCamaraDirecta() {
+  const input = document.getElementById('input-camara-directa');
+  if (input) {
+    input.value = '';
+    input.click();
+  }
+}
+
+function abrirGaleriaDirecta() {
+  const input = document.getElementById('input-galeria');
+  if (input) {
+    input.value = '';
+    input.click();
+  }
 }
 
 function procesarFotoEvidencia(event) {
@@ -664,14 +684,14 @@ function retomarFoto(event) {
     event.stopPropagation();
   }
   archivoEvidenciaSeleccionado = null;
-  const input = document.getElementById('input-camara');
-  if (input) input.value = '';
+  const inCam = document.getElementById('input-camara-directa');
+  const inGal = document.getElementById('input-galeria');
+  if (inCam) inCam.value = '';
+  if (inGal) inGal.value = '';
+
   document.getElementById('photo-placeholder').style.display = 'flex';
   document.getElementById('photo-preview-wrap').style.display = 'none';
   document.getElementById('img-evidencia-preview').src = '';
-  setTimeout(() => {
-    if (input) input.click();
-  }, 50);
 }
 
 async function confirmarFinalizarServicio() {

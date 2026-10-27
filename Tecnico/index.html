@@ -224,24 +224,38 @@
           </div>
         </div>
 
-        <!-- Zona para tomar foto o seleccionar archivo -->
-        <input type="file" id="input-camara" accept="image/*" style="position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none;" onchange="procesarFotoEvidencia(event)">
-        
-        <label for="input-camara" class="photo-capture-box" id="photo-box">
+        <!-- Inputs ocultos: uno forzado a cámara y otro para galería de fotos -->
+        <input type="file" id="input-camara-directa" accept="image/*" capture="environment" style="display: none;" onchange="procesarFotoEvidencia(event)">
+        <input type="file" id="input-galeria" accept="image/*" style="display: none;" onchange="procesarFotoEvidencia(event)">
+
+        <!-- Botones de acción directa para máxima compatibilidad móvil -->
+        <div class="photo-action-buttons-grid">
+          <button type="button" class="btn-photo-action btn-take-photo" onclick="abrirCamaraDirecta()">
+            <i class="fas fa-camera"></i>
+            <span>Tomar Foto</span>
+          </button>
+          <button type="button" class="btn-photo-action btn-choose-gallery" onclick="abrirGaleriaDirecta()">
+            <i class="fas fa-images"></i>
+            <span>Galería</span>
+          </button>
+        </div>
+
+        <!-- Zona de previsualización o placeholder -->
+        <div class="photo-capture-box" id="photo-box">
           <div class="photo-placeholder" id="photo-placeholder">
             <div class="icon-camera-circle">
               <i class="fas fa-camera"></i>
             </div>
-            <span class="photo-instruction-text">Tocar para tomar foto o elegir archivo</span>
-            <span class="photo-subtext">Cámara o Galería (JPG, PNG, WEBP)</span>
+            <span class="photo-instruction-text">Sin foto adjuntada</span>
+            <span class="photo-subtext">Pulsa "Tomar Foto" o "Galería" arriba</span>
           </div>
           <div class="photo-preview-wrap" id="photo-preview-wrap" style="display: none;">
             <img src="" id="img-evidencia-preview" alt="Foto capturada">
             <button type="button" class="btn-retake" onclick="retomarFoto(event)">
-              <i class="fas fa-rotate-left"></i> Cambiar foto
+              <i class="fas fa-rotate-left"></i> Cambiar / Tomar otra foto
             </button>
           </div>
-        </label>
+        </div>
 
         <!-- Notas técnicas opcionales -->
         <div class="form-group" style="margin-top: 15px;">
