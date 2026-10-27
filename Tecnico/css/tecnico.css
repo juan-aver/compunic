@@ -842,6 +842,47 @@ body {
   border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
+.btn-maps {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  grid-column: 1 / -1;
+}
+
+.card-address-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.card-address-preview i {
+  color: #f59e0b;
+}
+
+.card-address-preview span {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.service-address-text {
+  font-size: 0.92rem;
+  color: #f1f5f9;
+  line-height: 1.45;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
 .service-description {
   font-size: 0.94rem;
   color: #f1f5f9;

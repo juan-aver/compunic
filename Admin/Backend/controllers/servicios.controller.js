@@ -84,7 +84,7 @@ const serviciosController = {
     create: async (req, res) => {
         try {
             const { 
-                descripcion, fecha_solicitud, fecha_ejecucion, costo, 
+                descripcion, direccion, fecha_solicitud, fecha_ejecucion, costo, 
                 id_empleado, id_cliente, id_garantia, id_servicio_tipo, 
                 id_servicio_estado, notas_tecnicas, calificacion, opinion_cliente 
             } = req.body;
@@ -108,6 +108,7 @@ const serviciosController = {
 
             const datos = [
                 descripcion || null, 
+                direccion || null,
                 fecha_solicitud || new Date(), 
                 fecha_ejecucion || null, 
                 parseFloat(costo) || 0.00, 
@@ -142,7 +143,7 @@ const serviciosController = {
     update: async (req, res) => {
         try {
             const { 
-                descripcion, fecha_solicitud, fecha_ejecucion, costo, 
+                descripcion, direccion, fecha_solicitud, fecha_ejecucion, costo, 
                 id_empleado, id_cliente, id_garantia, id_servicio_tipo, 
                 id_servicio_estado, notas_tecnicas, calificacion, opinion_cliente 
             } = req.body;
@@ -170,6 +171,7 @@ const serviciosController = {
 
             const datos = [
                 descripcion || null, 
+                direccion !== undefined ? (direccion || null) : servicioActual.DIRECCION,
                 fecha_solicitud || null, 
                 fecha_ejecucion || null, 
                 parseFloat(costo) || 0.00, 

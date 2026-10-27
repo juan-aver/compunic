@@ -565,6 +565,9 @@ function seleccionarServicio(s) {
     const descInput = document.getElementById('descripcion');
     if (descInput) descInput.value = s.descripcion ?? s.DESCRIPCION ?? '';
 
+    const dirInput = document.getElementById('direccion');
+    if (dirInput) dirInput.value = s.direccion ?? s.DIRECCION ?? '';
+
     const clienteSelect = document.getElementById('id_cliente');
     if (clienteSelect) clienteSelect.value = s.id_cliente ?? s.ID_CLIENTE ?? '';
 
@@ -635,6 +638,7 @@ function agregarServicio() {
 
     const formData = new FormData();
     formData.append('descripcion', document.getElementById('descripcion')?.value || '');
+    formData.append('direccion', document.getElementById('direccion')?.value || '');
     formData.append('id_cliente', idCliente);
     formData.append('id_empleado', document.getElementById('id_empleado')?.value || '');
     formData.append('id_garantia', document.getElementById('id_garantia')?.value || '');
@@ -687,6 +691,7 @@ function modificarServicio() {
 
     const formData = new FormData();
     formData.append('descripcion', document.getElementById('descripcion')?.value || '');
+    formData.append('direccion', document.getElementById('direccion')?.value || '');
     formData.append('id_cliente', idCliente);
     formData.append('id_empleado', document.getElementById('id_empleado')?.value || '');
     formData.append('id_garantia', document.getElementById('id_garantia')?.value || '');

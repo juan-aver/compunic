@@ -318,6 +318,13 @@ function renderizarLista() {
           <span>${cliente}</span>
         </div>
 
+        ${s.DIRECCION ? `
+        <div class="card-address-preview">
+          <i class="fas fa-location-dot"></i>
+          <span>${s.DIRECCION}</span>
+        </div>
+        ` : ''}
+
         ${pausaAlert}
 
         <div class="card-bottom-row">
@@ -406,6 +413,22 @@ function abrirModalDetalle(idServicio) {
   document.getElementById('det-descripcion').textContent = s.DESCRIPCION || 'Sin detalles proporcionados.';
   document.getElementById('det-fecha-solicitud').textContent = s.FECHA_SOLICITUD ? new Date(s.FECHA_SOLICITUD).toLocaleDateString() : '-';
   document.getElementById('det-costo').textContent = `C$${parseFloat(s.COSTO || 0).toFixed(2)}`;
+
+  // Dirección y Botón Google Maps
+  const detDireccion = document.getElementById('det-direccion');
+  const dirActionsContainer = document.getElementById('direccion-actions-container');
+  const btnMaps = document.getElementById('btn-maps-client');
+
+  if (s.DIRECCION && s.DIRECCION.trim()) {
+    detDireccion.textContent = s.DIRECCION;
+    detDireccion.style.color = '#f1f5f9';
+    btnMaps.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.DIRECCION)}`;
+    dirActionsContainer.style.display = 'grid';
+  } else {
+    detDireccion.textContent = 'En taller / Sin dirección a domicilio especificada.';
+    detDireccion.style.color = '#94a3b8';
+    dirActionsContainer.style.display = 'none';
+  }
 
   // Evidencia previa si está terminado
   const cardEvidencia = document.getElementById('card-evidencia-completado');

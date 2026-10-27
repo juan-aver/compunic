@@ -7,6 +7,7 @@ const Servicio = {
         SELECT 
           s.ID_SERVICIO,
           s.DESCRIPCION,
+          s.DIRECCION,
           s.FECHA_SOLICITUD,
           s.FECHA_EJECUCION,
           s.COSTO,
@@ -52,6 +53,7 @@ const Servicio = {
         SELECT 
           s.ID_SERVICIO,
           s.DESCRIPCION,
+          s.DIRECCION,
           s.FECHA_SOLICITUD,
           s.FECHA_EJECUCION,
           s.COSTO,
@@ -116,15 +118,15 @@ const Servicio = {
 
     agregar: async (datos) => {
         try {
-            // datos: [descripcion, fecha_solicitud, fecha_ejecucion, costo, id_empleado, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado, evidencia_url, notas_tecnicas, calificacion, opinion_cliente]
+            // datos: [descripcion, direccion, fecha_solicitud, fecha_ejecucion, costo, id_empleado, id_cliente, id_garantia, id_servicio_tipo, id_servicio_estado, evidencia_url, notas_tecnicas, calificacion, opinion_cliente, fechaCalificacion]
             const sql = `
         INSERT INTO SERVICIOS (
-            DESCRIPCION, FECHA_SOLICITUD, FECHA_EJECUCION, COSTO, 
+            DESCRIPCION, DIRECCION, FECHA_SOLICITUD, FECHA_EJECUCION, COSTO, 
             ID_EMPLEADO, ID_CLIENTE, ID_GARANTIA, ID_SERVICIO_TIPO, 
             ID_SERVICIO_ESTADO, EVIDENCIA_URL, NOTAS_TECNICAS, 
             CALIFICACION, OPINION_CLIENTE, FECHA_CALIFICACION
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
             const [result] = await db.query(sql, datos);
             return result;
@@ -137,7 +139,7 @@ const Servicio = {
         try {
             const sql = `
         UPDATE SERVICIOS 
-        SET DESCRIPCION = ?, FECHA_SOLICITUD = ?, FECHA_EJECUCION = ?, COSTO = ?, 
+        SET DESCRIPCION = ?, DIRECCION = ?, FECHA_SOLICITUD = ?, FECHA_EJECUCION = ?, COSTO = ?, 
             ID_EMPLEADO = ?, ID_CLIENTE = ?, ID_GARANTIA = ?, ID_SERVICIO_TIPO = ?, 
             ID_SERVICIO_ESTADO = ?, EVIDENCIA_URL = ?, NOTAS_TECNICAS = ?, 
             CALIFICACION = ?, OPINION_CLIENTE = ?

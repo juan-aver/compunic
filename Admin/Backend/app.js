@@ -148,7 +148,7 @@ movimientosStockModel.sincronizarSiEstaVacio();
             ON DUPLICATE KEY UPDATE ESTADO = VALUES(ESTADO)
         `);
 
-        // 2. Asegurar MOTIVO_PAUSA en SERVICIOS
+        // 2. Asegurar MOTIVO_PAUSA y DIRECCION en SERVICIOS
         const [servCols] = await pool.query('SHOW COLUMNS FROM SERVICIOS');
         const servColNames = servCols.map(c => c.Field);
         if (!servColNames.includes('MOTIVO_PAUSA')) {
@@ -157,6 +157,14 @@ movimientosStockModel.sincronizarSiEstaVacio();
                 ADD COLUMN MOTIVO_PAUSA VARCHAR(500) NULL AFTER NOTAS_TECNICAS
             `);
             console.log('✅ Auto-migración: MOTIVO_PAUSA agregado a SERVICIOS.');
+        }
+
+        if (!servColNames.includes('DIRECCION')) {
+            await pool.query(`
+                ALTER TABLE SERVICIOS 
+                ADD COLUMN DIRECCION VARCHAR(500) NULL AFTER DESCRIPCION
+            `);
+            console.log('✅ Auto-migración: DIRECCION agregado a SERVICIOS.');
         }
     } catch (err) {
         console.error('⚠️ Auto-migración SERVICIOS:', err.message);
