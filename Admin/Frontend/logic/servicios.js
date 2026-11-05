@@ -260,8 +260,16 @@ function cargarServicios() {
     const tbodyHistorial = tablaHistorial.querySelector("tbody");
     if (!tbodyActivos || !tbodyHistorial) return;
 
-    tbodyActivos.innerHTML = '<tr><td colspan="10" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Cargando servicios activos...</td></tr>';
-    tbodyHistorial.innerHTML = '<tr><td colspan="10" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Cargando historial...</td></tr>';
+    if (typeof Skeleton !== 'undefined') {
+        tbodyActivos.innerHTML = Skeleton.tableRows(4, 9);
+    } else {
+        tbodyActivos.innerHTML = '<tr><td colspan="10" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Cargando servicios activos...</td></tr>';
+    }
+    if (typeof Skeleton !== 'undefined') {
+        tbodyHistorial.innerHTML = Skeleton.tableRows(4, 9);
+    } else {
+        tbodyHistorial.innerHTML = '<tr><td colspan="10" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Cargando historial...</td></tr>';
+    }
 
     fetch(`${API_BASE}/servicios/estados`)
         .then(res => res.json())

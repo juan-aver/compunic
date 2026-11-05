@@ -168,6 +168,14 @@ window._productosSearchQuery = '';
 
 // 🔥 Obtenemos TODOS los productos del backend y procesamos la vista actual
 function cargarProductos() {
+    const grid = document.getElementById('productosGrid');
+    const tbody = document.getElementById('tablaProductos');
+    if (grid && (!window._allProductos || window._allProductos.length === 0)) {
+        if (typeof Skeleton !== 'undefined') grid.innerHTML = Skeleton.productCards(8);
+    }
+    if (tbody && (!window._allProductos || window._allProductos.length === 0)) {
+        if (typeof Skeleton !== 'undefined') tbody.innerHTML = Skeleton.tableRows(8, 8);
+    }
     fetch(`${API_BASE}/productos`)
         .then(res => {
             if (!res.ok) throw new Error(`Error HTTP ${res.status}`);

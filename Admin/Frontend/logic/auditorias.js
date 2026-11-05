@@ -35,7 +35,11 @@ function filtrarAuditorias() {
 
     const tbody = document.getElementById('cuerpoAuditorias');
     if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">Filtrando registros...</td></tr>';
+        if (typeof Skeleton !== 'undefined') {
+            tbody.innerHTML = Skeleton.tableRows(6, 8);
+        } else {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">Filtrando registros...</td></tr>';
+        }
     }
 
     let url = `${API_BASE}/auditorias?limite=100`;

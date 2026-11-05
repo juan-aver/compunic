@@ -690,6 +690,10 @@ window._ventasPerPage = 15;
 
 // Función para cargar el historial de ventas
 function cargarVentas() {
+    const tbodyInicial = document.getElementById("sales-record-table");
+    if (tbodyInicial && typeof Skeleton !== 'undefined') {
+        tbodyInicial.innerHTML = Skeleton.tableRows(7, 7);
+    }
     fetch(`${API_BASE}/ventas`)
         .then(res => {
             if (!res.ok) {

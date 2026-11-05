@@ -90,7 +90,9 @@
 
         if (loading) loading.style.display = 'block';
         if (empty) empty.style.display   = 'none';
-        if (tbody) tbody.innerHTML       = '';
+        if (tbody) {
+            tbody.innerHTML = (typeof Skeleton !== 'undefined') ? Skeleton.tableRows(5, 7) : '';
+        }
 
         try {
             console.log(`🔍 Cargando pedidos con estado: ${estado}...`);

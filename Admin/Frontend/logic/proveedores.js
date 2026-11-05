@@ -34,6 +34,10 @@ function asignarEventosProveedores() {
 }
 
 function cargarProveedores() {
+    const tbodyInicial = document.getElementById('tablaProveedores');
+    if (tbodyInicial && typeof Skeleton !== 'undefined') {
+        tbodyInicial.innerHTML = Skeleton.tableRows(5, 7);
+    }
     const url = `${API_BASE}/proveedores`;
     const tablaSection = document.getElementById('seccion-tabla');
     const resultadosSection = document.getElementById('resultadosBusquedaSection');

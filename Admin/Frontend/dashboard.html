@@ -222,6 +222,7 @@
     });
   </script>
   <!-- ===== Módulos de Lógica (reemplazan app_logic.js) ===== -->
+  <script src="js/skeleton.js"></script>
   <script src="logic/router.js"></script>
   <script src="logic/utils.js"></script>
   <script src="logic/categorias.js"></script>
@@ -269,7 +270,7 @@
       </div>
 
       <ul class="nav-menu">
-        <li id="nav-inicio"><a href="#" class="nav-link active" onclick="location.reload()">Inicio</a></li>
+        <li id="nav-inicio"><a href="#" class="nav-link active" onclick="cargarVista('inicio'); return false;">Inicio</a></li>
 
         <li class="nav-item-dropdown" id="nav-inventario">
           <a href="#" class="nav-link">Inventario</a>
@@ -352,7 +353,7 @@
     <nav class="mobile-menu">
       <ul class="mobile-menu-items">
         <li class="mobile-menu-item" data-vista="inicio">
-          <a href="#" class="mobile-menu-link" onclick="location.reload()">
+          <a href="#" class="mobile-menu-link" onclick="cargarVista('inicio'); return false;">
             <span class="mobile-menu-icon">🏠</span>
             Inicio
           </a>

@@ -31,6 +31,10 @@ function toggleFormularioGarantia() {
 window.toggleFormularioGarantia = toggleFormularioGarantia;
 
 function cargarGarantias() {
+    const tbodyInicial = document.getElementById('tablaGarantias');
+    if (tbodyInicial && typeof Skeleton !== 'undefined') {
+        tbodyInicial.innerHTML = Skeleton.tableRows(5, 5);
+    }
     fetch(`${API_BASE}/garantias`)
         .then(res => res.json())
         .then(garantias => {

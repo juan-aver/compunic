@@ -4,6 +4,10 @@
 // ========================================================================================================
 
 function cargarClientes() {
+    const tbodyInicial = document.getElementById('tablaClientes');
+    if (tbodyInicial && typeof Skeleton !== 'undefined') {
+        tbodyInicial.innerHTML = Skeleton.tableRows(6, 7);
+    }
     fetch(`${API_BASE}/clientes`)
         .then(res => res.json())
         .then(clientes => {

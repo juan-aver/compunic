@@ -96,6 +96,10 @@ async function eliminarCategoria() {
 }
 
 function cargarCategorias() {
+    const tbodyInicial = document.getElementById('tablaCategorias');
+    if (tbodyInicial && typeof Skeleton !== 'undefined') {
+        tbodyInicial.innerHTML = Skeleton.tableRows(5, 3);
+    }
     fetch(`${API_BASE}/categorias`)
         .then(r => r.json())
         .then(arr => {

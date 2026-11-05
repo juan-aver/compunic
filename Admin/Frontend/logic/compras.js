@@ -14,6 +14,10 @@ window._comprasCurrentPage = 1;
 window._comprasPerPage = 15;
 
 function cargarCompras() {
+    const tbodyInicial = document.getElementById('tablaCompras');
+    if (tbodyInicial && typeof Skeleton !== 'undefined') {
+        tbodyInicial.innerHTML = Skeleton.tableRows(7, 8);
+    }
     fetch(`${API_BASE}/compras`)
         .then(r => r.json())
         .then(compras => {

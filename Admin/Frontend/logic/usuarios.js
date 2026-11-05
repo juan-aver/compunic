@@ -145,6 +145,10 @@ function renderFilaEmpleado(e) {
 // ============================================
 
 function cargarEmpleados() {
+    const tbodyInicial = document.getElementById('tablaEmpleados');
+    if (tbodyInicial && typeof Skeleton !== 'undefined') {
+        tbodyInicial.innerHTML = Skeleton.tableRows(5, 7);
+    }
     fetch(`${API_BASE}/empleados`)
         .then(res => res.json())
         .then(empleados => {

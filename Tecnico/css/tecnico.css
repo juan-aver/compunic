@@ -1237,3 +1237,35 @@ body {
   font-size: 1.3rem;
   cursor: pointer;
 }
+
+
+/* =========================================
+   SKELETON CARDS PARA PORTAL TÉCNICO
+   ========================================= */
+@keyframes tecnico-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.tecnico-skeleton-card {
+  background: var(--card-bg, #1e293b);
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.08));
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tecnico-skeleton-item {
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.06) 100%);
+  background-size: 200% 100%;
+  animation: tecnico-shimmer 1.5s infinite ease-in-out;
+  border-radius: 6px;
+}
+
+body.light-theme .tecnico-skeleton-item {
+  background: linear-gradient(90deg, #e2e8f0 0%, #f8fafc 50%, #e2e8f0 100%);
+  background-size: 200% 100%;
+}
