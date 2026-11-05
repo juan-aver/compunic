@@ -46,7 +46,7 @@ function getGradientForProduct(id) {
 function formatPrice(price) {
     const p = parseFloat(price) || 0;
     const usd = (p / 36.6243).toFixed(2);
-    return `C$${p.toFixed(2)} <span style="font-size:0.8em; color:#0284c7; font-weight:600;">($${usd})</span>`;
+    return `C$${p.toFixed(2)} <span class="price-usd" style="font-size:0.65em; color:#38bdf8; font-weight:600; margin-left: 6px; vertical-align: middle;">($${usd})</span>`;
 }
 
 function getStockStatus(stock) {
@@ -337,7 +337,8 @@ function openProductModal(productId) {
     
     document.getElementById('modalTitle').textContent = product.name;
     document.getElementById('modalModel').textContent = `Modelo: ${product.model}`;
-    document.getElementById('modalPrice').textContent = formatPrice(product.price);
+    // Usar innerHTML para que se renderice el span de conversión a USD con estilo
+    document.getElementById('modalPrice').innerHTML = formatPrice(product.price);
     const descEl = document.getElementById('modalDescription');
     descEl.textContent = product.description || 'Sin descripción disponible.';
     const warrantyEl = document.getElementById('modalWarranty');
@@ -356,7 +357,10 @@ function openProductModal(productId) {
     buyBtn.disabled = product.stock === 0;
 
     const waBtn = document.getElementById('modalWhatsapp');
-    waBtn.href = `https://wa.me/50588888888?text=Hola! Estoy interesado en el producto: ${encodeURIComponent(product.name)} - Precio: ${formatPrice(product.price)}`;
+    const pVal = parseFloat(product.price) || 0;
+    const usdVal = (pVal / 36.6243).toFixed(2);
+    const cleanPriceMsg = `C$${pVal.toFixed(2)} ($${usdVal} USD)`;
+    waBtn.href = `https://wa.me/50588888888?text=${encodeURIComponent(`¡Hola! Estoy interesado en el producto: ${product.name} - Precio: ${cleanPriceMsg}`)}`;
 
     document.getElementById('productModal').classList.add('active');
     document.body.style.overflow = 'hidden';

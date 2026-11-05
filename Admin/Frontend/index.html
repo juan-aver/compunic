@@ -35,13 +35,24 @@
       padding: 0;
     }
 
+    html {
+      min-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #0a1628;
       color: #e2e8f0;
       min-height: 100vh;
-      overflow: hidden;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       display: flex;
+      flex-direction: column;
     }
 
     /* ==========================================
@@ -52,6 +63,7 @@
       inset: 0;
       z-index: 0;
       overflow: hidden;
+      pointer-events: none;
     }
 
     .bg-particles .orb {
@@ -150,6 +162,7 @@
         linear-gradient(rgba(86, 165, 221, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(86, 165, 221, 0.03) 1px, transparent 1px);
       background-size: 60px 60px;
+      pointer-events: none;
     }
 
     /* ==========================================
@@ -157,26 +170,30 @@
        ========================================== */
     .login-wrapper {
       display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 3rem;
       width: 100%;
       min-height: 100vh;
+      min-height: 100dvh;
       position: relative;
       z-index: 1;
+      padding: 2.5rem 2rem;
+      margin: auto 0;
     }
 
     /* ==========================================
        LEFT PANEL - BRANDING
        ========================================== */
     .brand-panel {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 40%;
+      position: relative;
+      flex: 1;
+      max-width: 520px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 4rem;
-      overflow: hidden;
+      padding: 2rem 1rem;
       z-index: 1;
     }
 
@@ -249,12 +266,13 @@
     /* Decorative circuit lines */
     .brand-panel .circuit-decoration {
       position: absolute;
-      right: -40px;
+      right: -20px;
       top: 50%;
       transform: translateY(-50%);
-      width: 300px;
-      height: 400px;
+      width: 260px;
+      height: 380px;
       opacity: 0.08;
+      pointer-events: none;
     }
 
     .circuit-decoration svg {
@@ -266,23 +284,24 @@
        RIGHT PANEL - LOGIN FORM
        ========================================== */
     .form-panel {
-      width: 100%;
+      flex: 1;
+      max-width: 480px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
+      padding: 1rem 0;
       position: relative;
       z-index: 2;
     }
 
     .login-card {
       width: 100%;
-      max-width: 500px;
+      max-width: 480px;
       background: rgba(12, 22, 42, 0.85);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border-radius: 24px;
-      padding: 3rem;
+      padding: 2.5rem;
       border: 1px solid rgba(86, 165, 221, 0.15);
       box-shadow:
         0 0 40px rgba(86, 165, 221, 0.05),
@@ -668,27 +687,111 @@
       animation: glowPulse 3s ease-in-out infinite;
     }
 
-    /* ==========================================
-       RESPONSIVE
+        /* ==========================================
+       RESPONSIVE & TABLET OPTIMIZATIONS
        ========================================== */
-    @media (max-width: 1100px) {
-      body {
-        overflow: auto;
+    /* Pantallas con altura reducida (Tablets en horizontal, laptops de 768p, teclado virtual) */
+    @media (max-height: 850px) {
+      .login-wrapper {
+        min-height: 100%;
+        padding: 1.5rem 1rem;
+        gap: 1.75rem;
       }
 
+      .brand-logo {
+        width: 70px;
+        margin-bottom: 0.75rem;
+      }
+
+      .brand-title {
+        font-size: 2.2rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .brand-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .brand-features {
+        gap: 0.65rem;
+      }
+
+      .brand-feature {
+        font-size: 0.85rem;
+      }
+
+      .brand-feature .feature-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 0.95rem;
+      }
+
+      .login-card {
+        padding: 1.75rem 2rem;
+      }
+
+      .login-header {
+        margin-bottom: 1rem;
+      }
+
+      .login-header .login-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.2rem;
+        margin-bottom: 0.4rem;
+      }
+
+      .login-header h2 {
+        font-size: 1.35rem;
+      }
+
+      .login-header p {
+        font-size: 0.85rem;
+      }
+
+      .form-group {
+        margin-bottom: 0.85rem;
+      }
+
+      .input-wrapper input {
+        padding: 0.7rem 0.9rem 0.7rem 2.5rem;
+        font-size: 0.9rem;
+      }
+
+      .btn-login,
+      .btn-guest,
+      .btn-tecnico {
+        padding: 0.75rem 1rem;
+        font-size: 0.88rem;
+      }
+
+      .divider {
+        margin: 0.85rem 0;
+      }
+
+      .login-footer {
+        margin-top: 1rem;
+        padding-top: 0.85rem;
+      }
+    }
+
+    /* Tablets en vertical y pantallas medianas */
+    @media (max-width: 1024px) {
       .login-wrapper {
         flex-direction: column !important;
         justify-content: center !important;
         align-items: center !important;
         min-height: 100vh !important;
-        padding: 2rem 1rem !important;
+        min-height: 100dvh !important;
+        padding: 2rem 1.25rem !important;
+        gap: 1.5rem !important;
       }
 
       .brand-panel {
-        position: static !important;
         width: 100% !important;
         max-width: 480px !important;
-        padding: 1rem 1rem 1.5rem !important;
+        padding: 0.5rem 0 !important;
         text-align: center !important;
         align-items: center !important;
       }
@@ -699,12 +802,12 @@
 
       .brand-subtitle {
         font-size: 0.95rem !important;
-        margin-bottom: 1rem !important;
+        margin-bottom: 0.5rem !important;
       }
 
       .brand-logo {
-        width: 80px !important;
-        margin-bottom: 1rem !important;
+        width: 75px !important;
+        margin-bottom: 0.75rem !important;
       }
 
       .brand-features {
@@ -722,48 +825,51 @@
       }
 
       .login-card {
-        padding: 2rem !important;
+        padding: 2rem 1.75rem !important;
         width: 100% !important;
         border-radius: 20px !important;
       }
     }
 
+    /* Móviles pequeños */
     @media (max-width: 480px) {
+      .login-wrapper {
+        padding: 1.5rem 1rem !important;
+        gap: 1rem !important;
+      }
+
       .brand-panel {
-        padding: 2rem 1.5rem 1rem;
+        padding: 0.5rem 0 !important;
       }
 
       .brand-logo {
-        width: 80px;
+        width: 65px !important;
+        margin-bottom: 0.5rem !important;
       }
 
       .brand-title {
-        font-size: 1.8rem;
+        font-size: 1.8rem !important;
       }
 
       .brand-subtitle {
-        font-size: 0.9rem;
-        letter-spacing: 2px;
-      }
-
-      .form-panel {
-        padding: 0.5rem 1rem 1.5rem;
+        font-size: 0.85rem !important;
+        letter-spacing: 2px !important;
       }
 
       .login-card {
-        padding: 1.5rem;
-        border-radius: 20px;
+        padding: 1.5rem 1.25rem !important;
+        border-radius: 18px !important;
       }
 
       .login-header .login-icon {
-        width: 52px;
-        height: 52px;
-        font-size: 1.3rem;
-        border-radius: 16px;
+        width: 46px !important;
+        height: 46px !important;
+        font-size: 1.15rem !important;
+        border-radius: 14px !important;
       }
 
       .login-header h2 {
-        font-size: 1.4rem;
+        font-size: 1.3rem !important;
       }
     }
   </style>
