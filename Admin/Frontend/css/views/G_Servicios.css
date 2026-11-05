@@ -3,9 +3,6 @@
 /* ========================================= */
 
 /* Importar sistema de diseño */
-@import url('../variables.css');
-@import url('../components.css');
-
 /* ========================================= */
 /* =========================================
    ESTILO GLASS MEJORADO (más legible)
@@ -1141,4 +1138,4 @@ select.error {
   font-size: 0.82rem;
   font-weight: 600;
   border: 1px solid #dbeafe;
-}
+}

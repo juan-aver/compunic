@@ -1,9 +1,6 @@
 /* css/views/G_Auditorias.css */
 
 /* Importar sistema de diseño */
-@import url('../variables.css');
-@import url('../components.css');
-
 .primary-color {
   color: #3498db;
 }

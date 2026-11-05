@@ -275,8 +275,50 @@
     }
 }
 
+/* =========================================
+   ANTI-FOUC VIEW TRANSITION CONTAINER (Zero Flash)
+   ========================================= */
+
+.view-transition-wrapper {
+    opacity: 0 !important;
+    transform: translateY(6px);
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    will-change: opacity, transform;
+}
+
+.view-transition-wrapper.is-visible {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+/* Barra de progreso de carga superior (elegante y nativa) */
+#view-top-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+    z-index: 999999;
+    pointer-events: none;
+    transition: width 0.25s ease-out, opacity 0.2s ease-out;
+    opacity: 0;
+}
+
+#view-top-loader.loading {
+    opacity: 1;
+    width: 75%;
+}
+
+#view-top-loader.finished {
+    width: 100%;
+    opacity: 0;
+}
+
 .view-fade-in {
-    animation: viewContentEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    opacity: 0;
+    animation: viewContentEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
 
 .view-fade-out {

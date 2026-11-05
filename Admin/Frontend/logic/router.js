@@ -122,16 +122,35 @@ function obtenerVistasPermitidasPorRol(role) {
 window.obtenerVistasPermitidasPorRol = obtenerVistasPermitidasPorRol;
 
 // ========================
-// GESTOR DE HOJAS DE ESTILOS (ANTI-FOUC)
+// GESTOR DE HOJAS DE ESTILOS Y TRANSICIÓN DE VISTAS (ZERO FOUC)
 // ========================
+
+function showTopLoader() {
+    let loader = document.getElementById('view-top-loader');
+    if (!loader) {
+        loader = document.createElement('div');
+        loader.id = 'view-top-loader';
+        document.body.appendChild(loader);
+    }
+    loader.className = 'loading';
+}
+
+function finishTopLoader() {
+    const loader = document.getElementById('view-top-loader');
+    if (loader) {
+        loader.className = 'finished';
+        setTimeout(() => {
+            loader.className = '';
+        }, 300);
+    }
+}
+
 function aplicarCssVista(cssPath) {
-    // Si la vista no tiene CSS específico, deshabilitar hojas de vistas anteriores
     if (!cssPath) {
         document.querySelectorAll('link[data-view-css]').forEach(l => l.disabled = true);
         return Promise.resolve();
     }
 
-    // Si ya fue inyectada previamente, reactivarla y asegurar recálculo de estilos antes de renderizar
     const existing = document.querySelector(`link[data-view-css="${cssPath}"]`);
     if (existing) {
         existing.disabled = false;
@@ -140,7 +159,6 @@ function aplicarCssVista(cssPath) {
                 link.disabled = true;
             }
         });
-        // Forzar cálculo de estilos y esperar 2 frames para garantizar que el motor de render aplique el CSS
         void document.head.offsetHeight;
         return new Promise(resolve => {
             requestAnimationFrame(() => {
@@ -149,12 +167,11 @@ function aplicarCssVista(cssPath) {
         });
     }
 
-    // Desactivar las otras hojas de estilo de vistas antes de inyectar la nueva
+    // Desactivar hojas de estilo de otras vistas
     document.querySelectorAll('link[data-view-css]').forEach(link => {
         link.disabled = true;
     });
 
-    // Primera vez que se carga: inyectar y esperar su carga completa para evitar FOUC
     return new Promise((resolve) => {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -174,13 +191,11 @@ function aplicarCssVista(cssPath) {
 
         link.onload = finish;
         link.onerror = () => {
-            console.warn(`[Router] No se pudo cargar la hoja de estilos: ${cssPath}`);
+            console.warn(`[Router] No se pudo cargar: ${cssPath}`);
             finish();
         };
 
-        // Tiempo límite de seguridad para no bloquear jamás la navegación (máx 350ms)
         setTimeout(finish, 350);
-
         document.head.appendChild(link);
     });
 }
@@ -215,7 +230,6 @@ function actualizarNavActivo(nombreVista) {
         const matchingLink = document.querySelector(`[onclick*="'${nombreVista}'"]`);
         if (matchingLink) {
             matchingLink.classList.add('active');
-            // Si está dentro de un dropdown, resaltar también el menú padre
             const parentDropdown = matchingLink.closest('.nav-item-dropdown');
             if (parentDropdown) {
                 const parentLink = parentDropdown.querySelector('.nav-link');
@@ -236,10 +250,9 @@ function actualizarNavActivo(nombreVista) {
 }
 
 // ========================
-// ENRUTADOR PRINCIPAL
+// ENRUTADOR PRINCIPAL (ZERO-FOUC & TRANSICIÓN NATIVA)
 // ========================
 async function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedores = false, Lista_de_usuario = false) {
-    // Validar permisos del rol actual
     const currentRole = (typeof Auth !== 'undefined' && typeof Auth.getRole === 'function') ? Auth.getRole() : 'admin';
     const permitidas = obtenerVistasPermitidasPorRol(currentRole);
 
@@ -287,31 +300,21 @@ async function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_pro
         return;
     }
 
-    // Prevenir cargas duplicadas
     if (_vistaCargandoActualmente === nombreVista) return;
     _vistaCargandoActualmente = nombreVista;
 
-    // 1. Actualizar navbar activo inmediatamente
+    // 1. Resaltar menú de navegación de inmediato
     actualizarNavActivo(nombreVista);
 
-    // 2. Renderizar SKELETON SCREEN instantáneamente (0ms de latencia percibida)
-    if (typeof Skeleton !== 'undefined' && typeof Skeleton.renderView === 'function') {
-        content.innerHTML = Skeleton.renderView(nombreVista);
-    } else {
-        content.innerHTML = `
-            <div class="skeleton-view-wrapper" style="padding: 20px;">
-                <div class="skeleton-title" style="width: 250px;"></div>
-                <div class="skeleton-line w-75" style="height: 18px; margin-bottom: 25px;"></div>
-                <div class="skeleton-card" style="height: 300px;"></div>
-            </div>
-        `;
+    // 2. Activar barra superior de carga y atenuar suavemente la vista actual
+    showTopLoader();
+    if (content.children.length > 0) {
+        content.style.opacity = '0.65';
+        content.style.transition = 'opacity 0.15s ease';
     }
 
-    // Transición suave: garantizar un mínimo de 180ms para que la animación skeleton fluya sin micro-parpadeos
-    const minDelayPromise = new Promise(resolve => setTimeout(resolve, 180));
-
     try {
-        // 3. Cargar en paralelo: HTML de la vista, CSS y tiempo mínimo de transición
+        // 3. Cargar en paralelo: HTML y CSS de la nueva vista
         const htmlPromise = (async () => {
             if (nombreVista === 'inicio') {
                 return _initialDashboardHtml || _vistaHtmlCache.get('inicio') || '';
@@ -328,24 +331,36 @@ async function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_pro
 
         const cssPromise = aplicarCssVista(vista.css);
 
-        // Esperar a que AMBOS (HTML y CSS) y el tiempo mínimo de animación estén completamente listos
-        const [rawHtml] = await Promise.all([htmlPromise, cssPromise, minDelayPromise]);
+        // Esperar a que HTML y CSS estén 100% listos
+        const [rawHtml] = await Promise.all([htmlPromise, cssPromise]);
 
-        // 4. Limpiar fragmento HTML antes de insertar
+        // 4. Limpiar fragmento HTML
         const cleanHtml = limpiarHtmlVista(rawHtml);
 
-        // 5. Inyectar el HTML real estilizado con animación fade-in
-        content.innerHTML = `<div class="view-fade-in">${cleanHtml}</div>`;
+        // 5. Inyectar con opacidad 0 (ANTI-FOUC: Cero contenido sin estilo visible)
+        content.innerHTML = `<div class="view-transition-wrapper" id="active-view-wrapper">${cleanHtml}</div>`;
         content.scrollTop = 0;
         window.scrollTo({ top: 0, behavior: 'instant' });
 
-        // 6. Inicializar eventos comunes
+        // Forzar cálculo de estilos en el DOM antes de mostrarlo
+        const wrapper = document.getElementById('active-view-wrapper');
+        if (wrapper) void wrapper.offsetHeight;
+
+        // 6. Revelar suavemente con estilos ya aplicados y finalizar barra de progreso
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                if (wrapper) wrapper.classList.add('is-visible');
+                content.style.opacity = '1';
+                finishTopLoader();
+            });
+        });
+
+        // 7. Eventos comunes
         if (typeof inicializarEventos === 'function') {
             try { inicializarEventos(); } catch (e) { console.warn(e); }
         }
 
-        // 7. Desacoplar la inicialización pesada del controlador del renderizado del DOM
-        // Permite que el navegador pinte a 60fps sin congelar ("sin pegarse") la interfaz
+        // 8. Inicializar controlador de la vista de forma no bloqueante
         requestAnimationFrame(() => {
             setTimeout(() => {
                 try {
@@ -355,12 +370,14 @@ async function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_pro
                 } finally {
                     _vistaCargandoActualmente = null;
                 }
-            }, 8);
+            }, 10);
         });
 
     } catch (err) {
-        console.error('Error al cargar la vista:', err);
+        finishTopLoader();
+        content.style.opacity = '1';
         _vistaCargandoActualmente = null;
+        console.error('Error al cargar la vista:', err);
         content.innerHTML = `
             <div style="text-align: center; padding: 40px; color: var(--error-color, #ef4444);">
                 <i class="fas fa-triangle-exclamation" style="font-size: 3rem; margin-bottom: 15px;"></i>
