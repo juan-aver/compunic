@@ -7,8 +7,8 @@
    NAVEGACIÓN RESPONSIVA
    ========================================= */
 
-/* En móvil y tablet pequeña: ocultar nav desktop, mostrar hamburguesa */
-@media (max-width: 768px) {
+/* En móvil y tablet: ocultar nav desktop, mostrar menú */
+@media (max-width: 1024px) {
     .top-nav {
         padding: 0.5rem 1rem !important;
     }

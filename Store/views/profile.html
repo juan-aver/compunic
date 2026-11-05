@@ -127,6 +127,68 @@
         @media (max-width: 768px) {
             .profile-container { grid-template-columns: 1fr; }
         }
+    
+        /* ============================================
+           RESPONSIVE DESIGN (TABLETS & MÓVILES)
+           ============================================ */
+        @media (max-width: 992px) {
+            .profile-container {
+                grid-template-columns: 260px 1fr;
+                gap: 1.5rem;
+                margin: 25px auto;
+            }
+
+            .profile-sidebar {
+                padding: 1.5rem;
+            }
+
+            .profile-content {
+                padding: 1.5rem;
+            }
+
+            .points-card {
+                padding: 1.25rem;
+            }
+
+            .points-card .points {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .profile-container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                margin: 15px auto;
+                padding: 0 15px;
+            }
+
+            .profile-sidebar {
+                padding: 1.5rem;
+            }
+
+            .points-card {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                text-align: left;
+            }
+
+            .points-card .points {
+                font-size: 2rem;
+            }
+
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -0.5rem;
+                padding: 0 0.5rem;
+            }
+
+            table {
+                min-width: 520px;
+            }
+        }
     </style>
 </head>
 

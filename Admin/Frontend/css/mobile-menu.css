@@ -197,7 +197,7 @@
 }
 
 /* Mostrar solo en móvil */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .mobile-menu-toggle {
         display: block;
     }

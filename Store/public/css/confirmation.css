@@ -232,32 +232,69 @@
 }
 
 /* ============================================
-   RESPONSIVE
+   RESPONSIVE DESIGN (TABLETS & MÓVILES)
    ============================================ */
 
+/* TABLETS (768px a 1024px) */
+@media (max-width: 1024px) {
+    .confirmation-section {
+        padding: 3rem 0;
+    }
+
+    .confirmation-card {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 2.5rem 2rem;
+    }
+
+    .order-details-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+
+    .confirmation-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+}
+
+/* MÓVILES (<= 768px) */
 @media (max-width: 768px) {
     .confirmation-section {
         padding: 2rem 0;
     }
 
     .confirmation-card {
-        padding: 2rem 1.5rem;
+        padding: 2rem 1.25rem;
     }
 
     .confirmation-card h1 {
-        font-size: 1.5rem;
+        font-size: 1.45rem;
     }
 
     .confirmation-message {
-        font-size: 1rem;
+        font-size: 0.95rem;
     }
 
     .order-number .number {
-        font-size: 1.25rem;
+        font-size: 1.2rem;
+    }
+
+    .order-details-grid {
+        grid-template-columns: 1fr;
     }
 
     .confirmation-info {
         flex-direction: column;
         text-align: center;
+    }
+
+    .confirmation-actions {
+        flex-direction: column;
+    }
+
+    .confirmation-actions .btn {
+        width: 100%;
     }
 }

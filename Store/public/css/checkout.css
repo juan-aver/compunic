@@ -343,41 +343,105 @@ textarea.form-control {
    RESPONSIVE
    ============================================ */
 
+/* ============================================
+   RESPONSIVE DESIGN (TABLETS & MÓVILES)
+   ============================================ */
+
+/* TABLETS (768px a 1024px) */
 @media (max-width: 1024px) {
+    .checkout-section {
+        padding: 2.5rem 0;
+    }
+
+    /* En tablets landscape (880px - 1024px) mantenemos 2 columnas compactas */
+    .checkout-content {
+        grid-template-columns: 1fr 340px;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    .checkout-form-container .card {
+        padding: 2rem 1.75rem;
+    }
+
+    .checkout-summary .card {
+        padding: 1.75rem;
+    }
+
+    .checkout-summary {
+        position: sticky;
+        top: 90px;
+    }
+
+    /* Formulario en 2 columnas limpias en Tablet */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    /* Métodos de Pago en cuadrícula 2x2 en Tablet */
+    .payment-methods {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .payment-method {
+        padding: 12px 14px;
+    }
+
+    .pm-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 1.15rem;
+    }
+
+    .pm-name {
+        font-size: 0.9rem;
+    }
+}
+
+/* TABLETS EN FORMATO RETRATO ESTRECHO (<= 880px) */
+@media (max-width: 880px) {
     .checkout-content {
         grid-template-columns: 1fr;
     }
 
     .checkout-summary {
         position: static;
-    }
-}
-
-@media (max-width: 768px) {
-    .checkout-header h1 {
-        font-size: 1.5rem;
+        max-width: 580px;
+        margin: 0 auto;
+        width: 100%;
     }
 
     .checkout-steps {
-        gap: 1rem;
+        overflow-x: auto;
+        padding: 0.5rem 0;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* SMARTPHONES (<= 640px) */
+@media (max-width: 640px) {
+    .checkout-header h1 {
+        font-size: 1.45rem;
     }
 
-    .step span {
-        font-size: 0.8rem;
-    }
-
-    .step i {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
+    .checkout-form-container .card {
+        padding: 1.5rem 1rem;
     }
 
     .form-row {
         grid-template-columns: 1fr;
     }
 
+    .payment-methods {
+        grid-template-columns: 1fr;
+    }
+
     .form-actions {
         flex-direction: column-reverse;
+        gap: 0.75rem;
     }
 
     .form-actions .btn {
