@@ -420,34 +420,3 @@
     </div>
   </div>
 </div>
-
-</div>
-</main>
-
-<script>
-  // Definir API_BASE antes de cargar otros scripts
-  const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== ''
-    ? 'http://localhost:3001/api'
-    : '/api';
-</script>
-<script>
-  // Inicializar productos cuando se accede directamente a esta página
-  document.addEventListener('DOMContentLoaded', function () {
-    // Esperar a que todos los scripts se carguen
-    setTimeout(function () {
-      if (typeof cargarProductos === 'function') {
-        cargarProductos();
-      }
-      if (typeof poblarSelectCategorias === 'function') poblarSelectCategorias();
-      if (typeof poblarSelectMarcas === 'function') poblarSelectMarcas();
-      if (typeof poblarSelectProveedores === 'function') poblarSelectProveedores();
-      if (typeof poblarSelectGarantiaTipos === 'function') poblarSelectGarantiaTipos();
-      
-      const currentView = localStorage.getItem('compunic_product_view') || 'cards';
-      if (typeof switchProductView === 'function') switchProductView(currentView, true);
-    }, 500);
-  });
-</script>
-</body>
-
-</html>

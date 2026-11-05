@@ -886,32 +886,49 @@ function poblarSelectVendedores() {
         .catch(err => console.error('Error al cargar vendedores:', err));
 }
 
-function poblarSelectProductos() {
+function poblarSelectProductos(cachedProductos = null) {
+    const renderSelect = (productos) => {
+        const select = document.getElementById('producto-select');
+        if (!select) return;
+        select.innerHTML = '<option value="" selected>Seleccione un Producto</option>';
+        productos.forEach(p => {
+            const activo = p.activo !== undefined ? Number(p.activo) : (p.ACTIVO !== undefined ? Number(p.ACTIVO) : 1);
+            if (activo === 0) return; // Skip deactivated products
+            const option = document.createElement('option');
+            option.value = p.ID_PRODUCTO || p.id_producto;
+            const pNombre = p.nombre || p.NOMBRE_PRODUCTO || '';
+            const pModelo = p.modelo || p.MODELO || '';
+            const pPrecio = p.precio_venta || p.PRECIO_VENTA || 0;
+            option.textContent = `${pNombre} - ${pModelo}`;
+            option.setAttribute('data-precio', pPrecio);
+            const garantiaDesc = p.garantia_meses || p.garantia_desc || "Sin Garantía";
+            const garantiaId = (p._raw && (p._raw.ID_GARANTIAS || p._raw.id_garantias)) || p.ID_GARANTIA_TIPO || p.id_garantia_tipo || "";
+            option.setAttribute('data-garantia-desc', garantiaDesc);
+            option.setAttribute('data-garantia-id', garantiaId);
+            const stock = Number(p.stock ?? p.stock_actual_calculado ?? p.STOCK ?? 0) || 0;
+            option.setAttribute('data-stock', stock);
+            option.setAttribute('data-imagen', p.imagen_url || p.IMAGEN_URL || '');
+            option.textContent = `${pNombre} - ${pModelo} (Stock: ${stock})`;
+            select.appendChild(option);
+        });
+    };
+
+    if (cachedProductos && Array.isArray(cachedProductos) && cachedProductos.length > 0) {
+        renderSelect(cachedProductos);
+        return;
+    }
+    if (window._ventasPOSProductos && Array.isArray(window._ventasPOSProductos) && window._ventasPOSProductos.length > 0) {
+        renderSelect(window._ventasPOSProductos);
+        return;
+    }
+
     fetch(`${API_BASE}/productos`)
         .then(res => res.json())
         .then(productos => {
-            const select = document.getElementById('producto-select');
-            if (!select) return;
-            select.innerHTML = '<option value="" selected>Seleccione</option>';
-            productos.forEach(p => {
-                const activo = p.activo !== undefined ? Number(p.activo) : (p.ACTIVO !== undefined ? Number(p.ACTIVO) : 1);
-                if (activo === 0) return; // Skip deactivated products
-                const option = document.createElement('option');
-                option.value = p.ID_PRODUCTO || p.id_producto;
-                option.textContent = `${p.nombre} - ${p.modelo}`;
-                option.setAttribute('data-precio', p.precio_venta);
-                const garantiaDesc = p.garantia_meses || "Sin Garantía";
-                const garantiaId = (p._raw && (p._raw.ID_GARANTIAS || p._raw.id_garantias)) || "";
-                option.setAttribute('data-garantia-desc', garantiaDesc);
-                option.setAttribute('data-garantia-id', garantiaId);
-                const stock = Number(p.stock ?? p.stock_actual_calculado ?? p.STOCK ?? 0) || 0;
-                option.setAttribute('data-stock', stock);
-                option.setAttribute('data-imagen', p.imagen_url || '');
-                option.textContent = `${p.nombre} - ${p.modelo} (Stock: ${stock})`;
-                select.appendChild(option);
-            });
+            window._ventasPOSProductos = productos;
+            renderSelect(productos);
         })
-        .catch(err => console.error('Error al cargar productos:', err));
+        .catch(err => console.error('Error al cargar productos para select:', err));
 }
 
 function poblarSelectGarantias() {

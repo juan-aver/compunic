@@ -131,21 +131,30 @@ function aplicarCssVista(cssPath) {
         return Promise.resolve();
     }
 
-    // Desactivar las otras hojas de estilo de vistas
-    document.querySelectorAll('link[data-view-css]').forEach(link => {
-        if (link.getAttribute('data-view-css') !== cssPath) {
-            link.disabled = true;
-        }
-    });
-
-    // Si ya fue inyectada previamente, reactivarla al instante (0ms, sin re-descargas)
+    // Si ya fue inyectada previamente, reactivarla y asegurar recálculo de estilos antes de renderizar
     const existing = document.querySelector(`link[data-view-css="${cssPath}"]`);
     if (existing) {
         existing.disabled = false;
-        return Promise.resolve();
+        document.querySelectorAll('link[data-view-css]').forEach(link => {
+            if (link !== existing) {
+                link.disabled = true;
+            }
+        });
+        // Forzar cálculo de estilos y esperar 2 frames para garantizar que el motor de render aplique el CSS
+        void document.head.offsetHeight;
+        return new Promise(resolve => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(resolve);
+            });
+        });
     }
 
-    // Primera vez que se carga: inyectar y esperar su carga para evitar FOUC
+    // Desactivar las otras hojas de estilo de vistas antes de inyectar la nueva
+    document.querySelectorAll('link[data-view-css]').forEach(link => {
+        link.disabled = true;
+    });
+
+    // Primera vez que se carga: inyectar y esperar su carga completa para evitar FOUC
     return new Promise((resolve) => {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -156,7 +165,10 @@ function aplicarCssVista(cssPath) {
         const finish = () => {
             if (!resolved) {
                 resolved = true;
-                resolve();
+                void document.head.offsetHeight;
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(resolve);
+                });
             }
         };
 
@@ -166,11 +178,25 @@ function aplicarCssVista(cssPath) {
             finish();
         };
 
-        // Tiempo límite de seguridad para no bloquear jamás la navegación
+        // Tiempo límite de seguridad para no bloquear jamás la navegación (máx 350ms)
         setTimeout(finish, 350);
 
         document.head.appendChild(link);
     });
+}
+
+/**
+ * Sanitiza fragmentos HTML para evitar inyectar doctypes, html o scripts duplicados
+ */
+function limpiarHtmlVista(rawHtml) {
+    if (!rawHtml) return '';
+    return rawHtml
+        .replace(/<!DOCTYPE[^>]*>/gi, '')
+        .replace(/<\/?html[^>]*>/gi, '')
+        .replace(/<head[\s\S]*?<\/head>/gi, '')
+        .replace(/<\/?body[^>]*>/gi, '')
+        .replace(/<link\s+rel=["']stylesheet["'][^>]*>/gi, '')
+        .trim();
 }
 
 // ========================
@@ -281,8 +307,11 @@ async function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_pro
         `;
     }
 
+    // Transición suave: garantizar un mínimo de 180ms para que la animación skeleton fluya sin micro-parpadeos
+    const minDelayPromise = new Promise(resolve => setTimeout(resolve, 180));
+
     try {
-        // 3. Cargar en paralelo: HTML de la vista y CSS correspondiente
+        // 3. Cargar en paralelo: HTML de la vista, CSS y tiempo mínimo de transición
         const htmlPromise = (async () => {
             if (nombreVista === 'inicio') {
                 return _initialDashboardHtml || _vistaHtmlCache.get('inicio') || '';
@@ -299,18 +328,34 @@ async function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_pro
 
         const cssPromise = aplicarCssVista(vista.css);
 
-        // Esperar a que AMBOS (HTML y CSS) estén completamente listos
-        const [html] = await Promise.all([htmlPromise, cssPromise]);
+        // Esperar a que AMBOS (HTML y CSS) y el tiempo mínimo de animación estén completamente listos
+        const [rawHtml] = await Promise.all([htmlPromise, cssPromise, minDelayPromise]);
 
-        // 4. Inyectar el HTML real de forma limpia con animación fade-in
-        content.innerHTML = `<div class="view-fade-in">${html}</div>`;
+        // 4. Limpiar fragmento HTML antes de insertar
+        const cleanHtml = limpiarHtmlVista(rawHtml);
 
-        // 5. Inicializar eventos y controladores de la vista
-        if (typeof inicializarEventos === 'function') inicializarEventos();
+        // 5. Inyectar el HTML real estilizado con animación fade-in
+        content.innerHTML = `<div class="view-fade-in">${cleanHtml}</div>`;
+        content.scrollTop = 0;
+        window.scrollTo({ top: 0, behavior: 'instant' });
 
+        // 6. Inicializar eventos comunes
+        if (typeof inicializarEventos === 'function') {
+            try { inicializarEventos(); } catch (e) { console.warn(e); }
+        }
+
+        // 7. Desacoplar la inicialización pesada del controlador del renderizado del DOM
+        // Permite que el navegador pinte a 60fps sin congelar ("sin pegarse") la interfaz
         requestAnimationFrame(() => {
-            inicializarControladorVista(nombreVista);
-            _vistaCargandoActualmente = null;
+            setTimeout(() => {
+                try {
+                    inicializarControladorVista(nombreVista);
+                } catch (err) {
+                    console.error(`Error al inicializar controlador de vista ${nombreVista}:`, err);
+                } finally {
+                    _vistaCargandoActualmente = null;
+                }
+            }, 8);
         });
 
     } catch (err) {
