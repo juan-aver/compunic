@@ -196,15 +196,44 @@
     text-align: center;
 }
 
-/* Mostrar solo en móvil */
-@media (max-width: 1024px) {
+/* Mostrar en móvil y tablet (hasta 1280px para tablets landscape) */
+@media (max-width: 1280px) {
     .mobile-menu-toggle {
-        display: block;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        width: 42px !important;
+        height: 42px !important;
+        border-radius: 10px !important;
+        background: linear-gradient(135deg, #145D90 0%, #2563eb 100%) !important;
+        box-shadow: 0 4px 12px rgba(20, 93, 144, 0.3) !important;
+        border: none !important;
+        cursor: pointer !important;
+        flex-shrink: 0;
+        z-index: 1001;
     }
 
-    /* Ocultar navegación desktop */
-    nav.desktop-nav {
+    /* Ocultar navegación desktop sobrecargada */
+    .top-nav .nav-menu {
         display: none !important;
+    }
+
+    /* Cabecera compacta y alineada */
+    .top-nav {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 8px 16px !important;
+        min-height: 56px !important;
+        height: auto !important;
+    }
+
+    .top-nav .nav-logo {
+        height: 36px !important;
+        width: auto !important;
     }
 }
 

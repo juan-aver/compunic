@@ -327,32 +327,33 @@
           </ul>
         </li>
       </ul>
-      <div id="topbar-tc-widget" style="display:flex; align-items:center; margin-right:12px;"></div>
-      <div class="user-profile" style="position: relative;">
-        <!-- The theme toggle gets prepended here by JS -->
-        <img src="assets/img/icon user.png" alt="User" class="user-avatar" id="user-avatar-btn" style="cursor: pointer;" onclick="document.getElementById('user-profile-menu').classList.toggle('active')">
-        
-        <!-- Dropdown / Modal Perfil -->
-        <div id="user-profile-menu" class="dropdown-menu glass user-profile-dropdown" style="right: 0; left: auto; padding: 1rem; min-width: 250px;">
-          <div style="text-align: center; margin-bottom: 15px;">
-            <img src="assets/img/icon user.png" alt="User" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid #56A5DD; margin-bottom: 10px;">
-            <div id="user-display" style="font-weight: bold; font-size: 1.1rem; color: var(--text-color);">Usuario: ADMIN</div>
+      <div class="nav-right-actions" style="display: flex; align-items: center; gap: 8px;">
+        <div id="topbar-tc-widget" style="display:flex; align-items:center;"></div>
+        <div class="user-profile" style="position: relative;">
+          <!-- The theme toggle gets prepended here by JS -->
+          <img src="assets/img/icon user.png" alt="User" class="user-avatar" id="user-avatar-btn" style="cursor: pointer;" onclick="document.getElementById('user-profile-menu').classList.toggle('active')">
+          
+          <!-- Dropdown / Modal Perfil -->
+          <div id="user-profile-menu" class="dropdown-menu glass user-profile-dropdown" style="right: 0; left: auto; padding: 1rem; min-width: 250px;">
+            <div style="text-align: center; margin-bottom: 15px;">
+              <img src="assets/img/icon user.png" alt="User" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid #56A5DD; margin-bottom: 10px;">
+              <div id="user-display" style="font-weight: bold; font-size: 1.1rem; color: var(--text-color);">Usuario: ADMIN</div>
+            </div>
+            <hr style="border-top: 1px solid rgba(86, 165, 221, 0.2); margin-bottom: 15px;">
+            <button onclick="AurumTutorial.start(false); document.getElementById('user-profile-menu').classList.remove('active');" class="btn-tutorial" style="width: 100%; margin-left: 0; margin-bottom: 10px; justify-content: center; padding: 10px;">✨ Guía Aurum</button>
+            <button onclick="Auth.logout()" style="width: 100%; background: #d00505; border: none; color: #ffffff; padding: 10px; cursor: pointer; font-weight: bold; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">Cerrar Sesión</button>
           </div>
-          <hr style="border-top: 1px solid rgba(86, 165, 221, 0.2); margin-bottom: 15px;">
-          <button onclick="AurumTutorial.start(false); document.getElementById('user-profile-menu').classList.remove('active');" class="btn-tutorial" style="width: 100%; margin-left: 0; margin-bottom: 10px; justify-content: center; padding: 10px;">✨ Guía Aurum</button>
-          <button onclick="Auth.logout()" style="width: 100%; background: #d00505; border: none; color: #ffffff; padding: 10px; cursor: pointer; font-weight: bold; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">Cerrar Sesión</button>
         </div>
+        <!-- Botón Hamburguesa integrado en la cabecera (visible en tablets y móviles) -->
+        <button class="mobile-menu-toggle" aria-label="Menú">
+          <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
       </div>
     </nav>
-
-    <!-- Mobile Menu -->
-    <button class="mobile-menu-toggle" aria-label="Menú">
-      <div class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </button>
 
     <div class="mobile-menu-backdrop"></div>
 

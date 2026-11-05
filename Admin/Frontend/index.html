@@ -671,57 +671,60 @@
     /* ==========================================
        RESPONSIVE
        ========================================== */
-    @media (max-width: 1024px) {
-      .brand-panel {
-        padding: 3rem;
-      }
-
-      .brand-title {
-        font-size: 2.8rem;
-      }
-    }
-
-    @media (max-width: 768px) {
+    @media (max-width: 1100px) {
       body {
         overflow: auto;
       }
 
       .login-wrapper {
-        flex-direction: column;
-        min-height: 100vh;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        min-height: 100vh !important;
+        padding: 2rem 1rem !important;
       }
 
       .brand-panel {
-        flex: none;
-        padding: 2.5rem 2rem 1.5rem;
-        text-align: center;
-        align-items: center;
+        position: static !important;
+        width: 100% !important;
+        max-width: 480px !important;
+        padding: 1rem 1rem 1.5rem !important;
+        text-align: center !important;
+        align-items: center !important;
       }
 
       .brand-title {
-        font-size: 2.2rem;
+        font-size: 2.2rem !important;
       }
 
       .brand-subtitle {
-        margin-bottom: 1.5rem;
+        font-size: 0.95rem !important;
+        margin-bottom: 1rem !important;
+      }
+
+      .brand-logo {
+        width: 80px !important;
+        margin-bottom: 1rem !important;
       }
 
       .brand-features {
-        display: none;
+        display: none !important;
       }
 
       .brand-panel .circuit-decoration {
-        display: none;
+        display: none !important;
       }
 
       .form-panel {
-        width: 100%;
-        min-width: unset;
-        padding: 1rem 1.5rem 2rem;
+        width: 100% !important;
+        max-width: 480px !important;
+        padding: 0 !important;
       }
 
       .login-card {
-        padding: 2rem;
+        padding: 2rem !important;
+        width: 100% !important;
+        border-radius: 20px !important;
       }
     }
 
