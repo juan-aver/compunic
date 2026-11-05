@@ -8,9 +8,10 @@
  */
 
 // ========================
-// CACHÉ Y ESTADO GLOBAL DE RUTAS
+// CACHÉ Y ESTADO GLOBAL DE RUTAS (ZERO-FOUC ENGINE)
 // ========================
 const _vistaHtmlCache = new Map();
+const _vistaCssCache = new Map();
 let _initialDashboardHtml = null;
 let _vistaCargandoActualmente = null;
 
@@ -22,30 +23,58 @@ document.addEventListener('DOMContentLoaded', () => {
         _vistaHtmlCache.set('inicio', _initialDashboardHtml);
     }
 
-    // Pre-cargar en segundo plano las vistas más frecuentes cuando el navegador esté libre
+    // Pre-cargar en segundo plano vistas y estilos de forma silenciosa
     setTimeout(() => {
-        precargarVistasComunes();
-    }, 2000);
+        precargarVistasYEstilos();
+    }, 600);
 });
 
 /**
- * Pre-calienta en caché de memoria las vistas más consultadas para navegación ultra-rápida
+ * Pre-carga en memoria todos los estilos y plantillas para navegación instantánea (0ms)
  */
-function precargarVistasComunes() {
-    const vistasFrecuentes = [
+function precargarVistasYEstilos() {
+    const hojasCss = [
+        'css/views/G_Productos.css',
+        'css/views/G_ventas.css',
+        'css/views/G_Clientes.css',
+        'css/views/G_Compras.css',
+        'css/views/G_Servicios.css',
+        'css/views/G_Categorias.css',
+        'css/views/G_Lista_Ventas.css',
+        'css/views/G_Lista_Compras.css',
+        'css/views/G_Proveedores.css',
+        'css/views/G_Empleados.css',
+        'css/views/S_Garantias.css',
+        'css/views/G_Devoluciones.css',
+        'css/views/G_Caja.css',
+        'css/views/G_Auditorias.css',
+        'css/views/G_Reportes.css',
+        'css/views/H_Stock.css'
+    ];
+
+    hojasCss.forEach(url => {
+        if (!_vistaCssCache.has(url)) {
+            fetch(url)
+                .then(r => r.ok ? r.text() : '')
+                .then(css => { if (css) _vistaCssCache.set(url, css); })
+                .catch(() => {});
+        }
+    });
+
+    const vistasHtml = [
         'views/G_Productos.html',
         'views/G_ventas.html',
         'views/G_Clientes.html',
-        'views/G_Servicios.html'
+        'views/G_Servicios.html',
+        'views/G_Compras.html',
+        'views/G_Categorias.html'
     ];
 
-    vistasFrecuentes.forEach(url => {
+    vistasHtml.forEach(url => {
         if (!_vistaHtmlCache.has(url)) {
             fetch(url)
-                .then(r => r.ok ? r.text() : null)
-                .then(html => {
-                    if (html) _vistaHtmlCache.set(url, html);
-                })
+                .then(r => r.ok ? r.text() : '')
+                .then(html => { if (html) _vistaHtmlCache.set(url, html); })
                 .catch(() => {});
         }
     });
@@ -122,7 +151,7 @@ function obtenerVistasPermitidasPorRol(role) {
 window.obtenerVistasPermitidasPorRol = obtenerVistasPermitidasPorRol;
 
 // ========================
-// GESTOR DE HOJAS DE ESTILOS Y TRANSICIÓN DE VISTAS (ZERO FOUC)
+// GESTOR DE HOJAS DE ESTILOS SÍNCRONAS Y TRANSICIÓN (ZERO-FOUC TOTAL)
 // ========================
 
 function showTopLoader() {
@@ -145,59 +174,41 @@ function finishTopLoader() {
     }
 }
 
-function aplicarCssVista(cssPath) {
-    if (!cssPath) {
-        document.querySelectorAll('link[data-view-css]').forEach(l => l.disabled = true);
-        return Promise.resolve();
+/**
+ * Obtiene el texto CSS puro (desde caché o fetch)
+ */
+async function obtenerCssVista(cssPath) {
+    if (!cssPath) return '';
+    if (_vistaCssCache.has(cssPath)) {
+        return _vistaCssCache.get(cssPath);
     }
-
-    const existing = document.querySelector(`link[data-view-css="${cssPath}"]`);
-    if (existing) {
-        existing.disabled = false;
-        document.querySelectorAll('link[data-view-css]').forEach(link => {
-            if (link !== existing) {
-                link.disabled = true;
-            }
-        });
-        void document.head.offsetHeight;
-        return new Promise(resolve => {
-            requestAnimationFrame(() => {
-                requestAnimationFrame(resolve);
-            });
-        });
+    try {
+        const res = await fetch(cssPath);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const css = await res.text();
+        _vistaCssCache.set(cssPath, css);
+        return css;
+    } catch (e) {
+        console.warn(`[Router] No se pudo cargar CSS: ${cssPath}`, e);
+        return '';
     }
+}
 
-    // Desactivar hojas de estilo de otras vistas
-    document.querySelectorAll('link[data-view-css]').forEach(link => {
-        link.disabled = true;
-    });
-
-    return new Promise((resolve) => {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = cssPath;
-        link.setAttribute('data-view-css', cssPath);
-
-        let resolved = false;
-        const finish = () => {
-            if (!resolved) {
-                resolved = true;
-                void document.head.offsetHeight;
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(resolve);
-                });
-            }
-        };
-
-        link.onload = finish;
-        link.onerror = () => {
-            console.warn(`[Router] No se pudo cargar: ${cssPath}`);
-            finish();
-        };
-
-        setTimeout(finish, 350);
-        document.head.appendChild(link);
-    });
+/**
+ * Obtiene el HTML de la vista (desde caché o fetch)
+ */
+async function obtenerHtmlVista(htmlPath, nombreVista) {
+    if (nombreVista === 'inicio') {
+        return _initialDashboardHtml || _vistaHtmlCache.get('inicio') || '';
+    }
+    if (_vistaHtmlCache.has(htmlPath)) {
+        return _vistaHtmlCache.get(htmlPath);
+    }
+    const res = await fetch(htmlPath);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: No se pudo cargar ${htmlPath}`);
+    const html = await res.text();
+    _vistaHtmlCache.set(htmlPath, html);
+    return html;
 }
 
 /**
@@ -250,7 +261,7 @@ function actualizarNavActivo(nombreVista) {
 }
 
 // ========================
-// ENRUTADOR PRINCIPAL (ZERO-FOUC & TRANSICIÓN NATIVA)
+// ENRUTADOR PRINCIPAL (ZERO-FOUC SÍNCRONO)
 // ========================
 async function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_proveedores = false, Lista_de_usuario = false) {
     const currentRole = (typeof Auth !== 'undefined' && typeof Auth.getRole === 'function') ? Auth.getRole() : 'admin';
@@ -306,54 +317,37 @@ async function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_pro
     // 1. Resaltar menú de navegación de inmediato
     actualizarNavActivo(nombreVista);
 
-    // 2. Activar barra superior de carga y atenuar suavemente la vista actual
+    // 2. Activar barra superior de progreso (NO vaciar #content aún: la pantalla actual permanece en su sitio)
     showTopLoader();
-    if (content.children.length > 0) {
-        content.style.opacity = '0.65';
-        content.style.transition = 'opacity 0.15s ease';
-    }
 
     try {
-        // 3. Cargar en paralelo: HTML y CSS de la nueva vista
-        const htmlPromise = (async () => {
-            if (nombreVista === 'inicio') {
-                return _initialDashboardHtml || _vistaHtmlCache.get('inicio') || '';
-            }
-            if (_vistaHtmlCache.has(vista.html)) {
-                return _vistaHtmlCache.get(vista.html);
-            }
-            const res = await fetch(vista.html);
-            if (!res.ok) throw new Error(`HTTP ${res.status}: No se pudo cargar ${vista.html}`);
-            const html = await res.text();
-            _vistaHtmlCache.set(vista.html, html);
-            return html;
-        })();
+        // 3. Descargar o recuperar simultáneamente el CSS y el HTML de la vista
+        const [cssText, rawHtml] = await Promise.all([
+            obtenerCssVista(vista.css),
+            obtenerHtmlVista(vista.html, nombreVista)
+        ]);
 
-        const cssPromise = aplicarCssVista(vista.css);
+        // 4. PASO CRÍTICO ANTI-FOUC:
+        // APLICAR LOS ESTILOS EN UN TAG <style> DE FORMA SÍNCRONA ANTES DE INSERTAR EL HTML
+        let styleTag = document.getElementById('current-view-style');
+        if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = 'current-view-style';
+            document.head.appendChild(styleTag);
+        }
+        // Inyectar el CSS de inmediato en el CSSOM
+        styleTag.textContent = cssText || '';
 
-        // Esperar a que HTML y CSS estén 100% listos
-        const [rawHtml] = await Promise.all([htmlPromise, cssPromise]);
-
-        // 4. Limpiar fragmento HTML
+        // 5. Limpiar y sanitizar el fragmento HTML
         const cleanHtml = limpiarHtmlVista(rawHtml);
 
-        // 5. Inyectar con opacidad 0 (ANTI-FOUC: Cero contenido sin estilo visible)
-        content.innerHTML = `<div class="view-transition-wrapper" id="active-view-wrapper">${cleanHtml}</div>`;
+        // 6. INYECTAR EL HTML DIRECTAMENTE ESTILIZADO
+        // Las reglas CSS ya existen en styleTag; el navegador parsea los elementos ya vestidos.
+        content.innerHTML = `<div class="view-fade-in">${cleanHtml}</div>`;
         content.scrollTop = 0;
         window.scrollTo({ top: 0, behavior: 'instant' });
 
-        // Forzar cálculo de estilos en el DOM antes de mostrarlo
-        const wrapper = document.getElementById('active-view-wrapper');
-        if (wrapper) void wrapper.offsetHeight;
-
-        // 6. Revelar suavemente con estilos ya aplicados y finalizar barra de progreso
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                if (wrapper) wrapper.classList.add('is-visible');
-                content.style.opacity = '1';
-                finishTopLoader();
-            });
-        });
+        finishTopLoader();
 
         // 7. Eventos comunes
         if (typeof inicializarEventos === 'function') {
@@ -370,12 +364,11 @@ async function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_pro
                 } finally {
                     _vistaCargandoActualmente = null;
                 }
-            }, 10);
+            }, 8);
         });
 
     } catch (err) {
         finishTopLoader();
-        content.style.opacity = '1';
         _vistaCargandoActualmente = null;
         console.error('Error al cargar la vista:', err);
         content.innerHTML = `
