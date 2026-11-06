@@ -204,8 +204,29 @@ movimientosStockModel.sincronizarSiEstaVacio();
     }
 })();
 
+// Auto-verificar y crear tabla CLIENTES_RESET_TOKENS para la tienda web
+(async () => {
+    try {
+        const pool = require('./config/db');
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS CLIENTES_RESET_TOKENS (
+                ID INT PRIMARY KEY AUTO_INCREMENT,
+                ID_CLIENTE INT NOT NULL,
+                TOKEN VARCHAR(255) NOT NULL UNIQUE,
+                EXPIRA_EN DATETIME NOT NULL,
+                USADO TINYINT DEFAULT 0,
+                CREADO_EN DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_token (TOKEN),
+                INDEX idx_expira (EXPIRA_EN)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+        console.log('✅ Auto-migración: Tabla CLIENTES_RESET_TOKENS verificada/creada.');
+    } catch (err) {
+        console.error('⚠️ Auto-migración CLIENTES_RESET_TOKENS:', err.message);
+    }
+})();
+
 // 3. Inicializar AURUM (Gemini IA)
 aurumService.inicializarGemini();
-
 
 module.exports = app;
