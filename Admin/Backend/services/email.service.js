@@ -781,8 +781,82 @@ async function sendPagoRechazadoEmail(email, nombreCliente, numeroFactura, motiv
     }
 }
 
+
+/**
+ * Enviar correo de recuperación de contraseña para la Tienda Web (Clientes)
+ * @param {string} email - Correo del destinatario
+ * @param {string} token - Token de recuperación
+ * @param {string} nombreCliente - Nombre del cliente
+ * @param {string} [clientOrigin] - Origen del cliente web (ej: https://compunic.netlify.app)
+ */
+async function sendStorePasswordResetEmail(email, token, nombreCliente, clientOrigin) {
+    const baseUrl = getFrontendUrl(clientOrigin);
+    const resetUrl = `${baseUrl}/Store/views/reset-password.html?token=${token}`;
+
+    const mailOptions = {
+        from: `"COMPUNIC Tienda Web" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: '🔐 Restablece tu contraseña - COMPUNIC Tienda Web',
+        html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <style>
+                    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #1e293b; background-color: #0f172a; margin: 0; padding: 20px; }
+                    .wrapper { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+                    .header { background: linear-gradient(135deg, #145D90 0%, #56A5DD 100%); color: #ffffff; padding: 32px 24px; text-align: center; }
+                    .header h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+                    .content { padding: 32px 28px; background: #ffffff; }
+                    .content p { font-size: 15px; color: #334155; margin-bottom: 16px; }
+                    .btn-box { text-align: center; margin: 30px 0; }
+                    .btn { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #145D90 0%, #56A5DD 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(20, 93, 144, 0.35); }
+                    .warning { background: #f0f9ff; border-left: 4px solid #56A5DD; padding: 14px 16px; margin: 24px 0; border-radius: 0 8px 8px 0; font-size: 14px; color: #0369a1; }
+                    .link-alt { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; font-size: 12px; color: #64748b; word-break: break-all; margin-top: 10px; }
+                    .footer { text-align: center; padding: 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; }
+                </style>
+            </head>
+            <body>
+                <div class="wrapper">
+                    <div class="header">
+                        <h1>⚡ COMPUNIC Tienda Web</h1>
+                    </div>
+                    <div class="content">
+                        <p>Hola <strong>${nombreCliente || 'Estimado(a) Cliente'}</strong>,</p>
+                        <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en nuestra tienda online.</p>
+                        
+                        <div class="btn-box">
+                            <a href="${resetUrl}" class="btn">Restablecer mi Contraseña</a>
+                        </div>
+
+                        <div class="warning">
+                            <strong>⏰ Importante:</strong> Este enlace expirará en <strong>1 hora</strong> por tu seguridad. Si no solicitaste este cambio, puedes ignorar este mensaje; tu contraseña seguirá siendo la misma.
+                        </div>
+
+                        <p style="font-size: 13px; color: #64748b;">Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:</p>
+                        <div class="link-alt">${resetUrl}</div>
+                    </div>
+                    <div class="footer">
+                        <p>© ${new Date().getFullYear()} COMPUNIC — Todos los derechos reservados.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error('❌ Error enviando email de recuperación tienda:', error);
+        throw error;
+    }
+}
+
 module.exports = {
     sendPasswordResetEmail,
+    sendStorePasswordResetEmail,
     verifyEmailService,
     sendAccountLockoutEmail,
     sendInvoiceEmail,

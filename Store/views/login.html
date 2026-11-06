@@ -114,7 +114,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
         }
         .btn-primary:hover {
             box-shadow: var(--shadow-colored);
@@ -124,7 +124,7 @@
             margin-top: 1.5rem;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             font-size: 0.9rem;
         }
         .links a {
@@ -132,6 +132,10 @@
             text-decoration: none;
             font-weight: 500;
             transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .links a:hover { color: var(--primary-light); }
 
@@ -146,7 +150,7 @@
         }
     
         @media (max-width: 480px) {
-            .login-card, .register-card {
+            .login-card {
                 padding: 2rem 1.25rem;
                 border-radius: 14px;
             }
@@ -169,40 +173,51 @@
 
     <div class="main-container">
         <div class="login-card">
-        <div class="login-header">
-            <div class="icon"><i class="fas fa-bolt"></i></div>
-            <h2>Bienvenido a COMPUNIC</h2>
-            <p>Inicia sesión en tu cuenta web</p>
-        </div>
-
-        <form id="loginForm">
-            <div class="form-group">
-                <label>Correo Electrónico</label>
-                <div class="input-wrapper">
-                    <i class="fas fa-envelope input-icon"></i>
-                    <input type="email" id="email" required placeholder="tu@correo.com">
-                </div>
+            <div class="login-header">
+                <div class="icon"><i class="fas fa-bolt"></i></div>
+                <h2>Bienvenido a COMPUNIC</h2>
+                <p>Inicia sesión en tu cuenta web</p>
             </div>
 
-            <div class="form-group">
-                <label>Contraseña</label>
-                <div class="input-wrapper">
-                    <i class="fas fa-lock input-icon"></i>
-                    <input type="password" id="password" required placeholder="••••••••">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="email" required placeholder="tu@correo.com">
+                    </div>
                 </div>
+
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="password" required placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; margin-top: -0.5rem; margin-bottom: 1.25rem;">
+                    <a href="forgot-password.html" style="font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 500;">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+
+                <div class="error-message" id="errorMsg"></div>
+
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </button>
+            </form>
+
+            <div class="links">
+                <a href="forgot-password.html">
+                    <i class="fas fa-key"></i> ¿Olvidaste tu contraseña? Recuperar aquí
+                </a>
+                <a href="register.html">
+                    <i class="fas fa-user-plus"></i> ¿No tienes cuenta? Regístrate aquí
+                </a>
             </div>
-
-            <div class="error-message" id="errorMsg"></div>
-
-            <button type="submit" class="btn-primary">
-                <i class="fas fa-sign-in-alt"></i> Entrar
-            </button>
-        </form>
-
-        <div class="links">
-            <a href="register.html">¿No tienes cuenta? Regístrate aquí</a>
         </div>
-    </div>
     </div>
 
     <script src="../public/js/store-auth.js"></script>
@@ -222,7 +237,7 @@
             if (success) {
                 window.location.href = 'index.html';
             } else {
-                errorMsg.textContent = 'Credenciales inválidas. Por favor, intenta de nuevo.';
+                errorMsg.textContent = 'Credenciales inválidas. Por favor, verifica tu correo y contraseña.';
                 errorMsg.style.display = 'block';
                 btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
                 btn.disabled = false;

@@ -77,6 +77,50 @@ const StoreAuth = {
         }
     },
 
+    // Solicitar recuperación de contraseña
+    forgotPassword: async (email) => {
+        try {
+            const res = await fetch(`${StoreAuth.API_URL}/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            return data;
+        } catch (error) {
+            console.error('Error in forgotPassword:', error);
+            return { success: false, message: 'No se pudo conectar con el servidor. Revisa tu conexión.' };
+        }
+    },
+
+    // Verificar si un token de reseteo es válido
+    verifyResetToken: async (token) => {
+        try {
+            const res = await fetch(`${StoreAuth.API_URL}/verify-reset-token?token=${encodeURIComponent(token)}`);
+            const data = await res.json();
+            return data;
+        } catch (error) {
+            console.error('Error in verifyResetToken:', error);
+            return { success: false, message: 'Error al verificar enlace de recuperación.' };
+        }
+    },
+
+    // Guardar nueva contraseña con token
+    resetPassword: async (token, newPassword) => {
+        try {
+            const res = await fetch(`${StoreAuth.API_URL}/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, newPassword })
+            });
+            const data = await res.json();
+            return data;
+        } catch (error) {
+            console.error('Error in resetPassword:', error);
+            return { success: false, message: 'No se pudo actualizar la contraseña. Intenta nuevamente.' };
+        }
+    },
+
     // Cerrar Sesión
     logout: () => {
         safeRemoveItem('compunic_store_token');
