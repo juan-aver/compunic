@@ -17,25 +17,27 @@
       <form id="formularioProducto">
 
         <div style="margin-bottom: 15px;">
-          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Identificación del Producto:</label>
-          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <div style="flex: 0.25; min-width: 60px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 6px;">Identificación del Producto:</label>
+          <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <div style="width: 80px; flex-shrink: 0;">
               <label style="font-size: 0.8em; color: #666;">ID (Auto)</label>
               <input id="id_producto" type="text" placeholder="#" readonly
                 style="width: 100%; background-color: #e9ecef; cursor: not-allowed;" />
             </div>
-            <div style="flex: 1.2; min-width: 180px;">
+            <div style="flex: 1;">
               <label style="font-size: 0.8em; color: #666;">Nombre del Producto <span style="color:red;">*</span></label>
               <div class="input-with-icon">
                 <span class="input-icon">📦</span>
                 <input id="nombre_producto" type="text" placeholder="Ej: Laptop HP Pavilion" required />
               </div>
             </div>
-            <div style="flex: 0.8; min-width: 120px;">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
               <label style="font-size: 0.8em; color: #666;">Modelo</label>
               <input id="modelo" type="text" placeholder="Ej: V3400" style="width: 100%;" />
             </div>
-            <div style="flex: 0.9; min-width: 150px;">
+            <div>
               <label style="font-size: 0.8em; color: #666;">Código de Barras</label>
               <div class="input-with-icon">
                 <span class="input-icon"><i class="fas fa-barcode"></i></span>

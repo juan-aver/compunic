@@ -343,7 +343,7 @@ async function cargarVista(nombreVista, Lista_de_productos = false, Lista_de_pro
 
         // 6. INYECTAR EL HTML DIRECTAMENTE ESTILIZADO
         // Las reglas CSS ya existen en styleTag; el navegador parsea los elementos ya vestidos.
-        content.innerHTML = `<div class="view-fade-in">${cleanHtml}</div>`;
+        content.innerHTML = cleanHtml;
         content.scrollTop = 0;
         window.scrollTo({ top: 0, behavior: 'instant' });
 
