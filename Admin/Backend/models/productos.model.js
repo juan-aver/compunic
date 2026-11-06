@@ -10,6 +10,7 @@ const Producto = {
           p.ID_PRODUCTO,
           p.NOMBRE_PRODUCTO AS NOMBRE,
           p.MODELO,
+          p.CODIGO_BARRA,
           p.DESCRIPCION,
           p.IMAGEN_URL,
           COALESCE(p.ACTIVO, 1) AS ACTIVO,
@@ -50,7 +51,7 @@ const Producto = {
           LEFT JOIN PRODUCTO_CATEGORIA pc ON p.ID_PRODUCTO = pc.ID_PRODUCTO
           LEFT JOIN CATEGORIAS c ON pc.ID_CATEGORIA = c.ID_CATEGORIA
           GROUP BY 
-          p.ID_PRODUCTO, p.NOMBRE_PRODUCTO, p.MODELO, p.DESCRIPCION, p.PRECIO_COMPRA, p.PRECIO_VENTA, m.NOMBRE_MARCA, pv.NOMBRE_EMPRESA, g.DURACION_MESES, gt.TIPO, p.ACTIVO
+          p.ID_PRODUCTO, p.NOMBRE_PRODUCTO, p.MODELO, p.CODIGO_BARRA, p.DESCRIPCION, p.PRECIO_COMPRA, p.PRECIO_VENTA, m.NOMBRE_MARCA, pv.NOMBRE_EMPRESA, g.DURACION_MESES, gt.TIPO, p.ACTIVO
             ORDER BY 
             p.ID_PRODUCTO DESC;
       `;
@@ -134,12 +135,21 @@ const Producto = {
   // El resto de las funciones agregar, actualizar y eliminar (que usan el ID_ADMINISTRADOR)
   // deben ser revisadas para reflejar las columnas reales de PRODUCTOS
   // ID_ADMINISTRADOR, ID_GARANTIAS, ID_PROVEEDOR
-  agregar: async (datos) => {
+    agregar: async (datos) => {
     // datos puede ser con o sin ID_PRODUCTO al inicio
-    // Si la primera posición es un ID explícito, insertamos incluyendo la columna ID_PRODUCTO
+    // Con CODIGO_BARRA: 12 con ID, 11 sin ID
+    // Sin CODIGO_BARRA (compatibilidad legacy): 11 con ID, 10 sin ID
     try {
       let result;
-      if (datos.length === 11) {
+      if (datos.length === 12) {
+        // [id_producto, nombre, modelo, codigo_barra, descripcion, imagen_url, precio_compra, precio_venta, id_marca, id_empleado, id_garantias, id_proveedor]
+        const sqlWithId = `INSERT INTO PRODUCTOS (ID_PRODUCTO, NOMBRE_PRODUCTO, MODELO, CODIGO_BARRA, DESCRIPCION, IMAGEN_URL, PRECIO_COMPRA, PRECIO_VENTA, ID_MARCA, ID_EMPLEADO, ID_GARANTIAS, ID_PROVEEDOR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        [result] = await db.query(sqlWithId, datos);
+      } else if (datos.length === 11 && typeof datos[0] === 'string') {
+        // [nombre, modelo, codigo_barra, descripcion, imagen_url, precio_compra, precio_venta, id_marca, id_empleado, id_garantias, id_proveedor]
+        const sql = `INSERT INTO PRODUCTOS (NOMBRE_PRODUCTO, MODELO, CODIGO_BARRA, DESCRIPCION, IMAGEN_URL, PRECIO_COMPRA, PRECIO_VENTA, ID_MARCA, ID_EMPLEADO, ID_GARANTIAS, ID_PROVEEDOR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        [result] = await db.query(sql, datos);
+      } else if (datos.length === 11) {
         // [id_producto, nombre, modelo, descripcion, imagen_url, precio_compra, precio_venta, id_marca, id_empleado, id_garantias, id_proveedor]
         const sqlWithId = `INSERT INTO PRODUCTOS (ID_PRODUCTO, NOMBRE_PRODUCTO, MODELO, DESCRIPCION, IMAGEN_URL, PRECIO_COMPRA, PRECIO_VENTA, ID_MARCA, ID_EMPLEADO, ID_GARANTIAS, ID_PROVEEDOR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         [result] = await db.query(sqlWithId, datos);
@@ -154,12 +164,23 @@ const Producto = {
     }
   },
 
-  actualizar: async (datos) => {
-    const sql = `
-      UPDATE PRODUCTOS 
-      SET NOMBRE_PRODUCTO = ?, MODELO = ?, DESCRIPCION = ?, IMAGEN_URL = ?, PRECIO_COMPRA = ?, PRECIO_VENTA = ?, ID_MARCA = ?, ID_EMPLEADO = ?, ID_GARANTIAS = ?, ID_PROVEEDOR = ?
-      WHERE ID_PRODUCTO = ?
-    `;
+    actualizar: async (datos) => {
+    // Si datos tiene 12 elementos: [nombre, modelo, codigo_barra, descripcion, imagen_url, precio_compra, precio_venta, id_marca, id_empleado, id_garantias, id_proveedor, id]
+    // Si datos tiene 11 elementos (legacy): [nombre, modelo, descripcion, imagen_url, precio_compra, precio_venta, id_marca, id_empleado, id_garantias, id_proveedor, id]
+    let sql;
+    if (datos.length === 12) {
+      sql = `
+        UPDATE PRODUCTOS 
+        SET NOMBRE_PRODUCTO = ?, MODELO = ?, CODIGO_BARRA = ?, DESCRIPCION = ?, IMAGEN_URL = ?, PRECIO_COMPRA = ?, PRECIO_VENTA = ?, ID_MARCA = ?, ID_EMPLEADO = ?, ID_GARANTIAS = ?, ID_PROVEEDOR = ?
+        WHERE ID_PRODUCTO = ?
+      `;
+    } else {
+      sql = `
+        UPDATE PRODUCTOS 
+        SET NOMBRE_PRODUCTO = ?, MODELO = ?, DESCRIPCION = ?, IMAGEN_URL = ?, PRECIO_COMPRA = ?, PRECIO_VENTA = ?, ID_MARCA = ?, ID_EMPLEADO = ?, ID_GARANTIAS = ?, ID_PROVEEDOR = ?
+        WHERE ID_PRODUCTO = ?
+      `;
+    }
     try {
       const [result] = await db.query(sql, datos);
       return result;

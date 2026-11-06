@@ -198,7 +198,11 @@ function renderGridHTML(productos) {
         if (qtyInCart > 0) {
             card.classList.add('in-cart');
         }
-        card.dataset.searchText = nombre.toLowerCase();
+        const modelo = p.MODELO ?? p.modelo ?? '';
+        const codigoBarra = p.CODIGO_BARRA ?? p.codigo_barra ?? '';
+        card.dataset.searchText = `${nombre} ${modelo} ${codigoBarra}`.toLowerCase();
+        card.dataset.idProducto = idProducto;
+        card.dataset.codigoBarra = (codigoBarra || '').toLowerCase();
         const imgPath = imagenUrl && imagenUrl.startsWith('http') ? imagenUrl : `${SERVER_URL}/${imagenUrl}`;
         
         let badgeHtml = '';
@@ -225,6 +229,7 @@ function renderGridHTML(productos) {
             }
             <div class="pos-card-body">
                 <p class="pos-card-name" title="${nombre}">${nombre}</p>
+                ${codigoBarra ? `<span class="pos-card-barcode" style="font-size:0.72rem; color:#64748b; font-family:monospace; display:block; margin-top:-2px; margin-bottom:4px;"><i class="fas fa-barcode"></i> ${codigoBarra}</span>` : ''}
                 <span class="pos-card-price">C$${precioVenta.toFixed(2)} <small style="font-size:0.75rem; color:#0284c7; font-weight:700;">($${precioUSD})</small></span>
                 <span class="pos-card-stock ${stock === 0 ? 'stock-zero' : ''}"><i class="fas fa-cube"></i> ${stock}</span>
             </div>
@@ -345,13 +350,103 @@ function initVentasPOSSearch() {
     const searchInput = document.getElementById('ventas-pos-search');
     if (!searchInput) return;
 
-    searchInput.addEventListener('input', function () {
-        const query = this.value.toLowerCase().trim();
+    if (searchInput._hasSearchListener) return;
+    searchInput._hasSearchListener = true;
+
+    const filtrarCards = (query) => {
         const cards = document.querySelectorAll('.ventas-pos-product-card');
         cards.forEach(card => {
             const match = !query || (card.dataset.searchText && card.dataset.searchText.includes(query));
             card.style.display = match ? '' : 'none';
         });
+    };
+
+    searchInput.addEventListener('input', function () {
+        filtrarCards(this.value.toLowerCase().trim());
+    });
+
+    // Soporte para lectores de código de barras (envían Enter al finalizar lectura)
+    searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = this.value.trim().toLowerCase();
+            if (!query) return;
+
+            // 1. Búsqueda por código de barras exacto
+            let productoMatch = (window._ventasPOSProductos || []).find(p => {
+                const cb = (p.codigo_barra ?? p.CODIGO_BARRA ?? '').toString().trim().toLowerCase();
+                return cb && cb === query;
+            });
+
+            // 2. Si no hay coincidencia exacta de código, buscar por ID o Modelo exacto
+            if (!productoMatch) {
+                productoMatch = (window._ventasPOSProductos || []).find(p => {
+                    const id = (p.id_producto ?? p.ID_PRODUCTO ?? '').toString();
+                    const mod = (p.modelo ?? p.MODELO ?? '').toString().trim().toLowerCase();
+                    return id === query || (mod && mod === query);
+                });
+            }
+
+            // 3. Si no hay coincidencia directa, verificar si solo queda 1 tarjeta visible
+            if (!productoMatch) {
+                const visibleCards = Array.from(document.querySelectorAll('.ventas-pos-product-card')).filter(c => c.style.display !== 'none');
+                if (visibleCards.length === 1) {
+                    const matchedId = visibleCards[0].dataset.idProducto;
+                    productoMatch = (window._ventasPOSProductos || []).find(p => (p.id_producto ?? p.ID_PRODUCTO) == matchedId);
+                }
+            }
+
+            if (productoMatch) {
+                const stock = Number(productoMatch.stock ?? productoMatch.STOCK ?? 0) || 0;
+                if (stock <= 0) {
+                    Swal.fire({ icon: 'warning', title: 'Agotado', text: `El producto "${productoMatch.nombre || productoMatch.NOMBRE_PRODUCTO}" no tiene stock disponible.` });
+                    return;
+                }
+
+                // Agregar al carrito POS
+                agregarDesdeCardVenta({
+                    id_producto: productoMatch.id_producto ?? productoMatch.ID_PRODUCTO,
+                    nombre: productoMatch.nombre ?? productoMatch.NOMBRE_PRODUCTO,
+                    precio_unitario: parseFloat(productoMatch.precio_venta ?? productoMatch.PRECIO_VENTA ?? 0),
+                    descuento: 0,
+                    imagen_url: productoMatch.imagen_url || productoMatch.IMAGEN_URL || '',
+                    garantia_desc: productoMatch.garantia_desc ?? productoMatch.GARANTIA_DESC ?? '',
+                    garantia_id: productoMatch.id_garantia_tipo ?? productoMatch.ID_GARANTIA_TIPO ?? '',
+                    stock: stock
+                });
+
+                // Limpiar buscador y restaurar visualización para el siguiente escaneo
+                this.value = '';
+                filtrarCards('');
+
+                // Sonido sutil sintético de escaneo POS (Web Audio API)
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                } catch (_) {}
+
+                if (typeof Alerta !== 'undefined' && Alerta.notificacionCorta) {
+                    Alerta.notificacionCorta(`✓ Agregado: ${productoMatch.nombre || productoMatch.NOMBRE_PRODUCTO}`);
+                }
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Producto no encontrado',
+                    text: `No se encontró ningún producto con el código o término: "${query}".`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        }
     });
 }
 

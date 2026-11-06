@@ -123,6 +123,7 @@ const productosController = {
           id_producto: r.ID_PRODUCTO ?? r.id_producto ?? r.ID ?? null,
           nombre: r.NOMBRE ?? r.NOMBRE_PRODUCTO ?? r.nombre ?? '',
           modelo: r.MODELO ?? r.modelo ?? '',
+          codigo_barra: r.CODIGO_BARRA ?? r.codigo_barra ?? null,
           descripcion: r.DESCRIPCION ?? r.descripcion ?? '',
           imagen_url: r.IMAGEN_URL ?? r.imagen_url ?? null,
           activo: r.ACTIVO !== undefined ? Number(r.ACTIVO) : 1,
@@ -135,6 +136,7 @@ const productosController = {
           garantia_proveedor: r.GARANTIA_PROVEEDOR ?? r.garantia_proveedor ?? 0,
           stock: stockNum,
           _raw: {
+            CODIGO_BARRA: r.CODIGO_BARRA ?? r.codigo_barra ?? null,
             ID_MARCA: r.ID_MARCA ?? null,
             ID_PROVEEDOR: r.ID_PROVEEDOR ?? null,
             ID_GARANTIAS: r.ID_GARANTIAS ?? null,
@@ -150,7 +152,7 @@ const productosController = {
   },
 
   crear: async (req, res) => {
-    const { nombre, modelo, descripcion, id_marca, id_empleado, id_garantias, id_proveedor, id_categoria } = req.body;
+    const { nombre, modelo, codigo_barra, descripcion, id_marca, id_empleado, id_garantias, id_proveedor, id_categoria } = req.body;
 
     let imagenUrl = null;
     try {
@@ -170,8 +172,9 @@ const productosController = {
       const cleanGarantias = parseFK(id_garantias);
       const cleanProveedor = parseFK(id_proveedor);
       const cleanCategoria = parseFK(id_categoria);
+      const cleanCodigoBarra = (codigo_barra && String(codigo_barra).trim()) ? String(codigo_barra).trim() : null;
 
-      const datosBase = [nombre, modelo, descripcion, imagenUrl, 0, 0, cleanMarca, adminId, cleanGarantias, cleanProveedor];
+      const datosBase = [nombre, modelo, cleanCodigoBarra, descripcion, imagenUrl, 0, 0, cleanMarca, adminId, cleanGarantias, cleanProveedor];
 
       if (explicitId) {
         await Producto.agregar([explicitId, ...datosBase]);
@@ -202,7 +205,7 @@ const productosController = {
 
   actualizar: async (req, res) => {
     const { id } = req.params;
-    const { nombre, modelo, descripcion, precio_compra, precio_venta, id_marca, id_empleado, id_garantias, id_proveedor, id_categoria, stock, activo } = req.body;
+    const { nombre, modelo, codigo_barra, descripcion, precio_compra, precio_venta, id_marca, id_empleado, id_garantias, id_proveedor, id_categoria, stock, activo } = req.body;
 
     try {
       // ⭐ Caso especial: solo se pide dar de baja (activo: 0)
@@ -248,11 +251,12 @@ const productosController = {
       const cleanGarantias = parseFK(id_garantias);
       const cleanProveedor = parseFK(id_proveedor);
       const cleanCategoria = parseFK(id_categoria);
+      const cleanCodigoBarra = (codigo_barra !== undefined) ? ((codigo_barra && String(codigo_barra).trim()) ? String(codigo_barra).trim() : null) : null;
       
       const cleanPrecioCompra = (precio_compra !== undefined && precio_compra !== '') ? parseFloat(precio_compra) : 0;
       const cleanPrecioVenta = (precio_venta !== undefined && precio_venta !== '') ? parseFloat(precio_venta) : 0;
 
-      await Producto.actualizar([nombre, modelo, descripcion, imagenUrl, cleanPrecioCompra, cleanPrecioVenta, cleanMarca, adminId, cleanGarantias, cleanProveedor, id]);
+      await Producto.actualizar([nombre, modelo, cleanCodigoBarra, descripcion, imagenUrl, cleanPrecioCompra, cleanPrecioVenta, cleanMarca, adminId, cleanGarantias, cleanProveedor, id]);
 
       await db.query('DELETE FROM PRODUCTO_CATEGORIA WHERE ID_PRODUCTO = ?', [id]);
       if (cleanCategoria) {

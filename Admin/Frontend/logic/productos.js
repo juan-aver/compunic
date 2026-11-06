@@ -38,6 +38,7 @@ function mostrarDetalleProducto(producto) {
     const p = {
         nombre: producto.nombre || producto.NOMBRE || producto.NOMBRE_PRODUCTO || 'N/A',
         modelo: producto.modelo || producto.MODELO || 'N/A',
+        codigo_barra: producto.codigo_barra || producto.CODIGO_BARRA || null,
         descripcion: producto.descripcion || producto.DESCRIPCION || 'Sin descripción',
         categoria: producto.nombre_categoria || producto.NOMBRE_CATEGORIA || producto.CATEGORIA || 'N/A',
         marca: producto.nombre_marca || producto.NOMBRE_MARCA || producto.MARCA || 'N/A',
@@ -292,7 +293,8 @@ function renderProductCards(paginatedData) {
         const card = document.createElement('div');
         card.className = 'product-card' + (activo === 0 ? ' product-card-baja' : '');
         card.style.animationDelay = `${Math.min(index * 0.03, 0.3)}s`;
-        card.dataset.searchText = `${nombre} ${modelo} ${categoria} ${marca}`.toLowerCase();
+        const codigoBarra = producto.codigo_barra || producto.CODIGO_BARRA || '';
+        card.dataset.searchText = `${nombre} ${modelo} ${categoria} ${marca} ${codigoBarra}`.toLowerCase();
 
         card.innerHTML = `
             <div class="card-badges">${badges}</div>
@@ -300,6 +302,7 @@ function renderProductCards(paginatedData) {
             <div class="card-body">
                 <h4 title="${nombre}">${nombre}</h4>
                 <div class="card-subtitle">${subtitle}</div>
+                ${codigoBarra ? `<div class="card-barcode" style="font-size: 0.73rem; color: #64748b; font-family: monospace; display: flex; align-items: center; gap: 4px; margin-top: 2px;"><i class="fas fa-barcode"></i> ${codigoBarra}</div>` : ''}
                 <div class="card-info">
                     <span class="card-price">${activo === 0 ? '<s>C$' + precioVenta.toFixed(2) + '</s>' : 'C$' + precioVenta.toFixed(2)}</span>
                     <span class="${stockClass}"><i class="fas fa-cube"></i> ${stock}</span>
@@ -390,6 +393,7 @@ function renderProductTable(paginatedData) {
             <td title="${nombre}">
                 <div style="font-weight: 600; color: inherit;">${nombre}</div>
                 ${badgesHtml ? `<div style="margin-top: 3px; display: flex; gap: 4px; flex-wrap: wrap;">${badgesHtml}</div>` : ''}
+                ${producto.codigo_barra ? `<div style="font-size: 0.73rem; color: #64748b; font-family: monospace; margin-top: 2px;"><i class="fas fa-barcode"></i> ${producto.codigo_barra}</div>` : ''}
             </td>
             <td>${modelo}</td>
             <td style="text-align: center;">
@@ -501,6 +505,22 @@ function initCardSearch() {
 
     input.addEventListener('keyup', handleSearch);
     input.addEventListener('input', handleSearch);
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const val = this.value.trim().toLowerCase();
+            if (!val) return;
+            const match = (window._allProductos || []).find(p => {
+                const cb = (p.codigo_barra ?? p.CODIGO_BARRA ?? '').toString().trim().toLowerCase();
+                return cb && cb === val;
+            });
+            if (match) {
+                window._filteredProductos = [match];
+                window._productosCurrentPage = 1;
+                renderProductosPaginated();
+            }
+        }
+    });
 }
 window.initCardSearch = initCardSearch;
 
@@ -563,6 +583,7 @@ function abrirModalProducto(producto) {
             delete form.dataset.idSelected;
         }
         document.getElementById('id_producto').value = '';
+        if (document.getElementById('codigo_barra')) document.getElementById('codigo_barra').value = '';
         const previewContainer = document.getElementById('preview_imagen_container');
         if (previewContainer) previewContainer.style.display = 'none';
         if (btnAgregar) {
@@ -602,6 +623,7 @@ function cargarFormularioProducto(p) {
     }
     document.getElementById('nombre_producto').value = p.nombre ?? p.NOMBRE ?? p.NOMBRE_PRODUCTO ?? '';
     document.getElementById('modelo').value = p.modelo ?? p.MODELO ?? '';
+    if (document.getElementById('codigo_barra')) document.getElementById('codigo_barra').value = p.codigo_barra ?? p.CODIGO_BARRA ?? '';
     if (document.getElementById('descripcion')) document.getElementById('descripcion').value = p.descripcion ?? p.DESCRIPCION ?? '';
 
     // Selects
@@ -672,6 +694,7 @@ function modificarProducto() {
     const formData = new FormData();
     formData.append('nombre', document.getElementById('nombre_producto').value);
     formData.append('modelo', document.getElementById('modelo')?.value || '');
+    formData.append('codigo_barra', document.getElementById('codigo_barra')?.value.trim() || '');
     formData.append('descripcion', document.getElementById('descripcion')?.value || '');
     formData.append('precio_compra', document.getElementById('precio_compra').value ? parseFloat(document.getElementById('precio_compra').value) : 0);
     formData.append('precio_venta', document.getElementById('precio_venta').value ? parseFloat(document.getElementById('precio_venta').value) : 0);
@@ -792,6 +815,7 @@ function agregarProducto() {
     const formData = new FormData();
     formData.append('nombre', nombre);
     formData.append('modelo', document.getElementById('modelo')?.value || '');
+    formData.append('codigo_barra', document.getElementById('codigo_barra')?.value.trim() || '');
     formData.append('descripcion', document.getElementById('descripcion')?.value || '');
     formData.append('precio_compra', 0);
     formData.append('precio_venta', document.getElementById('precio_venta').value ? parseFloat(document.getElementById('precio_venta').value) : 0);
