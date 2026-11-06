@@ -2014,11 +2014,15 @@ textarea[readonly] {
   height: 100vh !important;
   height: 100dvh !important;
   z-index: 99999 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 1rem !important;
-  box-sizing: border-box !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.producto-form-modal[style*="display: none"] {
+  display: none !important;
 }
 
 .producto-form-modal-overlay {
