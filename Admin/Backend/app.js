@@ -175,16 +175,29 @@ movimientosStockModel.sincronizarSiEstaVacio();
 (async () => {
     try {
         const pool = require('./config/db');
-        const [prodCols] = await pool.query('SHOW COLUMNS FROM PRODUCTOS');
-        const prodColNames = prodCols.map(c => c.Field);
+        let targetTable = 'PRODUCTOS';
+        let prodCols;
+        try {
+            [prodCols] = await pool.query('SHOW COLUMNS FROM PRODUCTOS');
+            targetTable = 'PRODUCTOS';
+        } catch (_) {
+            try {
+                [prodCols] = await pool.query('SHOW COLUMNS FROM productos');
+                targetTable = 'productos';
+            } catch (e2) {
+                console.error('⚠️ No se pudo inspeccionar tabla PRODUCTOS/productos:', e2.message);
+                return;
+            }
+        }
+        const prodColNames = (prodCols || []).map(c => c.Field);
 
         if (!prodColNames.includes('CODIGO_BARRA')) {
             await pool.query(`
-                ALTER TABLE PRODUCTOS 
+                ALTER TABLE ${targetTable} 
                 ADD COLUMN CODIGO_BARRA VARCHAR(100) NULL AFTER MODELO,
                 ADD KEY idx_codigo_barra (CODIGO_BARRA)
             `);
-            console.log('✅ Auto-migración: Columna CODIGO_BARRA agregada a PRODUCTOS.');
+            console.log(`✅ Auto-migración: Columna CODIGO_BARRA agregada a ${targetTable}.`);
         }
     } catch (err) {
         console.error('⚠️ Auto-migración PRODUCTOS (CODIGO_BARRA):', err.message);

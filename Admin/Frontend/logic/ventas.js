@@ -158,6 +158,11 @@ function renderVentasPOSGrid(forceFetch = false) {
     fetch(`${API_BASE}/productos`)
         .then(r => r.json())
         .then(productos => {
+            if (!Array.isArray(productos)) {
+                console.error('Respuesta de productos no es un arreglo:', productos);
+                grid.innerHTML = '<div class="cart-empty-message"><i class="fas fa-exclamation-triangle"></i><p>' + ((productos && (productos.error || productos.detail)) || 'Error al cargar productos.') + '</p></div>';
+                return;
+            }
             window._ventasPOSProductos = productos;
             renderGridHTML(productos);
         })

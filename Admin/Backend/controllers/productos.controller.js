@@ -147,7 +147,8 @@ const productosController = {
       });
       res.json(normalizados);
     } catch (err) {
-      res.status(500).json({ error: 'No se pudieron obtener los productos.' });
+      console.error('Error en listar productos:', err.message);
+      res.status(500).json({ error: 'No se pudieron obtener los productos.', detail: err.message });
     }
   },
 

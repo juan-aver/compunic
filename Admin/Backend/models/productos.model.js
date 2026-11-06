@@ -4,62 +4,88 @@ const db = require('../config/db.js');
 
 const Producto = {
   obtenerTodos: async () => {
+    const query = `
+      SELECT 
+        p.ID_PRODUCTO,
+        p.NOMBRE_PRODUCTO AS NOMBRE,
+        p.MODELO,
+        p.CODIGO_BARRA,
+        p.DESCRIPCION,
+        p.IMAGEN_URL,
+        COALESCE(p.ACTIVO, 1) AS ACTIVO,
+        (
+          COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = p.ID_PRODUCTO), 0) - 
+          COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp JOIN VENTAS v ON vp.ID_VENTA = v.ID_VENTA WHERE vp.ID_PRODUCTO = p.ID_PRODUCTO AND v.ESTADO != 'Rechazado'), 0) -
+          COALESCE((SELECT SUM(d.CANTIDAD) FROM DEVOLUCIONES d WHERE d.ID_PRODUCTO_REEMPLAZO = p.ID_PRODUCTO), 0) -
+          COALESCE((SELECT SUM(m.CANTIDAD) FROM MERMAS m WHERE m.ID_PRODUCTO = p.ID_PRODUCTO), 0) -
+          COALESCE((SELECT SUM(dp.CANTIDAD) FROM DEVOLUCIONES_PROVEEDORES dp WHERE dp.ID_PRODUCTO = p.ID_PRODUCTO AND dp.ESTADO IN ('Aprobada', 'Pendiente', 'Reembolso_Recibido')), 0) +
+          COALESCE((SELECT SUM(d.CANTIDAD) FROM DEVOLUCIONES d WHERE (d.ID_PRODUCTO = p.ID_PRODUCTO AND d.ID_PRODUCTO_SEMINUEVO IS NULL) AND d.ACCION = 'reingreso' AND d.REINGRESO_CONFIRMADO = 1), 0) +
+          COALESCE((SELECT SUM(d.CANTIDAD) FROM DEVOLUCIONES d WHERE d.ID_PRODUCTO_SEMINUEVO = p.ID_PRODUCTO AND d.ACCION = 'reingreso' AND d.REINGRESO_CONFIRMADO = 1), 0)
+        ) AS stock_actual_calculado,
+        (SELECT COUNT(*) FROM PRODUCTO_SERIES ps WHERE ps.ID_PRODUCTO = p.ID_PRODUCTO AND ps.ESTADO = 'en_stock' AND ps.CONDICION = 'Nuevo') AS series_nuevas,
+        (SELECT COUNT(*) FROM PRODUCTO_SERIES ps WHERE ps.ID_PRODUCTO = p.ID_PRODUCTO AND ps.ESTADO = 'en_stock' AND ps.CONDICION = 'Seminuevo') AS series_seminuevas,
+        CONCAT(g.DURACION_MESES, ' Meses - ', COALESCE(gt.TIPO, 'Estándar')) AS GARANTIA_MESES,
+        COALESCE(
+          (SELECT dc.MESES_GARANTIA 
+           FROM DETALLE_COMPRA dc 
+           WHERE dc.ID_PRODUCTO = p.ID_PRODUCTO 
+           ORDER BY dc.ID_DETALLE DESC 
+           LIMIT 1), 0
+        ) AS GARANTIA_PROVEEDOR,
+        p.PRECIO_COMPRA,
+        p.PRECIO_VENTA,
+        m.NOMBRE_MARCA AS nombre_marca, 
+        pv.NOMBRE_EMPRESA AS nombre_proveedor, 
+        GROUP_CONCAT(DISTINCT c.NOMBRE_CATEGORIA SEPARATOR ', ') AS nombre_categoria,
+        GROUP_CONCAT(DISTINCT c.ID_CATEGORIA SEPARATOR ',') AS categoria_ids,
+        p.ID_PROVEEDOR,
+        p.ID_MARCA,
+        p.ID_GARANTIAS 
+        FROM 
+        PRODUCTOS p
+        LEFT JOIN MARCAS m ON p.ID_MARCA = m.ID_MARCA 
+        LEFT JOIN PROVEEDORES pv ON p.ID_PROVEEDOR = pv.ID_PROVEEDOR
+        LEFT JOIN GARANTIAS g ON p.ID_GARANTIAS = g.ID_GARANTIA
+        LEFT JOIN GARANTIA_TIPOS gt ON g.ID_GARANTIA_TIPO = gt.ID_GARANTIA_TIPO
+        LEFT JOIN PRODUCTO_CATEGORIA pc ON p.ID_PRODUCTO = pc.ID_PRODUCTO
+        LEFT JOIN CATEGORIAS c ON pc.ID_CATEGORIA = c.ID_CATEGORIA
+        GROUP BY 
+        p.ID_PRODUCTO, p.NOMBRE_PRODUCTO, p.MODELO, p.CODIGO_BARRA, p.DESCRIPCION, p.PRECIO_COMPRA, p.PRECIO_VENTA, m.NOMBRE_MARCA, pv.NOMBRE_EMPRESA, g.DURACION_MESES, gt.TIPO, p.ACTIVO
+        ORDER BY 
+        p.ID_PRODUCTO DESC;
+    `;
+
     try {
-      const query = `
-        SELECT 
-          p.ID_PRODUCTO,
-          p.NOMBRE_PRODUCTO AS NOMBRE,
-          p.MODELO,
-          p.CODIGO_BARRA,
-          p.DESCRIPCION,
-          p.IMAGEN_URL,
-          COALESCE(p.ACTIVO, 1) AS ACTIVO,
-          (
-            COALESCE((SELECT SUM(dc.CANTIDAD) FROM DETALLE_COMPRA dc WHERE dc.ID_PRODUCTO = p.ID_PRODUCTO), 0) - 
-            COALESCE((SELECT SUM(vp.cantidad_neta) FROM VENTAS_PRODUCTOS vp JOIN VENTAS v ON vp.ID_VENTA = v.ID_VENTA WHERE vp.ID_PRODUCTO = p.ID_PRODUCTO AND v.ESTADO != 'Rechazado'), 0) -
-            COALESCE((SELECT SUM(d.CANTIDAD) FROM DEVOLUCIONES d WHERE d.ID_PRODUCTO_REEMPLAZO = p.ID_PRODUCTO), 0) -
-            COALESCE((SELECT SUM(m.CANTIDAD) FROM MERMAS m WHERE m.ID_PRODUCTO = p.ID_PRODUCTO), 0) -
-            COALESCE((SELECT SUM(dp.CANTIDAD) FROM DEVOLUCIONES_PROVEEDORES dp WHERE dp.ID_PRODUCTO = p.ID_PRODUCTO AND dp.ESTADO IN ('Aprobada', 'Pendiente', 'Reembolso_Recibido')), 0) +
-            COALESCE((SELECT SUM(d.CANTIDAD) FROM DEVOLUCIONES d WHERE (d.ID_PRODUCTO = p.ID_PRODUCTO AND d.ID_PRODUCTO_SEMINUEVO IS NULL) AND d.ACCION = 'reingreso' AND d.REINGRESO_CONFIRMADO = 1), 0) +
-            COALESCE((SELECT SUM(d.CANTIDAD) FROM DEVOLUCIONES d WHERE d.ID_PRODUCTO_SEMINUEVO = p.ID_PRODUCTO AND d.ACCION = 'reingreso' AND d.REINGRESO_CONFIRMADO = 1), 0)
-          ) AS stock_actual_calculado,
-          (SELECT COUNT(*) FROM PRODUCTO_SERIES ps WHERE ps.ID_PRODUCTO = p.ID_PRODUCTO AND ps.ESTADO = 'en_stock' AND ps.CONDICION = 'Nuevo') AS series_nuevas,
-          (SELECT COUNT(*) FROM PRODUCTO_SERIES ps WHERE ps.ID_PRODUCTO = p.ID_PRODUCTO AND ps.ESTADO = 'en_stock' AND ps.CONDICION = 'Seminuevo') AS series_seminuevas,
-          CONCAT(g.DURACION_MESES, ' Meses - ', COALESCE(gt.TIPO, 'Estándar')) AS GARANTIA_MESES,
-          COALESCE(
-            (SELECT dc.MESES_GARANTIA 
-             FROM DETALLE_COMPRA dc 
-             WHERE dc.ID_PRODUCTO = p.ID_PRODUCTO 
-             ORDER BY dc.ID_DETALLE DESC 
-             LIMIT 1), 0
-          ) AS GARANTIA_PROVEEDOR,
-          p.PRECIO_COMPRA,
-          p.PRECIO_VENTA,
-          m.NOMBRE_MARCA AS nombre_marca, 
-          pv.NOMBRE_EMPRESA AS nombre_proveedor, 
-          GROUP_CONCAT(DISTINCT c.NOMBRE_CATEGORIA SEPARATOR ', ') AS nombre_categoria,
-          GROUP_CONCAT(DISTINCT c.ID_CATEGORIA SEPARATOR ',') AS categoria_ids,
-          p.ID_PROVEEDOR,
-          p.ID_MARCA,
-          p.ID_GARANTIAS 
-          FROM 
-          PRODUCTOS p
-          LEFT JOIN MARCAS m ON p.ID_MARCA = m.ID_MARCA 
-          LEFT JOIN PROVEEDORES pv ON p.ID_PROVEEDOR = pv.ID_PROVEEDOR
-          LEFT JOIN GARANTIAS g ON p.ID_GARANTIAS = g.ID_GARANTIA
-          LEFT JOIN GARANTIA_TIPOS gt ON g.ID_GARANTIA_TIPO = gt.ID_GARANTIA_TIPO
-          LEFT JOIN PRODUCTO_CATEGORIA pc ON p.ID_PRODUCTO = pc.ID_PRODUCTO
-          LEFT JOIN CATEGORIAS c ON pc.ID_CATEGORIA = c.ID_CATEGORIA
-          GROUP BY 
-          p.ID_PRODUCTO, p.NOMBRE_PRODUCTO, p.MODELO, p.CODIGO_BARRA, p.DESCRIPCION, p.PRECIO_COMPRA, p.PRECIO_VENTA, m.NOMBRE_MARCA, pv.NOMBRE_EMPRESA, g.DURACION_MESES, gt.TIPO, p.ACTIVO
-            ORDER BY 
-            p.ID_PRODUCTO DESC;
-      `;
       const [resultados] = await db.query(query);
       return resultados;
-    } catch (err) {
-      console.error('Error al ejecutar SQL en obtenerTodos:', err.message);
-      throw new Error('Error al obtener los productos (SQL): ' + err.message);
+    } catch (sqlErr) {
+      // Si la columna CODIGO_BARRA no existe en la BD de producción
+      if (sqlErr.code === 'ER_BAD_FIELD_ERROR' || (sqlErr.message && sqlErr.message.includes('CODIGO_BARRA'))) {
+        console.warn('⚠️ Columna CODIGO_BARRA no encontrada en PRODUCTOS. Intentando auto-creación...');
+        try {
+          await db.query('ALTER TABLE PRODUCTOS ADD COLUMN CODIGO_BARRA VARCHAR(100) NULL AFTER MODELO, ADD KEY idx_codigo_barra (CODIGO_BARRA)');
+        } catch (_) {
+          try {
+            await db.query('ALTER TABLE productos ADD COLUMN CODIGO_BARRA VARCHAR(100) NULL AFTER MODELO, ADD KEY idx_codigo_barra (CODIGO_BARRA)');
+          } catch (_) {}
+        }
+
+        // Reintentar tras auto-migración
+        try {
+          const [retryResultados] = await db.query(query);
+          return retryResultados;
+        } catch (retryErr) {
+          // Fallback seguro usando NULL AS CODIGO_BARRA para evitar HTTP 500
+          console.warn('⚠️ Ejecutando query con fallback NULL AS CODIGO_BARRA');
+          const queryFallback = query
+            .replace('p.CODIGO_BARRA,', 'NULL AS CODIGO_BARRA,')
+            .replace('p.CODIGO_BARRA,', ''); // en GROUP BY
+          const [fallbackResultados] = await db.query(queryFallback);
+          return fallbackResultados;
+        }
+      }
+      console.error('Error al ejecutar SQL en obtenerTodos:', sqlErr.message);
+      throw new Error('Error al obtener los productos (SQL): ' + sqlErr.message);
     }
   },
 

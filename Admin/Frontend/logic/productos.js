@@ -183,6 +183,11 @@ function cargarProductos() {
             return res.json();
         })
         .then(data => {
+            if (!Array.isArray(data)) {
+                console.error('Error al recibir productos:', data);
+                if (grid) grid.innerHTML = '<div class="no-products-message"><i class="fas fa-exclamation-triangle"></i>' + ((data && (data.error || data.detail)) || 'Error al cargar productos') + '</div>';
+                return;
+            }
             window._allProductos = data;
             window._filteredProductos = data;
             const savedView = localStorage.getItem('compunic_product_view') || 'cards';
