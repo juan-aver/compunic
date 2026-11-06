@@ -2,6 +2,9 @@
   command = "rm -rf dist && mkdir -p dist/Store dist/Tecnico && cp -r Admin/Frontend/. dist/ && cp -r Store/. dist/Store/ && cp -r Tecnico/. dist/Tecnico/"
   publish = "dist"
 
+[build.environment]
+  NODE_VERSION = "20"
+
 [[redirects]]
   from = "/tecnico"
   to = "/Tecnico/index.html"
@@ -28,4 +31,3 @@
   to = "https://compunic-production.up.railway.app/uploads/:splat"
   status = 200
   force = true
-
